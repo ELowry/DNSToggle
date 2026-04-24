@@ -6,6 +6,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -43,16 +46,33 @@ jobs:
         run: ./gradlew assembleRelease
 
       - name: Sign APK
-        uses: r0adkll/sign-android-release@v1
         id: sign_app
-        with:
-          releaseDirectory: app/build/outputs/apk/release
-          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-          alias: ${{ secrets.KEY_ALIAS }}
-          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-          keyPassword: ${{ secrets.KEY_PASSWORD }}
         env:
-          BUILD_TOOLS_VERSION: "36.0.0"
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          # Decode keystore
+          echo "$SIGNING_KEY" | base64 --decode > release.keystore
+          
+          # Find the unsigned APK
+          APK_PATH=$(find app/build/outputs/apk/release -name '*.apk' | head -n 1)
+          SIGNED_APK_PATH="${APK_PATH%.apk}-signed.apk"
+          
+          # Sign using Android SDK's apksigner
+          APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
+          $APKSIGNER sign --ks release.keystore \
+            --ks-pass "pass:$KEY_STORE_PASSWORD" \
+            --ks-key-alias "$KEY_ALIAS" \
+            --key-pass "pass:$KEY_PASSWORD" \
+            --out "$SIGNED_APK_PATH" \
+            "$APK_PATH"
+            
+          # Clean up the keystore for safety
+          rm release.keystore
+          
+          echo "signedReleaseFile=$SIGNED_APK_PATH" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
