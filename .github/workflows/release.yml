@@ -1,0 +1,66 @@
+name: Release Signed APK
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Prepare Release Info
+        id: release_info
+        run: |
+          # Extract versionCode and versionName from build.gradle.kts
+          VERSION_CODE=$(grep -E 'versionCode\s*=\s*[0-9]+' app/build.gradle.kts | tr -dc '0-9')
+          VERSION_NAME=$(grep -E 'versionName\s*=\s*".+"' app/build.gradle.kts | cut -d'"' -f2)
+          
+          CHANGELOG_PATH="app/src/main/fastlane/metadata/android/en-US/changelogs/${VERSION_CODE}.txt"
+          
+          if [ ! -f "$CHANGELOG_PATH" ]; then
+            echo "No specific changelog found for this release." > "$CHANGELOG_PATH"
+          fi
+          
+          echo "path=$CHANGELOG_PATH" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VERSION_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease
+
+      - name: Sign APK
+        uses: r0adkll/sign-android-release@v1
+        id: sign_app
+        with:
+          releaseDirectory: app/build/outputs/apk/release
+          signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+          alias: ${{ secrets.KEY_ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+        env:
+          BUILD_TOOLS_VERSION: "36.0.0"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || steps.release_info.outputs.tag }}
+          files: ${{ steps.sign_app.outputs.signedReleaseFile }}
+          generate_release_notes: true
+          draft: true
+          body_path: ${{ steps.release_info.outputs.path }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
