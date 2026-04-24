@@ -1,3 +1,5 @@
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 # DNS Toggle
 
 A tiny Android app that allows you to easily toggle your phone's Private DNS through the Quick Settings panel.
