@@ -1,0 +1,1 @@
+Déplacement des métadonnées fastlane vers l'emplacement attendu
