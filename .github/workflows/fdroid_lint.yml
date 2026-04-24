@@ -17,34 +17,63 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Install fdroidserver
+      - name: Verify Fastlane Structure and Content
         run: |
-          python3 -m pip install fdroidserver
-
-      - name: Verify Fastlane Structure
-        run: |
-          # Basic check to ensure required files exist in the Fastlane structure
-          # F-Droid requires at least en-US title, short_description, and full_description
-          MISSING=0
-          FILES=(
-            "app/src/main/fastlane/metadata/android/en-US/title.txt"
-            "app/src/main/fastlane/metadata/android/en-US/short_description.txt"
-            "app/src/main/fastlane/metadata/android/en-US/full_description.txt"
-          )
+          METADATA_DIR="app/src/main/fastlane/metadata/android"
+          FAILED=0
           
-          for file in "${FILES[@]}"; do
-            if [ ! -f "$file" ]; then
-              echo "Error: Missing mandatory F-Droid metadata file: $file"
-              MISSING=1
+          # Check for en-US at minimum
+          if [ ! -d "$METADATA_DIR/en-US" ]; then
+            echo "Error: Mandatory en-US metadata directory is missing."
+            FAILED=1
+          fi
+
+          # Iterate through all locale directories
+          for locale_dir in "$METADATA_DIR"/*/; do
+            if [ -d "$locale_dir" ]; then
+              locale_name=$(basename "$locale_dir")
+              echo "Verifying locale: $locale_name"
+              
+              # Check for mandatory files
+              for file_name in "title.txt" "short_description.txt" "full_description.txt"; do
+                if [ ! -f "$locale_dir$file_name" ]; then
+                  echo "  Error: Missing mandatory file: $file_name"
+                  FAILED=1
+                fi
+              done
+              
+              # Check character limits
+              # summary (short_description.txt) must be <= 80 characters
+              if [ -f "$locale_dir/short_description.txt" ]; then
+                CHAR_COUNT=$(wc -m < "$locale_dir/short_description.txt")
+                echo "  Short description: $CHAR_COUNT / 80"
+                if [ $CHAR_COUNT -gt 80 ]; then
+                  echo "  Error: Character limit exceeded (80)"
+                  FAILED=1
+                fi
+              fi
+              
+              # description (full_description.txt) must be <= 4000 characters
+              if [ -f "$locale_dir/full_description.txt" ]; then
+                CHAR_COUNT=$(wc -m < "$locale_dir/full_description.txt")
+                echo "  Full description: $CHAR_COUNT / 4000"
+                if [ $CHAR_COUNT -gt 4000 ]; then
+                  echo "  Error: Character limit exceeded (4000)"
+                  FAILED=1
+                fi
+              fi
             fi
           done
           
-          if [ $MISSING -eq 1 ]; then
+          if [ $FAILED -eq 1 ]; then
             exit 1
           fi
-          echo "Fastlane structure verified successfully."
+          echo "Fastlane metadata verified successfully."
 
-      - name: Run fdroid lint (Dry Run)
+      - name: Scan for proprietary dependencies (F-Droid compliance)
         run: |
-          # Note: 'fdroid lint' typically expects a full metadata/ repo setup, instead we check fastlane data only.
-          fdroid rewritemeta --check com.ericlowry.dnstoggle || echo "Initial check done"
+          # Basic scan for things F-Droid might flag as "Anti-Features"
+          # This provides warnings but doesn't fail the build.
+          grep -rn "com.google.android.gms" . && echo "Warning: Potential non-free GMS dependency found." || true
+          grep -rn "firebase" . && echo "Warning: Potential non-free Firebase dependency found." || true
+          grep -rn "admob" . && echo "Warning: Potential advertising dependency found." || true
