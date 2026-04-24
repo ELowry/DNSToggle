@@ -1,0 +1,14 @@
+DNS Toggle is a tiny Android app that allows you to easily toggle your phone's Private DNS through the Quick Settings panel.
+
+IMPORTANT:
+To modify Private DNS system settings, this app requires the WRITE_SECURE_SETTINGS permission. You must either have a rooted device or manually grant the permission using the ADB command:
+
+adb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS
+
+Features:
+- Quick Settings Tile: Toggle Private DNS on/off with a single tap from your notification shade.
+- Custom DNS Provider: Define a custom provider hostname (e.g., dns.adguard.com) to use when Private DNS is active.
+- Dynamic Tile Labeling: Rename the quick-settings label to fit your preference.
+- Privacy-Focused: No tracking, no ads, and no data collection.
+
+Note: The app does not create an app drawer icon, as it is designed for exclusive use through the Quick Settings panel.

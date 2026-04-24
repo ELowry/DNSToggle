@@ -1,0 +1,1 @@
+A tiny Android app to easily toggle Private DNS through Quick Settings

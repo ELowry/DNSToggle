@@ -1,0 +1,14 @@
+DNS Toggle est une micro-application Android qui permet d'activer/désactiver facilement le DNS privé de votre téléphone via les tuiles de paramètres rapides.
+
+IMPORTANT:
+Pour modifier les paramètres système du DNS privé, cette application nécessite la permission WRITE_SECURE_SETTINGS. Vous devez soit avoir un appareil rooté, soit accorder manuellement la permission via la commande ADB:
+
+adb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS
+
+Fonctionnalités:
+- Tuile de paramètres rapides: Activez/désactivez le DNS privé d'une seule pression depuis votre volet de notifications.
+- Fournisseur DNS personnalisé: Définissez un nom d'hôte de fournisseur DNS personnalisé (ex: dns.adguard.com) à utiliser lorsque le DNS privé est actif.
+- Étiquetage de la tuile: Renommez l'étiquette de la tuile de paramètres rapides.
+- Données personnelles: Pas de suivi, pas de publicité et pas de collecte de données.
+
+Remarque: L'application ne crée pas d'icône dans le tiroir d'applications car elle est conçue pour être utilisée exclusivement via le panneau des paramètres rapides.
