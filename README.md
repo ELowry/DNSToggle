@@ -1,8 +1,15 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-# DNS Toggle
+# [![DNS Toggle](app/fastlane/metadata/android/en-US/images/featureGraphic.png)](#)
 
 A tiny Android app that allows you to easily toggle your phone's Private DNS through the Quick Settings panel.
+
+<p align="center">
+  <img src="app/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="24%" />
+  <img src="app/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="24%" />
+  <img src="app/fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="24%" />
+  <img src="app/fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width="24%" />
+</p>
 
 > [!WARNING]
 >
