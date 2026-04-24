@@ -33,14 +33,22 @@ jobs:
           VERSION_CODE=$(grep -E 'versionCode\s*=\s*[0-9]+' app/build.gradle.kts | tr -dc '0-9')
           VERSION_NAME=$(grep -E 'versionName\s*=\s*".+"' app/build.gradle.kts | cut -d'"' -f2)
           
+          # Determine final version (prioritize git tag, fallback to versionName)
+          if [ "${{ github.ref_type }}" = "tag" ]; then
+            VERSION="${{ github.ref_name }}"
+          else
+            VERSION="v${VERSION_NAME}"
+          fi
+          # Ensure 'v' prefix for filename consistency
+          [[ $VERSION == v* ]] || VERSION="v$VERSION"
+
           CHANGELOG_PATH="app/src/main/fastlane/metadata/android/en-US/changelogs/${VERSION_CODE}.txt"
-          
           if [ ! -f "$CHANGELOG_PATH" ]; then
             echo "No specific changelog found for this release." > "$CHANGELOG_PATH"
           fi
           
           echo "path=$CHANGELOG_PATH" >> "$GITHUB_OUTPUT"
-          echo "tag=v${VERSION_NAME}" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Build Release APK
         run: ./gradlew assembleRelease
@@ -56,9 +64,12 @@ jobs:
           # Decode keystore
           echo "$SIGNING_KEY" | base64 --decode > release.keystore
           
+          # Prepare the output filename
+          VERSION="${{ steps.release_info.outputs.version }}"
+          SIGNED_APK_PATH="dns_toggle_${VERSION}.apk"
+          
           # Find the unsigned APK
           APK_PATH=$(find app/build/outputs/apk/release -name '*.apk' | head -n 1)
-          SIGNED_APK_PATH="${APK_PATH%.apk}-signed.apk"
           
           # Sign using Android SDK's apksigner
           APKSIGNER="$ANDROID_HOME/build-tools/36.0.0/apksigner"
@@ -77,7 +88,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || steps.release_info.outputs.tag }}
+          tag_name: ${{ steps.release_info.outputs.version }}
           files: ${{ steps.sign_app.outputs.signedReleaseFile }}
           generate_release_notes: true
           draft: true
