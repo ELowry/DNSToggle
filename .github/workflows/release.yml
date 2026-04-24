@@ -42,7 +42,7 @@ jobs:
           # Ensure 'v' prefix for filename consistency
           [[ $VERSION == v* ]] || VERSION="v$VERSION"
 
-          CHANGELOG_PATH="app/src/main/fastlane/metadata/android/en-US/changelogs/${VERSION_CODE}.txt"
+          CHANGELOG_PATH="app/fastlane/metadata/android/en-US/changelogs/${VERSION_CODE}.txt"
           if [ ! -f "$CHANGELOG_PATH" ]; then
             echo "No specific changelog found for this release." > "$CHANGELOG_PATH"
           fi
