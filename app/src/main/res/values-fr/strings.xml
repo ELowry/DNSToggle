@@ -1,0 +1,10 @@
+<resources>
+	<string name="app_name">DNS Toggle</string>
+	<string name="private_dns">DNS privé</string>
+	<string name="custom_dns_provider">Fournisseur DNS personnalisé</string>
+	<string name="rename_app">Renommer l\'application</string>
+	<string name="permission_required">Autorisation requise</string>
+	<string name="permission_message">Pour utiliser cette application, vous devez exécuter cette commande ADB sur votre ordinateur :\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
+	<string name="ok">OK</string>
+	<string name="cancel">Annuler</string>
+</resources>
