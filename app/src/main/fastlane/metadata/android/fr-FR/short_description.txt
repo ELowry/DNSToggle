@@ -1,1 +1,1 @@
-Une micro-application Android pour activer/désactiver le DNS privé via les réglages rapides
+Une micro-application pour basculer le DNS privé via les réglages rapides
