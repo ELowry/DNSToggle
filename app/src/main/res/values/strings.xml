@@ -1,0 +1,10 @@
+<resources>
+	<string name="app_name">DNS Toggle</string>
+	<string name="private_dns">Private DNS</string>
+	<string name="custom_dns_provider">Custom DNS Provider</string>
+	<string name="rename_app">Rename App</string>
+	<string name="permission_required">Permission Required</string>
+	<string name="permission_message">To use this toggle, you must run this ADB command on your computer:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
+	<string name="ok">OK</string>
+	<string name="cancel">Cancel</string>
+</resources>

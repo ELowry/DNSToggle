@@ -1,0 +1,26 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+	<!-- Base application theme. -->
+	<style name="Theme.DNSToggle" parent="Theme.Material3.DayNight.NoActionBar">
+		<!-- Primary brand color (Backup for Dynamic Colors) -->
+		<item name="colorPrimary">@color/light_accent</item>
+		<item name="colorOnPrimary">@color/white</item>
+
+		<!-- Secondary brand color -->
+		<item name="colorSecondaryContainer">@color/light_border</item>
+		<item name="colorOnSecondaryContainer">@color/light_text</item>
+
+		<!-- Background and text colors -->
+		<item name="android:colorBackground">@color/light_background</item>
+		<item name="colorSurface">@color/light_background</item>
+		<item name="colorOnSurface">@color/light_text</item>
+		<item name="colorOnSurfaceVariant">@color/light_text</item>
+		<item name="android:textColorPrimary">@color/light_text</item>
+
+		<!-- Outline / Border -->
+		<item name="colorOutline">@color/light_border</item>
+
+		<!-- Status bar color. -->
+		<item name="android:statusBarColor">?attr/colorSurface</item>
+		<item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+	</style>
+</resources>

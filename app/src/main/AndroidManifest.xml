@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools">
+
+	<uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" tools:ignore="ProtectedPermissions"/>
+
+	<application
+		android:name=".DnsToggleApplication"
+		android:allowBackup="true"
+		android:icon="@drawable/ic_launcher"
+		android:label="@string/app_name"
+		android:roundIcon="@drawable/ic_launcher_round"
+		android:supportsRtl="true"
+		android:theme="@style/Theme.DNSToggle">
+
+		<activity
+			android:name=".MainActivity"
+			android:exported="true"
+			android:label="@string/app_name"
+			android:theme="@style/Theme.DNSToggle">
+			<intent-filter>
+				<action android:name="android.intent.action.MAIN" />
+				<action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
+			</intent-filter>
+		</activity>
+
+		<service android:name=".DnsToggleService"
+			android:label="@string/app_name"
+			android:icon="@drawable/ic_qs_dns"
+			android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+			android:exported="true">
+			<intent-filter>
+				<action android:name="android.service.quicksettings.action.QS_TILE" />
+			</intent-filter>
+		</service>
+	</application>
+
+</manifest>

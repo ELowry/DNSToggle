@@ -1,0 +1,40 @@
+# Build artifacts
+.gradle/
+build/
+app/build/
+*.iml
+
+# IDE
+.idea/
+*.ipr
+*.iws
+out/
+.vscode/
+
+# Local configuration
+local.properties
+
+# Log files
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Android Specific
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Signing files
+dnstoggle_key
+*.jks
+*.keystore
+*.p12
+*.pem
+*.pk8
