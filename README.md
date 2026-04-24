@@ -5,10 +5,10 @@
 A tiny Android app that allows you to easily toggle your phone's Private DNS through the Quick Settings panel.
 
 <p align="center">
-  <img src="app/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="24%" />
-  <img src="app/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="24%" />
-  <img src="app/fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="24%" />
-  <img src="app/fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width="24%" />
+  <img src="app/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Screenshot of Private DNS being toggled on in the Quick Settings menu" width="24%" />
+  <img src="app/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" alt="Screenshot of Private DNS being toggled off in the Quick Settings menu" width="24%" />
+  <img src="app/fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" alt="Screenshot of the DNS Toggle configuration menu" width="24%" />
+  <img src="app/fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" alt="Screenshot of the DNS Toggle configuration menu's rename popup" width="24%" />
 </p>
 
 > [!WARNING]
