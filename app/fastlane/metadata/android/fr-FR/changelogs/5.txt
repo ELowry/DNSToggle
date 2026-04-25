@@ -1,0 +1,1 @@
+Inclusion de zipalign dans le processus de build

@@ -14,8 +14,8 @@ android {
 		applicationId = "com.ericlowry.dnstoggle"
 		minSdk = 28
 		targetSdk = 36
-		versionCode = 4
-		versionName = "1.0.4"
+		versionCode = 5
+		versionName = "1.0.5"
 	}
 
 	buildTypes {
