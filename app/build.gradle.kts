@@ -14,8 +14,8 @@ android {
 		applicationId = "com.ericlowry.dnstoggle"
 		minSdk = 28
 		targetSdk = 36
-		versionCode = 5
-		versionName = "1.0.5"
+		versionCode = 6
+		versionName = "1.0.6"
 	}
 
 	buildTypes {
@@ -30,6 +30,10 @@ android {
 	compileOptions {
 		sourceCompatibility = JavaVersion.VERSION_11
 		targetCompatibility = JavaVersion.VERSION_11
+	}
+	dependenciesInfo {
+		includeInApk = false
+		includeInBundle = false
 	}
 }
 
