@@ -19,13 +19,13 @@ import androidx.core.content.edit
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
-import com.google.android.material.switchmaterial.SwitchMaterial
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
 
 class MainActivity : AppCompatActivity() {
 
 	private lateinit var tvToggleLabel: TextView
-	private lateinit var switchDns: SwitchMaterial
+	private lateinit var switchDns: MaterialSwitch
 	private lateinit var etCustomDns: TextInputEditText
 	private val handler = Handler(Looper.getMainLooper())
 	private var updateRunnable: Runnable? = null
@@ -61,6 +61,7 @@ class MainActivity : AppCompatActivity() {
 
 	private fun initUi() {
 		val resolver = contentResolver
+
 		try {
 			val currentMode = Settings.Global.getString(resolver, "private_dns_mode")
 			val currentSpecifier = Settings.Global.getString(resolver, "private_dns_specifier")
@@ -68,6 +69,7 @@ class MainActivity : AppCompatActivity() {
 			val isEnabled = currentMode == "hostname"
 			switchDns.isChecked = isEnabled
 			etCustomDns.setText(currentSpecifier ?: "")
+			
 			updateTitle()
 
 			switchDns.setOnCheckedChangeListener { _, isChecked ->
@@ -139,7 +141,7 @@ class MainActivity : AppCompatActivity() {
 		val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
 		val currentName = prefs.getString("dynamic_app_name", getString(R.string.app_name))
 		input.setText(currentName)
-
+		
 		val padding = (24 * resources.displayMetrics.density).toInt()
 		val container = FrameLayout(this)
 		container.setPadding(padding, padding / 4, padding, 0)

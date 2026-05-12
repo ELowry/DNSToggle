@@ -1,9 +1,11 @@
 package com.ericlowry.dnstoggle
 
 import android.app.AlertDialog
+import android.content.Context
 import android.provider.Settings
 import android.graphics.drawable.Icon
 import android.content.pm.PackageManager
+import android.os.Build
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 
@@ -29,6 +31,7 @@ class DnsToggleService : TileService() {
 				Settings.Global.putString(resolver, "private_dns_mode", "hostname")
 				updateTileState(Tile.STATE_ACTIVE)
 			}
+			
 		} catch (e: SecurityException) {
 			e.printStackTrace()
 		}
@@ -55,10 +58,19 @@ class DnsToggleService : TileService() {
 		qsTile?.let { tile ->
 			tile.state = state
 
-			val prefs = getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
+			val prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
 			val dynamicName = prefs.getString("dynamic_app_name", getString(R.string.app_name))
 
 			tile.label = dynamicName
+			
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+				// Use translatable status strings
+				tile.subtitle = if (state == Tile.STATE_ACTIVE) {
+					getString(R.string.on_label)
+				} else {
+					getString(R.string.off_label)
+				}
+			}
 
 			val iconRes = if (state == Tile.STATE_ACTIVE) {
 				R.drawable.ic_qs_dns

@@ -1,0 +1,1 @@
+- Displays current status in the Quick Settings tile description

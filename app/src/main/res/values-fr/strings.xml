@@ -7,4 +7,6 @@
 	<string name="permission_message">Pour utiliser cette application, vous devez exécuter cette commande ADB sur votre ordinateur :\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
 	<string name="ok">OK</string>
 	<string name="cancel">Annuler</string>
+	<string name="on_label">Activé</string>
+	<string name="off_label">Désactivé</string>
 </resources>
