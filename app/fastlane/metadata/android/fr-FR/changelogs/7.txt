@@ -1,1 +1,6 @@
-- Affiche l'état actuel dans la description de la tuile de configuration rapides
+- Ajout du statut dans la description de la tuile de configuration rapide.
+- Ajout d'une liste de blocage Wi-Fi pour le basculement automatique du DNS privé.
+- Ajout d'une option de mise à jour automatique de la liste de blocage via la configuration rapide.
+- Ajout de notifications d'état pour les ajustements DNS automatiques.
+- Ajout d'une surveillance en arrière-plan économe en batterie.
+- Activation de la sauvegarde automatique pour les paramètres et les listes de blocage.

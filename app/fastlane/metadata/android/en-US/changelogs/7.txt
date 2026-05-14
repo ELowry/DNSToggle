@@ -1,1 +1,6 @@
-- Displays current status in the Quick Settings tile description
+- Added current status to the Quick Settings tile description.
+- Added Wi-Fi blocklist for automatic Private DNS toggling.
+- Added auto-update option for the blocklist via Quick Settings.
+- Added status notifications for automatic DNS adjustments.
+- Added battery-efficient background monitoring.
+- Enabled automatic backup for settings and blocklists.

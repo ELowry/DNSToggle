@@ -4,9 +4,39 @@
 	<string name="custom_dns_provider">Custom DNS Provider</string>
 	<string name="rename_app">Rename App</string>
 	<string name="permission_required">Permission Required</string>
-	<string name="permission_message">To use this toggle, you must run this ADB command on your computer:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
+	<string name="permission_message">To use this toggle, you must grant settings persmissions through root or run this ADB command on your computer with USB debugging enabled:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
 	<string name="ok">OK</string>
 	<string name="cancel">Cancel</string>
 	<string name="on_label">On</string>
 	<string name="off_label">Off</string>
+
+	<!-- SSID Blacklist -->
+	<string name="ssid_blacklist_title">SSID Blacklist</string>
+	<string name="auto_blacklist_on_disable">Auto-blacklist when disabling</string>
+	<string name="auto_whitelist_on_enable">Auto-whitelist when enabling</string>
+	<string name="grant_permission_notice">Location/Nearby permission (including background) required to verify the Wi-Fi SSID.</string>
+	<string name="grant_permission_button">Grant Permissions</string>
+	<string name="notification_permission_explanation">To notify you when Private DNS is automatically toggled in the background, and ensure monitoring rmains active, please allow notifications.</string>
+	<string name="background_location_explanation">To monitor Wi-Fi while the app is closed, please select \"Allow all the time\" on the next screen.</string>
+	<string name="add_ssid">Add SSID</string>
+	<string name="edit_ssid">Edit SSID</string>
+	<string name="ssid_hint">SSID (Wi-Fi Name)</string>
+	<string name="delete_ssid_confirm">Remove this SSID from blacklist?</string>
+
+	<!-- Notifications -->
+	<string name="notif_channel_name">Network Status</string>
+	<string name="notif_dns_disabled_auto">Private DNS disabled automatically for %s</string>
+	<string name="notif_ssid_added">Added %s to blacklist</string>
+	<string name="notif_ssid_removed">Removed %s from blacklist</string>
+
+	<!-- Foreground Service -->
+	<string name="service_notif_title">Monitoring Wi-Fi</string>
+	<string name="service_notif_text">DNS Toggle is active to automate Private DNS mode.</string>
+
+	<!-- Wi-Fi Monitoring Info -->
+	<string name="wifi_monitoring_info_title">Wi-Fi Monitoring Info</string>
+	<string name="wifi_monitoring_info_text">To support automatic toggling, the app monitors network changes. The impact on battery consumption should be minimal, but the system may still report background activity.</string>
+	<string name="battery_optimization_explanation">Some devices kill background monitoring to save battery. If automation stops working, disable restrictions for this app.</string>
+	<string name="ignore_battery_optimizations">Disable battery restrictions</string>
+	<string name="info_content_description">More information</string>
 </resources>

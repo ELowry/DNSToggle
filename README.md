@@ -1,4 +1,4 @@
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-3d383b.svg)](LICENSE) [![GitHub release (latest by date)](https://img.shields.io/github/v/release/ELowry/DNSToggle?logo=GitHub&color=e29186)](https://github.com/ELowry/DNSToggle/releases/latest) [![F-Droid](https://img.shields.io/f-droid/v/com.ericlowry.dnstoggle?logo=FDroid)](https://f-droid.org/packages/com.ericlowry.dnstoggle/)
 
 # [![DNS Toggle](app/fastlane/metadata/android/en-US/images/featureGraphic.png)](#)
 
@@ -33,10 +33,13 @@ Adds a Quick Settings tile to toggle your Private DNS on and off with a single t
 
 #### Additional Options
 
-By long-pressing the Quick Settings tile, you can:
+By long-pressing the Quick Settings tile, you can access the configuration menu to:
 
-- **Custom DNS Provider**: Define a custom DNS provider hostname (e.g., `dns.adguard.com`) to use when Private DNS is active. When turned off, the system defaults back to automatic/opportunistic mode.
-- **Dynamic Tile Labeling**: Tap the settings gear icon in the top-right corner to rename the quick-settings label.
+- **Custom DNS Provider**: Set a custom hostname for Private DNS (e.g., `dns.adguard.com`).
+- **Wi-Fi Blocklist**: Automatically disable Private DNS when connected to specific Wi-Fi networks.
+- **Auto-Update Blocklist**: Optionally add or remove the current SSID from the blocklist automatically when manually toggling the Quick Settings tile.
+- **Status Notifications**: Receive notifications when Private DNS settings are automatically adjusted.
+- **Dynamic Tile Labeling**: Rename the Quick Settings tile label via the settings menu.
 
 ## Usage
 
@@ -51,9 +54,15 @@ By long-pressing the Quick Settings tile, you can:
 - **ADB Command Fails**: Ensure USB Debugging is enabled in Developer Options, and that your device is recognized by running the `adb devices` command.
 - **Tile is Grayed Out**: This usually means the permission was not granted correctly. See the warning above.
 
+## Permissions
+
+- **WRITE_SECURE_SETTINGS**: Required to modify system Private DNS settings. Must be granted via root or using ADB.
+- **Location & Nearby Devices**_(optional)_: Required only for **Wi-Fi Blocklist** automation. Used to identify the Wi-Fi network name (SSID) locally.
+- **Notifications**_(optional)_: Used for status alerts when Private DNS is automatically adjusted.
+
 ## Privacy
 
-This app is just a shortcut for existing settings; it doesn't store or send any information from your device.
+This app is a shortcut for existing system settings. It does not store, collect, or share any personal data. All permission-related activities (such as reading the Wi-Fi SSID) occur strictly on-device for automation purposes.
 
 ## Building from Source
 
