@@ -1,4 +1,4 @@
-[![License: MIT](https://img.shields.io/badge/License-MIT-3d383b.svg)](LICENSE) [![GitHub release (latest by date)](https://img.shields.io/github/v/release/ELowry/DNSToggle?logo=GitHub&color=e29186)](https://github.com/ELowry/DNSToggle/releases/latest)<!-- [![F-Droid](https://img.shields.io/f-droid/v/com.ericlowry.dnstoggle?logo=FDroid)](https://f-droid.org/packages/com.ericlowry.dnstoggle/) -->
+[![License: MIT](https://img.shields.io/badge/License-MIT-3d383b.svg)](LICENSE) [![GitHub release (latest by date)](https://img.shields.io/github/v/release/ELowry/DNSToggle?logo=GitHub&color=e29186)](https://github.com/ELowry/DNSToggle/releases/latest) <!--[![F-Droid](https://img.shields.io/f-droid/v/com.ericlowry.dnstoggle?logo=FDroid)](https://f-droid.org/packages/com.ericlowry.dnstoggle/) -->
 
 # [![DNS Toggle](app/fastlane/metadata/android/en-US/images/featureGraphic.png)](#)
 
