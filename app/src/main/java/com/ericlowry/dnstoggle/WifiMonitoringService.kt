@@ -7,10 +7,10 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
+import android.net.ConnectivityManager.NetworkCallback
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
@@ -18,14 +18,14 @@ import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.IBinder
-import android.provider.Settings
+import android.provider.Settings.Global
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 
 class WifiMonitoringService : Service() {
 
     private lateinit var connectivityManager: ConnectivityManager
-    private var networkCallback: ConnectivityManager.NetworkCallback? = null
+    private var networkCallback: NetworkCallback? = null
 
     companion object {
         private const val NOTIFICATION_ID_FOREGROUND = 2001
@@ -86,7 +86,7 @@ class WifiMonitoringService : Service() {
             .build()
 
         networkCallback = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            object : ConnectivityManager.NetworkCallback(ConnectivityManager.NetworkCallback.FLAG_INCLUDE_LOCATION_INFO) {
+            object : NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
                 override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
                     evaluateNetworkCapabilities(caps)
                 }
@@ -97,7 +97,7 @@ class WifiMonitoringService : Service() {
                 }
             }
         } else {
-            object : ConnectivityManager.NetworkCallback() {
+            object : NetworkCallback() {
                 override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
                     evaluateNetworkCapabilities(caps)
                 }
@@ -111,7 +111,7 @@ class WifiMonitoringService : Service() {
 
         try {
             connectivityManager.registerNetworkCallback(networkRequest, networkCallback!!)
-        } catch (ignored: Exception) { }
+        } catch (_: Exception) { }
     }
 
     private fun evaluateNetworkCapabilities(networkCapabilities: NetworkCapabilities) {
@@ -119,7 +119,7 @@ class WifiMonitoringService : Service() {
             val wifiInfo = networkCapabilities.transportInfo as? WifiInfo
             wifiInfo?.ssid?.removePrefix("\"")?.removeSuffix("\"")
         } else {
-            val wm = applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+            val wm = getSystemService(WIFI_SERVICE) as WifiManager
             @Suppress("DEPRECATION")
             wm.connectionInfo?.ssid?.removePrefix("\"")?.removeSuffix("\"")
         }
@@ -134,7 +134,7 @@ class WifiMonitoringService : Service() {
         
         app.detectedSsid = currentSsid
         
-        val sharedPreferences = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
         val blacklistSet = sharedPreferences.getStringSet("ssid_blacklist", emptySet()) ?: emptySet()
 
         if (blacklistSet.contains(currentSsid)) {
@@ -149,7 +149,7 @@ class WifiMonitoringService : Service() {
         networkCallback?.let { callback ->
             try {
                 connectivityManager.unregisterNetworkCallback(callback)
-            } catch (ignored: Exception) { }
+            } catch (_: Exception) { }
         }
         networkCallback = null
     }
@@ -159,7 +159,7 @@ class WifiMonitoringService : Service() {
     }
 
     private fun restorePreferredDns() {
-        val sharedPreferences = getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
         val preferredMode = sharedPreferences.getString("preferred_dns_mode", "hostname") ?: "hostname"
         updateDnsSetting(preferredMode, null)
     }
@@ -167,15 +167,15 @@ class WifiMonitoringService : Service() {
     private fun updateDnsSetting(newMode: String, ssidForNotification: String?) {
         try {
             val resolver = contentResolver
-            val currentMode = Settings.Global.getString(resolver, "private_dns_mode")
+            val currentMode = Global.getString(resolver, "private_dns_mode")
             if (currentMode != newMode) {
-                Settings.Global.putString(resolver, "private_dns_mode", newMode)
+                Global.putString(resolver, "private_dns_mode", newMode)
                 ssidForNotification?.let { 
                     dispatchStatusNotification(getString(R.string.notif_dns_disabled_auto, it)) 
                 }
                 TileServiceCompat.requestListeningState(this, ComponentName(this, DnsToggleService::class.java))
             }
-        } catch (ignored: SecurityException) { }
+        } catch (_: SecurityException) { }
     }
 
     private fun dispatchStatusNotification(message: String) {

@@ -2,10 +2,11 @@ package com.ericlowry.dnstoggle
 
 import android.Manifest
 import android.content.ComponentName
-import android.content.Context
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
+import android.widget.Toast
 import android.content.pm.PackageManager
-import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -46,6 +47,7 @@ class MainActivity : AppCompatActivity() {
     
     private lateinit var switchAutoBlacklist: MaterialSwitch
     private lateinit var switchAutoWhitelist: MaterialSwitch
+    private lateinit var switchHideLauncher: MaterialSwitch
     private lateinit var permissionNoticeText: TextView
     private lateinit var btnGrantPermission: Button
     private lateinit var ssidListContainer: LinearLayout
@@ -95,11 +97,14 @@ class MainActivity : AppCompatActivity() {
         initializeViews()
         observeViewModel()
 
+        setupUserInteractions()
+        updateSsidUiState(hasSsidPermissions())
+
         if (checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) != PackageManager.PERMISSION_GRANTED) {
-            showInitialPermissionDialog()
-        } else {
-            setupUserInteractions()
-            updateSsidUiState(hasSsidPermissions())
+            val wasGrantSuccessful = RootUtils.grantSecureSettingsPermission(packageName)
+            if (!wasGrantSuccessful && intent.getBooleanExtra("show_permission_dialog", false)) {
+                showInitialPermissionDialog()
+            }
         }
     }
 
@@ -124,6 +129,7 @@ class MainActivity : AppCompatActivity() {
 
         switchAutoBlacklist = findViewById(R.id.switchAutoBlacklist)
         switchAutoWhitelist = findViewById(R.id.switchAutoWhitelist)
+        switchHideLauncher = findViewById(R.id.switchHideLauncher)
         permissionNoticeText = findViewById(R.id.tvPermissionNotice)
         btnGrantPermission = findViewById(R.id.btnGrantPermission)
         ssidListContainer = findViewById(R.id.ssidListContainer)
@@ -157,13 +163,31 @@ class MainActivity : AppCompatActivity() {
             switchAutoWhitelist.isChecked = enabled
         }
 
+        dnsViewModel.hideLauncherIcon.observe(this) { isHidden ->
+            switchHideLauncher.isChecked = isHidden
+            updateLauncherComponentState(isHidden)
+        }
+
         updateToolbarTitle()
     }
 
     private fun setupUserInteractions() {
-        dnsToggleSwitch.setOnCheckedChangeListener { _, isChecked ->
-            dnsViewModel.togglePrivateDns(isChecked)
-            requestTileUpdate()
+        dnsToggleSwitch.setOnClickListener {
+            val isChecked = dnsToggleSwitch.isChecked
+            if (checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED) {
+                dnsViewModel.togglePrivateDns(isChecked)
+                requestTileUpdate()
+            } else {
+                // Attempt root grant again
+                if (RootUtils.grantSecureSettingsPermission(packageName)) {
+                    dnsViewModel.togglePrivateDns(isChecked)
+                    requestTileUpdate()
+                } else {
+                    // Revert UI and show manual instructions
+                    dnsToggleSwitch.isChecked = !isChecked
+                    showInitialPermissionDialog()
+                }
+            }
         }
 
         customDnsInput.doAfterTextChanged { text ->
@@ -186,6 +210,10 @@ class MainActivity : AppCompatActivity() {
             if (isChecked) {
                 checkSsidPermissions(requestIfNotGranted = true)
             }
+        }
+
+        switchHideLauncher.setOnCheckedChangeListener { _, isChecked ->
+            dnsViewModel.setHideLauncherIcon(isChecked)
         }
 
         addSsidButton.setOnClickListener { 
@@ -408,7 +436,7 @@ class MainActivity : AppCompatActivity() {
                 data = "package:$packageName".toUri()
             }
             startActivity(intent)
-        } catch (ignored: Exception) {
+        } catch (_: Exception) {
             val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
             startActivity(intent)
         }
@@ -424,12 +452,35 @@ class MainActivity : AppCompatActivity() {
         TileServiceCompat.requestListeningState(this, ComponentName(this, DnsToggleService::class.java))
     }
 
+    private fun updateLauncherComponentState(isHidden: Boolean) {
+        val componentName = ComponentName(this, "${packageName}.LauncherActivity")
+        val newState = if (isHidden) {
+            PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+        } else {
+            PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+        }
+
+        if (packageManager.getComponentEnabledSetting(componentName) != newState) {
+            packageManager.setComponentEnabledSetting(
+                componentName,
+                newState,
+                PackageManager.DONT_KILL_APP
+            )
+        }
+    }
+
     private fun showInitialPermissionDialog() {
+        val adbCommand = "adb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS"
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.permission_required))
             .setMessage(getString(R.string.permission_message))
-            .setPositiveButton(getString(R.string.ok)) { _, _ -> finish() }
-            .setCancelable(false)
+            .setPositiveButton(getString(R.string.copy_command)) { _, _ ->
+                val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("ADB Command", adbCommand)
+                clipboard.setPrimaryClip(clip)
+                Toast.makeText(this, getString(R.string.command_copied), Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton(getString(R.string.ok), null)
             .show()
     }
 

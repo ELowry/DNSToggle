@@ -9,6 +9,6 @@ Fonctionnalités:
 - Tuile de paramètres rapides: Activez/désactivez le DNS privé d'une seule pression depuis votre volet de notifications.
 - Fournisseur DNS personnalisé: Définissez un nom d'hôte de fournisseur DNS personnalisé (ex: dns.adguard.com) à utiliser lorsque le DNS privé est actif.
 - Étiquetage de la tuile: Renommez l'étiquette de la tuile de paramètres rapides.
+- Liste noire de SSID: Désactivez automatiquement le DNS privé lors de la connexion à des réseaux Wi-Fi spécifiques.
+- Masquer l'icône de l'application: Fonctionnalité optionnelle pour masquer l'application de votre tiroir d'applications, gardant votre écran d'accueil propre tout en conservant l'accès via la tuile de paramètres rapides.
 - Données personnelles: Pas de suivi, pas de publicité et pas de collecte de données.
-
-Remarque: L'application ne crée pas d'icône dans le tiroir d'applications car elle est conçue pour être utilisée exclusivement via le panneau des paramètres rapides.

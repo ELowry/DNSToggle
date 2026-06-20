@@ -1,0 +1,4 @@
+- Ajout d'une demande de permission `WRITE_SECURE_SETTINGS` sur les appareils rootés
+- Ajout d'un bouton pour copier la commande adb dans le presse-papiers afin d'accorder facilement `WRITE_SECURE_SETTINGS` sans root.
+- Restauration de l'icône de l'application dans le tiroir d'applications.
+- Ajout d'une option pour masquer l'icône de l'application dans le tiroir d'applications.

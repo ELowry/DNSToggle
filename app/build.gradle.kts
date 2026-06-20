@@ -4,18 +4,14 @@ plugins {
 
 android {
 	namespace = "com.ericlowry.dnstoggle"
-	compileSdk {
-		version = release(36) {
-			minorApiLevel = 1
-		}
-	}
+	compileSdk = 37
 
 	defaultConfig {
 		applicationId = "com.ericlowry.dnstoggle"
 		minSdk = 28
 		targetSdk = 36
-		versionCode = 7
-		versionName = "1.1.0"
+		versionCode = 8
+		versionName = "1.2.0"
 	}
 
 	buildTypes {

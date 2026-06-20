@@ -1,0 +1,4 @@
+- Added a prompt for `WRITE_SECURE_SETTINGS` permissions on rooted devices
+- Added a button to copy the adb command to the clipboard for easily granting `WRITE_SECURE_SETTINGS` without root.
+- Restored the app's launcher icon.
+- Added a toggle to hide the app's launcher icon.

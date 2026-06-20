@@ -4,7 +4,11 @@
 	<string name="custom_dns_provider">Custom DNS Provider</string>
 	<string name="rename_app">Rename App</string>
 	<string name="permission_required">Permission Required</string>
-	<string name="permission_message">To use this toggle, you must grant settings persmissions through root or run this ADB command on your computer with USB debugging enabled:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
+	<string name="permission_message">To use this toggle, you must grant settings permissions through root or run this ADB command on your computer with USB debugging enabled:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
+	<string name="copy_command">Copy Command</string>
+    <string name="command_copied">Command copied to clipboard</string>
+    <string name="hide_launcher_icon">Hide app icon</string>
+    <string name="hide_launcher_icon_summary">When enabled, the app will be hidden from your app drawer. You can still access settings by long-pressing the Quick Settings tile.</string>
 	<string name="ok">OK</string>
 	<string name="cancel">Cancel</string>
 	<string name="on_label">On</string>
@@ -16,7 +20,7 @@
 	<string name="auto_whitelist_on_enable">Auto-whitelist when enabling</string>
 	<string name="grant_permission_notice">Location/Nearby permission (including background) required to verify the Wi-Fi SSID.</string>
 	<string name="grant_permission_button">Grant Permissions</string>
-	<string name="notification_permission_explanation">To notify you when Private DNS is automatically toggled in the background, and ensure monitoring rmains active, please allow notifications.</string>
+	<string name="notification_permission_explanation">To notify you when Private DNS is automatically toggled in the background, and ensure monitoring remains active, please allow notifications.</string>
 	<string name="background_location_explanation">To monitor Wi-Fi while the app is closed, please select \"Allow all the time\" on the next screen.</string>
 	<string name="add_ssid">Add SSID</string>
 	<string name="edit_ssid">Edit SSID</string>

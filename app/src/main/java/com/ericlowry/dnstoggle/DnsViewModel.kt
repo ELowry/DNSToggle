@@ -28,10 +28,13 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
     private val _autoWhitelistEnabled = MutableLiveData<Boolean>()
     val autoWhitelistEnabled: LiveData<Boolean> = _autoWhitelistEnabled
 
+    private val _hideLauncherIcon = MutableLiveData<Boolean>()
+    val hideLauncherIcon: LiveData<Boolean> = _hideLauncherIcon
+
     private val preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         when (key) {
             "ssid_blacklist" -> loadBlacklist()
-            "auto_blacklist", "auto_whitelist" -> loadSettings()
+            "auto_blacklist", "auto_whitelist", "hide_launcher_icon" -> loadSettings()
         }
     }
 
@@ -48,6 +51,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
         
         _autoBlacklistEnabled.postValue(sharedPreferences.getBoolean("auto_blacklist", false))
         _autoWhitelistEnabled.postValue(sharedPreferences.getBoolean("auto_whitelist", false))
+        _hideLauncherIcon.postValue(sharedPreferences.getBoolean("hide_launcher_icon", false))
     }
 
     fun loadBlacklist() {
@@ -77,14 +81,14 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
         try {
             Settings.Global.putString(getApplication<Application>().contentResolver, "private_dns_mode", newMode)
             _privateDnsMode.value = newMode
-        } catch (ignored: SecurityException) { }
+        } catch (_: SecurityException) { }
     }
 
     fun updateCustomDns(address: String) {
         try {
             Settings.Global.putString(getApplication<Application>().contentResolver, "private_dns_specifier", address)
             _privateDnsSpecifier.value = address
-        } catch (ignored: SecurityException) { }
+        } catch (_: SecurityException) { }
     }
 
     fun setAutoBlacklist(enabled: Boolean) {
@@ -97,6 +101,11 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
         sharedPreferences.edit { putBoolean("auto_whitelist", enabled) }
         _autoWhitelistEnabled.value = enabled
         notifyMonitoringChange()
+    }
+
+    fun setHideLauncherIcon(hidden: Boolean) {
+        sharedPreferences.edit { putBoolean("hide_launcher_icon", hidden) }
+        _hideLauncherIcon.value = hidden
     }
 
     fun addToBlacklist(ssid: String) {
@@ -135,7 +144,6 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     override fun onCleared() {
-        super.onCleared()
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
     }
 }

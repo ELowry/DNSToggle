@@ -9,6 +9,6 @@ Features:
 - Quick Settings Tile: Toggle Private DNS on/off with a single tap from your notification shade.
 - Custom DNS Provider: Define a custom provider hostname (e.g., dns.adguard.com) to use when Private DNS is active.
 - Dynamic Tile Labeling: Rename the quick-settings label to fit your preference.
+- SSID Blacklist: Automatically disable Private DNS when connected to specific Wi-Fi networks.
+- Hide App Icon: Optional feature to hide the app from your launcher drawer, keeping your home screen clean while maintaining access via the Quick Settings tile.
 - Privacy-Focused: No tracking, no ads, and no data collection.
-
-Note: The app does not create an app drawer icon, as it is designed for exclusive use through the Quick Settings panel.

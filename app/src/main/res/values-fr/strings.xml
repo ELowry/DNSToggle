@@ -2,22 +2,26 @@
 	<string name="app_name">DNS Toggle</string>
 	<string name="private_dns">DNS privé</string>
 	<string name="custom_dns_provider">Fournisseur DNS personnalisé</string>
-	<string name="rename_app">"Renommer l'application"</string>
+	<string name="rename_app">"Renommer l\'application</string>
 	<string name="permission_required">Autorisation requise</string>
-	<string name="permission_message">"Pour utiliser cette application, vous devez accorder des autorisations d'accès aux paramètres via root ou exécuter cette commande ADB sur votre ordinateur avec le débogage USB activé:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS"</string>
+	<string name="permission_message">"Pour utiliser cette application, vous devez accorder des autorisations d\'accès aux paramètres via root ou exécuter cette commande ADB sur votre ordinateur avec le débogage USB activé:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
 	<string name="ok">OK</string>
 	<string name="cancel">Annuler</string>
+	<string name="copy_command">Copier la commande</string>
+    <string name="command_copied">Commande copiée dans le presse-papiers</string>
+    <string name="hide_launcher_icon">"Masquer l\'icône de l\'application</string>
+    <string name="hide_launcher_icon_summary">"Une fois activée, l\'application sera masquée de votre tiroir d\'applications. Vous pourrez toujours y accéder en effectuant un appui long sur la tuile des paramètres rapides.</string>
 	<string name="on_label">Activé</string>
 	<string name="off_label">Désactivé</string>
 
 	<!-- SSID Blacklist -->
 	<string name="ssid_blacklist_title">Liste des SSID bloqués</string>
-	<string name="auto_blacklist_on_disable">Ajout automatique à la liste des SSID bloqués en désactivant</string>
-	<string name="auto_whitelist_on_enable">Retrait automatique de la liste des SSID bloqués en activant</string>
-	<string name="grant_permission_notice">"L'autorisation de localisation/proximité (y compris en arrière-plan) est requise pour vérifier le nom du Wi-Fi."</string>
+	<string name="auto_blacklist_on_disable">Ajout automatique à la liste des SSID bloqués lors de la désactivation</string>
+	<string name="auto_whitelist_on_enable">Retrait automatique de la liste des SSID bloqués lors de l\'activation</string>
+	<string name="grant_permission_notice">L\'autorisation de localisation/proximité (y compris en arrière-plan) est requise pour vérifier le nom du Wi-Fi.</string>
 	<string name="grant_permission_button">Accorder les autorisations</string>
 	<string name="notification_permission_explanation">Pour vous avertir lorsque le DNS privé est automatiquement activé en arrière-plan, et pour garantir la vérification en arrière-plan, veuillez autoriser les notifications.</string>
-	<string name="background_location_explanation">"Pour que l'application puisse vérifier l'état du WiFi en arrière-plan, veuillez sélectionner \"Toujours autoriser\" sur l'écran suivant."</string>
+	<string name="background_location_explanation">Pour que l\'application puisse vérifier l\'état du WiFi en arrière-plan, veuillez sélectionner \"Toujours autoriser\" sur l\'écran suivant.</string>
 	<string name="add_ssid">Ajouter un SSID</string>
 	<string name="edit_ssid">Modifier le SSID</string>
 	<string name="ssid_hint">SSID (Nom du Wi-Fi)</string>
@@ -30,13 +34,13 @@
 	<string name="notif_ssid_removed">%s retiré de la liste</string>
 
 	<!-- Foreground Service -->
-	<string name="service_notif_title">Surveillance du SSID activee</string>
+	<string name="service_notif_title">Surveillance du SSID activée</string>
 	<string name="service_notif_text">DNS Toggle est actif pour automatiser le mode DNS privé.</string>
 
 	<!-- Wi-Fi Monitoring Info -->
 	<string name="wifi_monitoring_info_title">Info sur la surveillance du SSID</string>
-	<string name="wifi_monitoring_info_text">"Pour prendre en charge le basculement automatique, l'application surveille les changements de réseau. L'impact sur la consommation de la batterie devrait être minimal, mais le système peut afficher une activité en arrière-plan continue."</string>
-	<string name="battery_optimization_explanation">"Certains appareils arrêtent la surveillance en arrière-plan pour économiser la batterie. Si l'automatisation cesse de fonctionner, désactivez les restrictions pour cette application."</string>
+	<string name="wifi_monitoring_info_text">Pour prendre en charge le basculement automatique, l\'application surveille les changements de réseau. L\'impact sur la consommation de la batterie devrait être minimal, mais le système peut afficher une activité en arrière-plan continue.</string>
+	<string name="battery_optimization_explanation">Certains appareils arrêtent la surveillance en arrière-plan pour économiser la batterie. Si l\'automatisation cesse de fonctionner, désactivez les restrictions pour cette application.</string>
 	<string name="ignore_battery_optimizations">Désactiver les restrictions de batterie</string>
-	<string name="info_content_description">"Plus d'informations"</string>
+	<string name="info_content_description">Plus d\'informations</string>
 </resources>
