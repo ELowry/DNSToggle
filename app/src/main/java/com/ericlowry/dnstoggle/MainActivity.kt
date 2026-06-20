@@ -6,11 +6,13 @@ import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -23,7 +25,6 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -36,14 +37,11 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
-
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-
 import kotlin.time.Duration.Companion.milliseconds
 
 class MainActivity : AppCompatActivity() {
@@ -71,6 +69,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnSsidInfo: ImageButton
     private lateinit var dividerSsidList: View
 
+    private lateinit var cardMainPermission: com.google.android.material.card.MaterialCardView
+    private lateinit var btnFixMainPermission: Button
+
+    private var permissionDialog: AlertDialog? = null
     private var inputUpdateJob: Job? = null
     private var isRedirectedFromTile = false
 
@@ -114,17 +116,15 @@ class MainActivity : AppCompatActivity() {
         observeViewModel()
 
         setupUserInteractions()
+        updateMainPermissionUiState()
         updateSsidUiState(hasSsidPermissions())
         handleIntentExtras(intent)
+    }
 
-        if (checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) != PackageManager.PERMISSION_GRANTED) {
-            lifecycleScope.launch {
-                val wasGrantSuccessful = RootUtils.grantSecureSettingsPermission(packageName)
-                if (!wasGrantSuccessful && intent.getBooleanExtra("show_permission_dialog", false)) {
-                    showInitialPermissionDialog()
-                }
-            }
-        }
+    override fun onResume() {
+        super.onResume()
+        updateMainPermissionUiState()
+        updateSsidUiState(hasSsidPermissions())
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -133,6 +133,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun handleIntentExtras(intent: Intent?) {
+        if (intent?.getBooleanExtra("show_permission_dialog", false) == true && !hasSecureSettingsPermission()) {
+            lifecycleScope.launch {
+                RootUtils.grantSecureSettingsPermission(packageName)
+                updateMainPermissionUiState()
+                if (!hasSecureSettingsPermission()) {
+                    showInitialPermissionDialog()
+                }
+            }
+        }
+
         if (intent?.getBooleanExtra(EXTRA_FOCUS_DNS_INPUT, false) == true) {
             isRedirectedFromTile = true
             customDnsInput.requestFocus()
@@ -174,6 +184,9 @@ class MainActivity : AppCompatActivity() {
         addSsidButton = findViewById(R.id.btnAddSsid)
         btnSsidInfo = findViewById(R.id.btnSsidInfo)
         dividerSsidList = findViewById(R.id.dividerSsidList)
+
+        cardMainPermission = findViewById(R.id.cardMainPermission)
+        btnFixMainPermission = findViewById(R.id.btnFixMainPermission)
 
         privateDnsLabel.text = getString(R.string.private_dns)
     }
@@ -235,16 +248,18 @@ class MainActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            if (checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED) {
+            if (hasSecureSettingsPermission()) {
                 dnsViewModel.togglePrivateDns(isChecked)
                 requestTileUpdate()
             } else {
                 // Attempt root grant again
                 setLoadingState(true)
                 lifecycleScope.launch {
-                    val success = RootUtils.grantSecureSettingsPermission(packageName)
+                    RootUtils.grantSecureSettingsPermission(packageName)
                     setLoadingState(false)
-                    if (success) {
+                    updateMainPermissionUiState()
+                    
+                    if (hasSecureSettingsPermission()) {
                         dnsViewModel.togglePrivateDns(isChecked)
                         requestTileUpdate()
                     } else {
@@ -294,6 +309,37 @@ class MainActivity : AppCompatActivity() {
         }
         btnGrantPermission.setOnClickListener { requestSsidPermissions() }
         btnSsidInfo.setOnClickListener { showWifiMonitoringInfoDialog() }
+
+        btnFixMainPermission.setOnClickListener { 
+            if (hasSecureSettingsPermission()) {
+                updateMainPermissionUiState()
+            } else {
+                setLoadingState(true)
+                lifecycleScope.launch {
+                    val success = RootUtils.grantSecureSettingsPermission(packageName)
+                    setLoadingState(false)
+                    updateMainPermissionUiState()
+                    
+                    if (!hasSecureSettingsPermission()) {
+                        showInitialPermissionDialog()
+                    } else if (success) {
+                        Toast.makeText(this@MainActivity, getString(R.string.on_label), Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun hasSecureSettingsPermission(): Boolean {
+        return checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun updateMainPermissionUiState() {
+        if (hasSecureSettingsPermission()) {
+            cardMainPermission.visibility = View.GONE
+        } else {
+            cardMainPermission.visibility = View.VISIBLE
+        }
     }
 
     private fun hasSsidPermissions(): Boolean {
@@ -535,11 +581,13 @@ class MainActivity : AppCompatActivity() {
                 tilCustomDns.helperText = null
             }
             reachability == DnsViewModel.ReachabilityState.UNREACHABLE -> {
-                tilCustomDns.error = getString(R.string.warning_unreachable_dns)
-                tilCustomDns.helperText = null
+                tilCustomDns.error = null
+                setDnsHelperStyle(isWarning = true)
+                tilCustomDns.helperText = getString(R.string.warning_unreachable_dns)
             }
             reachability == DnsViewModel.ReachabilityState.TESTING -> {
                 tilCustomDns.error = null
+                setDnsHelperStyle(isWarning = false)
                 tilCustomDns.helperText = getString(R.string.status_testing_dns)
             }
             else -> {
@@ -547,6 +595,13 @@ class MainActivity : AppCompatActivity() {
                 tilCustomDns.helperText = null
             }
         }
+    }
+
+    private fun setDnsHelperStyle(isWarning: Boolean) {
+        val colorAttr = if (isWarning) R.attr.warning_color else android.R.attr.textColorSecondary
+        val typedValue = TypedValue()
+        theme.resolveAttribute(colorAttr, typedValue, true)
+        tilCustomDns.setHelperTextColor(ColorStateList.valueOf(typedValue.data))
     }
 
     private fun requestTileUpdate() {
@@ -576,8 +631,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showInitialPermissionDialog() {
+        if (permissionDialog?.isShowing == true) return
+
         val adbCommand = "adb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS"
-        AlertDialog.Builder(this)
+        permissionDialog = AlertDialog.Builder(this)
             .setTitle(getString(R.string.permission_required))
             .setMessage(getString(R.string.permission_message))
             .setPositiveButton(getString(R.string.copy_command)) { _, _ ->
@@ -585,6 +642,27 @@ class MainActivity : AppCompatActivity() {
                 val clip = ClipData.newPlainText("ADB Command", adbCommand)
                 clipboard.setPrimaryClip(clip)
                 Toast.makeText(this, getString(R.string.command_copied), Toast.LENGTH_SHORT).show()
+            }
+            .setNeutralButton(R.string.retry_root) { _, _ ->
+                setLoadingState(true)
+                lifecycleScope.launch {
+                    val startTime = System.currentTimeMillis()
+                    RootUtils.grantSecureSettingsPermission(packageName)
+                    
+                    // Artificial delay to prevent UI flicker and give visual confirmation
+                    val elapsedTime = System.currentTimeMillis() - startTime
+                    if (elapsedTime < 1000) {
+                        delay(1000.milliseconds - elapsedTime.milliseconds)
+                    }
+                    
+                    setLoadingState(false)
+                    updateMainPermissionUiState()
+                    
+                    if (!hasSecureSettingsPermission()) {
+                        Toast.makeText(this@MainActivity, R.string.root_grant_failed, Toast.LENGTH_SHORT).show()
+                        showInitialPermissionDialog()
+                    }
+                }
             }
             .setNegativeButton(getString(R.string.ok), null)
             .show()
@@ -608,6 +686,7 @@ class MainActivity : AppCompatActivity() {
     private fun showRenameAppDialog() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle(getString(R.string.rename_app))
+        builder.setMessage(getString(R.string.rename_app_message))
 
         val inputTextField = EditText(this)
         val sharedPreferences = (application as DnsToggleApplication).getPrefs()

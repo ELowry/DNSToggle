@@ -1,0 +1,3 @@
+- Fixed UX flow for root permission request.
+- Added permission requirement banner.
+- Added context for the app label renaming setting.

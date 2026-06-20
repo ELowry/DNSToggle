@@ -19,6 +19,8 @@
 		<!-- Outline / Border -->
 		<item name="colorOutline">@color/dark_border</item>
 
+		<item name="warning_color">#de9245</item>
+
 		<!-- Status bar color. -->
 		<item name="android:statusBarColor">?attr/colorSurface</item>
 		<item name="android:windowLightStatusBar">false</item>

@@ -19,6 +19,8 @@
 		<!-- Outline / Border -->
 		<item name="colorOutline">@color/light_border</item>
 
+		<item name="warning_color">@color/warning_color</item>
+
 		<!-- Status bar color. -->
 		<item name="android:statusBarColor">?attr/colorSurface</item>
 		<item name="android:windowLightStatusBar">true</item>

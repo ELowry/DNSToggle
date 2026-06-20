@@ -1,0 +1,3 @@
+- Amélioration du processus de demande d'autorisation root.
+- Ajout d'une bannière pour les autorisations manquantes.
+- Ajout d'explications pour la personnalisation du nom de l'application.

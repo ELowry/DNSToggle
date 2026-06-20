@@ -12,4 +12,6 @@
 	<color name="light_text">#221a1f</color>
 	<color name="light_accent">#6d0a1f</color>
 	<color name="light_border">#b19f9e</color>
+
+	<color name="warning_color">#a35b12</color>
 </resources>
