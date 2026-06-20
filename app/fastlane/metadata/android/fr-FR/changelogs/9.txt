@@ -1,0 +1,3 @@
+- Les SSID Wi-Fi et les paramètres de l'application sont désormais chiffrés.
+- Ajout d'avertissements clairs pour les adresses DNS vides ou invalides.
+- Amélioration des performances.

@@ -13,6 +13,10 @@
 	<string name="cancel">Cancel</string>
 	<string name="on_label">On</string>
 	<string name="off_label">Off</string>
+	<string name="error_empty_dns_host">Private DNS cannot be enabled while host address is empty</string>
+	<string name="error_invalid_dns_host">Invalid DNS host address format</string>
+	<string name="warning_unreachable_dns">DNS server unreachable on port 853 (DoT). Android may still successfully connect via other methods.</string>
+	<string name="status_testing_dns">Testing connection…</string>
 
 	<!-- SSID Blacklist -->
 	<string name="ssid_blacklist_title">SSID Blacklist</string>

@@ -1,23 +1,46 @@
 package com.ericlowry.dnstoggle
 
 import android.app.Application
-import android.content.Context
 import android.content.SharedPreferences
 import android.provider.Settings
+import android.util.Log
+
+import java.net.InetSocketAddress
+import java.net.Socket
+
+import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.core.content.edit
+import androidx.lifecycle.viewModelScope
+
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 
 class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
-    private val sharedPreferences = application.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+    enum class ReachabilityState { IDLE, TESTING, REACHABLE, UNREACHABLE }
+
+    companion object {
+        private const val TAG = "DnsViewModel"
+    }
+
+    private val sharedPreferences = (application as DnsToggleApplication).getPrefs()
 
     private val _privateDnsMode = MutableLiveData<String?>()
     val privateDnsMode: LiveData<String?> = _privateDnsMode
 
     private val _privateDnsSpecifier = MutableLiveData<String?>()
     val privateDnsSpecifier: LiveData<String?> = _privateDnsSpecifier
+
+    private val _dnsReachability = MutableLiveData(ReachabilityState.IDLE)
+    val dnsReachability: LiveData<ReachabilityState> = _dnsReachability
+
+    private val _hasPermissionError = MutableLiveData(false)
+    val hasPermissionError: LiveData<Boolean> = _hasPermissionError
+
+    private var reachabilityJob: Job? = null
 
     private val _ssidBlacklist = MutableLiveData<Set<String>>()
     val ssidBlacklist: LiveData<Set<String>> = _ssidBlacklist
@@ -45,20 +68,37 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun loadSettings() {
-        val resolver = getApplication<Application>().contentResolver
-        _privateDnsMode.postValue(Settings.Global.getString(resolver, "private_dns_mode"))
-        _privateDnsSpecifier.postValue(Settings.Global.getString(resolver, "private_dns_specifier"))
-        
-        _autoBlacklistEnabled.postValue(sharedPreferences.getBoolean("auto_blacklist", false))
-        _autoWhitelistEnabled.postValue(sharedPreferences.getBoolean("auto_whitelist", false))
-        _hideLauncherIcon.postValue(sharedPreferences.getBoolean("hide_launcher_icon", false))
+        viewModelScope.launch(Dispatchers.IO) {
+            val resolver = getApplication<Application>().contentResolver
+            val specifier = Settings.Global.getString(resolver, "private_dns_specifier")
+            _privateDnsMode.postValue(Settings.Global.getString(resolver, "private_dns_mode"))
+            _privateDnsSpecifier.postValue(specifier)
+            
+            _autoBlacklistEnabled.postValue(sharedPreferences.getBoolean("auto_blacklist", false))
+            _autoWhitelistEnabled.postValue(sharedPreferences.getBoolean("auto_whitelist", false))
+            _hideLauncherIcon.postValue(sharedPreferences.getBoolean("hide_launcher_icon", false))
+            
+            if (!specifier.isNullOrEmpty() && NetworkUtils.isValidDnsHostname(specifier)) {
+                testReachability(specifier)
+            }
+        }
     }
 
     fun loadBlacklist() {
-        _ssidBlacklist.postValue(sharedPreferences.getStringSet("ssid_blacklist", emptySet()) ?: emptySet())
+        val encryptedSet = sharedPreferences.getStringSet("ssid_blacklist", emptySet()) ?: emptySet()
+        val decryptedSet = encryptedSet.asSequence()
+            .mapNotNull { EncryptionManager.decrypt(it) }
+            .toSet()
+        _ssidBlacklist.postValue(decryptedSet)
     }
 
     fun togglePrivateDns(enabled: Boolean) {
+        val resolver = getApplication<Application>().contentResolver
+        if (enabled) {
+            val specifier = Settings.Global.getString(resolver, "private_dns_specifier")
+            if (specifier.isNullOrEmpty() || !NetworkUtils.isValidDnsHostname(specifier)) return
+        }
+
         val newMode = if (enabled) "hostname" else "opportunistic"
         val currentSsid = NetworkUtils.getCurrentWifiSsid(getApplication())
         
@@ -79,16 +119,51 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
         }
 
         try {
-            Settings.Global.putString(getApplication<Application>().contentResolver, "private_dns_mode", newMode)
+            Settings.Global.putString(resolver, "private_dns_mode", newMode)
             _privateDnsMode.value = newMode
-        } catch (_: SecurityException) { }
+            _hasPermissionError.value = false
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Failed to toggle Private DNS mode", e)
+            _hasPermissionError.value = true
+        }
     }
 
     fun updateCustomDns(address: String) {
+        if (address.isNotEmpty() && !NetworkUtils.isValidDnsHostname(address)) {
+            _dnsReachability.postValue(ReachabilityState.IDLE)
+            return
+        }
         try {
             Settings.Global.putString(getApplication<Application>().contentResolver, "private_dns_specifier", address)
             _privateDnsSpecifier.value = address
-        } catch (_: SecurityException) { }
+            _hasPermissionError.value = false
+            testReachability(address)
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Failed to update custom DNS specifier", e)
+            _hasPermissionError.value = true
+        }
+    }
+
+    private fun testReachability(hostname: String) {
+        reachabilityJob?.cancel()
+        if (hostname.isEmpty()) {
+            _dnsReachability.postValue(ReachabilityState.IDLE)
+            return
+        }
+
+        reachabilityJob = viewModelScope.launch(Dispatchers.IO) {
+            _dnsReachability.postValue(ReachabilityState.TESTING)
+            val isReachable = try {
+                val socket = Socket()
+                socket.connect(InetSocketAddress(hostname, 853), 3000) // DoT port
+                socket.close()
+                true
+            } catch (e: Exception) {
+                Log.w(TAG, "Reachability test failed for $hostname: ${e.message}")
+                false
+            }
+            _dnsReachability.postValue(if (isReachable) ReachabilityState.REACHABLE else ReachabilityState.UNREACHABLE)
+        }
     }
 
     fun setAutoBlacklist(enabled: Boolean) {
@@ -130,7 +205,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun saveBlacklist(list: Set<String>) {
-        sharedPreferences.edit { putStringSet("ssid_blacklist", list) }
+        val encryptedSet = list.map { EncryptionManager.encrypt(it) }.toSet()
+        sharedPreferences.edit { putStringSet("ssid_blacklist", encryptedSet) }
         _ssidBlacklist.value = list
         notifyMonitoringChange()
     }

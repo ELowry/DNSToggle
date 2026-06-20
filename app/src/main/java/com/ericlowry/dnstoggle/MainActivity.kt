@@ -1,28 +1,29 @@
 package com.ericlowry.dnstoggle
 
 import android.Manifest
-import android.content.ComponentName
 import android.content.ClipData
 import android.content.ClipboardManager
+import android.content.ComponentName
 import android.content.Intent
-import android.widget.Toast
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.os.PowerManager
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
+
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -34,15 +35,30 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.textfield.TextInputEditText
 
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+import kotlin.time.Duration.Companion.milliseconds
+
 class MainActivity : AppCompatActivity() {
+
+    companion object {
+        private const val TAG = "MainActivity"
+        const val EXTRA_FOCUS_DNS_INPUT = "focus_dns_input"
+    }
 
     private lateinit var dnsViewModel: DnsViewModel
 
     private lateinit var privateDnsLabel: TextView
     private lateinit var dnsToggleSwitch: MaterialSwitch
+    private lateinit var progressRootAction: com.google.android.material.progressindicator.CircularProgressIndicator
+    private lateinit var tilCustomDns: com.google.android.material.textfield.TextInputLayout
     private lateinit var customDnsInput: TextInputEditText
     
     private lateinit var switchAutoBlacklist: MaterialSwitch
@@ -55,8 +71,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnSsidInfo: ImageButton
     private lateinit var dividerSsidList: View
 
-    private val mainHandler = Handler(Looper.getMainLooper())
-    private var inputUpdateRunnable: Runnable? = null
+    private var inputUpdateJob: Job? = null
+    private var isRedirectedFromTile = false
 
     private val foregroundPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
@@ -99,12 +115,32 @@ class MainActivity : AppCompatActivity() {
 
         setupUserInteractions()
         updateSsidUiState(hasSsidPermissions())
+        handleIntentExtras(intent)
 
         if (checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) != PackageManager.PERMISSION_GRANTED) {
-            val wasGrantSuccessful = RootUtils.grantSecureSettingsPermission(packageName)
-            if (!wasGrantSuccessful && intent.getBooleanExtra("show_permission_dialog", false)) {
-                showInitialPermissionDialog()
+            lifecycleScope.launch {
+                val wasGrantSuccessful = RootUtils.grantSecureSettingsPermission(packageName)
+                if (!wasGrantSuccessful && intent.getBooleanExtra("show_permission_dialog", false)) {
+                    showInitialPermissionDialog()
+                }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntentExtras(intent)
+    }
+
+    private fun handleIntentExtras(intent: Intent?) {
+        if (intent?.getBooleanExtra(EXTRA_FOCUS_DNS_INPUT, false) == true) {
+            isRedirectedFromTile = true
+            customDnsInput.requestFocus()
+            customDnsInput.postDelayed({
+                updateDnsErrorState(isEnabled = true, customDnsInput.text.toString())
+                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(customDnsInput, 0)
+            }, 200)
         }
     }
 
@@ -125,6 +161,8 @@ class MainActivity : AppCompatActivity() {
     private fun initializeViews() {
         privateDnsLabel = findViewById(R.id.tvToggleLabel)
         dnsToggleSwitch = findViewById(R.id.switchPrivateDns)
+        progressRootAction = findViewById(R.id.progressRootAction)
+        tilCustomDns = findViewById(R.id.tilCustomDns)
         customDnsInput = findViewById(R.id.inputCustomDns)
 
         switchAutoBlacklist = findViewById(R.id.switchAutoBlacklist)
@@ -142,12 +180,15 @@ class MainActivity : AppCompatActivity() {
 
     private fun observeViewModel() {
         dnsViewModel.privateDnsMode.observe(this) { mode ->
-            dnsToggleSwitch.isChecked = (mode == "hostname")
+            val isEnabled = (mode == "hostname")
+            dnsToggleSwitch.isChecked = isEnabled
+            updateDnsErrorState(isEnabled, customDnsInput.text.toString())
         }
 
         dnsViewModel.privateDnsSpecifier.observe(this) { specifier ->
             if (customDnsInput.text.toString() != specifier) {
                 customDnsInput.setText(specifier ?: "")
+                updateDnsErrorState(dnsToggleSwitch.isChecked, specifier ?: "")
             }
         }
 
@@ -168,34 +209,62 @@ class MainActivity : AppCompatActivity() {
             updateLauncherComponentState(isHidden)
         }
 
+        dnsViewModel.dnsReachability.observe(this) { state ->
+            updateDnsErrorState(dnsToggleSwitch.isChecked, customDnsInput.text.toString(), state)
+        }
+
+        dnsViewModel.hasPermissionError.observe(this) { hasError ->
+            if (hasError) {
+                showInitialPermissionDialog()
+            }
+        }
+
         updateToolbarTitle()
     }
 
     private fun setupUserInteractions() {
         dnsToggleSwitch.setOnClickListener {
             val isChecked = dnsToggleSwitch.isChecked
+            val address = customDnsInput.text.toString().trim()
+            
+            updateDnsErrorState(isChecked, address)
+            
+            if (isChecked && (address.isEmpty() || !NetworkUtils.isValidDnsHostname(address))) {
+                // Don't allow toggling on if invalid or empty
+                dnsToggleSwitch.isChecked = false
+                return@setOnClickListener
+            }
+
             if (checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED) {
                 dnsViewModel.togglePrivateDns(isChecked)
                 requestTileUpdate()
             } else {
                 // Attempt root grant again
-                if (RootUtils.grantSecureSettingsPermission(packageName)) {
-                    dnsViewModel.togglePrivateDns(isChecked)
-                    requestTileUpdate()
-                } else {
-                    // Revert UI and show manual instructions
-                    dnsToggleSwitch.isChecked = !isChecked
-                    showInitialPermissionDialog()
+                setLoadingState(true)
+                lifecycleScope.launch {
+                    val success = RootUtils.grantSecureSettingsPermission(packageName)
+                    setLoadingState(false)
+                    if (success) {
+                        dnsViewModel.togglePrivateDns(isChecked)
+                        requestTileUpdate()
+                    } else {
+                        // Revert UI and show manual instructions
+                        dnsToggleSwitch.isChecked = !isChecked
+                        updateDnsErrorState(dnsToggleSwitch.isChecked, address)
+                        showInitialPermissionDialog()
+                    }
                 }
             }
         }
 
         customDnsInput.doAfterTextChanged { text ->
-            inputUpdateRunnable?.let { mainHandler.removeCallbacks(it) }
-            inputUpdateRunnable = Runnable {
-                dnsViewModel.updateCustomDns(text.toString().trim())
+            val address = text.toString().trim()
+            updateDnsErrorState(dnsToggleSwitch.isChecked, address)
+            inputUpdateJob?.cancel()
+            inputUpdateJob = lifecycleScope.launch {
+                delay(500.milliseconds)
+                dnsViewModel.updateCustomDns(address)
             }
-            mainHandler.postDelayed(inputUpdateRunnable!!, 500)
         }
 
         switchAutoBlacklist.setOnCheckedChangeListener { _, isChecked ->
@@ -287,7 +356,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
+            val sharedPreferences = (application as DnsToggleApplication).getPrefs()
             val alreadyHandled = sharedPreferences.getBoolean("notif_permission_handled", false)
             val isGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
             
@@ -298,7 +367,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showNotificationPermissionRationale() {
-        val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
+        val sharedPreferences = (application as DnsToggleApplication).getPrefs()
         
         AlertDialog.Builder(this)
             .setTitle(getString(R.string.permission_required))
@@ -436,20 +505,57 @@ class MainActivity : AppCompatActivity() {
                 data = "package:$packageName".toUri()
             }
             startActivity(intent)
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to request ignore battery optimizations", e)
             val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
             startActivity(intent)
         }
     }
 
     private fun updateToolbarTitle() {
-        val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
+        val sharedPreferences = (application as DnsToggleApplication).getPrefs()
         val dynamicName = sharedPreferences.getString("dynamic_app_name", getString(R.string.app_name))
         supportActionBar?.title = dynamicName
     }
 
+    private fun updateDnsErrorState(
+        isEnabled: Boolean,
+        address: String,
+        reachability: DnsViewModel.ReachabilityState = dnsViewModel.dnsReachability.value ?: DnsViewModel.ReachabilityState.IDLE
+    ) {
+        val effectivelyEnabled = isEnabled || (isRedirectedFromTile && address.isEmpty())
+        
+        when {
+            effectivelyEnabled && address.isEmpty() -> {
+                tilCustomDns.error = getString(R.string.error_empty_dns_host)
+                tilCustomDns.helperText = null
+            }
+            address.isNotEmpty() && !NetworkUtils.isValidDnsHostname(address) -> {
+                tilCustomDns.error = getString(R.string.error_invalid_dns_host)
+                tilCustomDns.helperText = null
+            }
+            reachability == DnsViewModel.ReachabilityState.UNREACHABLE -> {
+                tilCustomDns.error = getString(R.string.warning_unreachable_dns)
+                tilCustomDns.helperText = null
+            }
+            reachability == DnsViewModel.ReachabilityState.TESTING -> {
+                tilCustomDns.error = null
+                tilCustomDns.helperText = getString(R.string.status_testing_dns)
+            }
+            else -> {
+                tilCustomDns.error = null
+                tilCustomDns.helperText = null
+            }
+        }
+    }
+
     private fun requestTileUpdate() {
         TileServiceCompat.requestListeningState(this, ComponentName(this, DnsToggleService::class.java))
+    }
+
+    private fun setLoadingState(isLoading: Boolean) {
+        dnsToggleSwitch.isEnabled = !isLoading
+        progressRootAction.visibility = if (isLoading) View.VISIBLE else View.GONE
     }
 
     private fun updateLauncherComponentState(isHidden: Boolean) {
@@ -504,7 +610,7 @@ class MainActivity : AppCompatActivity() {
         builder.setTitle(getString(R.string.rename_app))
 
         val inputTextField = EditText(this)
-        val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
+        val sharedPreferences = (application as DnsToggleApplication).getPrefs()
         val currentAppName = sharedPreferences.getString("dynamic_app_name", getString(R.string.app_name))
         inputTextField.setText(currentAppName)
         

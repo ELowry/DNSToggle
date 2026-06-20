@@ -1,0 +1,3 @@
+- Wi-Fi SSIDs and app settings are now encrypted when stored.
+- Added clear warnings for empty or invalid DNS addresses.
+- Performance improvements.

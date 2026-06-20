@@ -1,17 +1,24 @@
 package com.ericlowry.dnstoggle
 
+import android.util.Log
+
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
 import java.io.DataOutputStream
 import java.io.IOException
 
 object RootUtils {
+    private const val TAG = "RootUtils"
+
     /**
      * Attempts to grant WRITE_SECURE_SETTINGS permission using root access.
      * Returns true if the command was executed successfully.
      */
-    fun grantSecureSettingsPermission(packageName: String): Boolean {
+    suspend fun grantSecureSettingsPermission(packageName: String): Boolean = withContext(Dispatchers.IO) {
         var process: Process? = null
         var os: DataOutputStream? = null
-        return try {
+        try {
             process = Runtime.getRuntime().exec("su")
             os = DataOutputStream(process.outputStream)
             
@@ -20,13 +27,14 @@ object RootUtils {
             os.flush()
             
             process.waitFor() == 0
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to grant secure settings permission via root", e)
             false
         } finally {
             try {
                 os?.close()
-            } catch (_: IOException) {
-                // ignore
+            } catch (e: IOException) {
+                Log.w(TAG, "Failed to close output stream", e)
             }
             process?.destroy()
         }

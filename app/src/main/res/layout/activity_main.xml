@@ -50,12 +50,25 @@
                 app:layout_constraintTop_toTopOf="@id/tvToggleLabel"
                 app:layout_constraintBottom_toBottomOf="@id/tvToggleLabel" />
 
+            <com.google.android.material.progressindicator.CircularProgressIndicator
+                android:id="@+id/progressRootAction"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:indeterminate="true"
+                android:visibility="gone"
+                app:indicatorSize="24dp"
+                app:layout_constraintEnd_toStartOf="@id/switchPrivateDns"
+                app:layout_constraintTop_toTopOf="@id/switchPrivateDns"
+                app:layout_constraintBottom_toBottomOf="@id/switchPrivateDns"
+                android:layout_marginEnd="8dp" />
+
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilCustomDns"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:hint="@string/custom_dns_provider"
+                app:errorEnabled="true"
                 app:layout_constraintTop_toBottomOf="@id/tvToggleLabel"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent">

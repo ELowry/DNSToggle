@@ -13,6 +13,10 @@
     <string name="hide_launcher_icon_summary">"Une fois activée, l\'application sera masquée de votre tiroir d\'applications. Vous pourrez toujours y accéder en effectuant un appui long sur la tuile des paramètres rapides.</string>
 	<string name="on_label">Activé</string>
 	<string name="off_label">Désactivé</string>
+	<string name="error_empty_dns_host">Le DNS privé ne peut être active tant que l\'adresse de l\'hôte est vide</string>
+	<string name="error_invalid_dns_host">Format d\'adresse d\'hôte DNS non valide</string>
+	<string name="warning_unreachable_dns">Serveur DNS injoignable sur le port 853 (DoT). Android peut possiblement s\'y connecter par d\'autres méthodes.</string>
+	<string name="status_testing_dns">Test de connexion…</string>
 
 	<!-- SSID Blacklist -->
 	<string name="ssid_blacklist_title">Liste des SSID bloqués</string>

@@ -8,6 +8,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.ComponentName
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.ConnectivityManager.NetworkCallback
@@ -19,6 +20,8 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.IBinder
 import android.provider.Settings.Global
+import android.util.Log
+
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 
@@ -28,10 +31,15 @@ class WifiMonitoringService : Service() {
     private var networkCallback: NetworkCallback? = null
 
     companion object {
+        private const val TAG = "WifiMonitoringService"
         private const val NOTIFICATION_ID_FOREGROUND = 2001
         private const val NOTIFICATION_ID_STATUS = 1001
         private const val CHANNEL_ID_SERVICE = "wifi_monitoring"
         private const val CHANNEL_ID_ALERT = "network_status"
+    }
+
+    private fun getPrefs(): SharedPreferences {
+        return (application as DnsToggleApplication).getPrefs()
     }
 
     override fun onCreate() {
@@ -111,7 +119,9 @@ class WifiMonitoringService : Service() {
 
         try {
             connectivityManager.registerNetworkCallback(networkRequest, networkCallback!!)
-        } catch (_: Exception) { }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to register network callback", e)
+        }
     }
 
     private fun evaluateNetworkCapabilities(networkCapabilities: NetworkCapabilities) {
@@ -134,8 +144,11 @@ class WifiMonitoringService : Service() {
         
         app.detectedSsid = currentSsid
         
-        val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-        val blacklistSet = sharedPreferences.getStringSet("ssid_blacklist", emptySet()) ?: emptySet()
+        val sharedPreferences = getPrefs()
+        val encryptedBlacklist = sharedPreferences.getStringSet("ssid_blacklist", emptySet()) ?: emptySet()
+        val blacklistSet = encryptedBlacklist.asSequence()
+            .mapNotNull { EncryptionManager.decrypt(it) }
+            .toSet()
 
         if (blacklistSet.contains(currentSsid)) {
             applyOpportunisticDns(currentSsid)
@@ -149,7 +162,9 @@ class WifiMonitoringService : Service() {
         networkCallback?.let { callback ->
             try {
                 connectivityManager.unregisterNetworkCallback(callback)
-            } catch (_: Exception) { }
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to unregister network callback", e)
+            }
         }
         networkCallback = null
     }
@@ -159,7 +174,7 @@ class WifiMonitoringService : Service() {
     }
 
     private fun restorePreferredDns() {
-        val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
+        val sharedPreferences = getPrefs()
         val preferredMode = sharedPreferences.getString("preferred_dns_mode", "hostname") ?: "hostname"
         updateDnsSetting(preferredMode, null)
     }
@@ -175,7 +190,9 @@ class WifiMonitoringService : Service() {
                 }
                 TileServiceCompat.requestListeningState(this, ComponentName(this, DnsToggleService::class.java))
             }
-        } catch (_: SecurityException) { }
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Failed to update DNS setting", e)
+        }
     }
 
     private fun dispatchStatusNotification(message: String) {

@@ -5,6 +5,7 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.provider.Settings
@@ -22,6 +23,10 @@ class DnsToggleApplication : Application() {
         initializeNotificationChannels()
         initializePreferredDnsMode()
         updateWifiMonitoringRegistration()
+    }
+
+    fun getPrefs(): SharedPreferences {
+        return getSharedPreferences("app_prefs_v2", MODE_PRIVATE)
     }
 
     private fun initializeNotificationChannels() {
@@ -45,7 +50,7 @@ class DnsToggleApplication : Application() {
     }
 
     private fun initializePreferredDnsMode() {
-        val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
+        val sharedPreferences = getPrefs()
         if (!sharedPreferences.contains("preferred_dns_mode")) {
             val currentMode = Settings.Global.getString(contentResolver, "private_dns_mode") ?: "opportunistic"
             sharedPreferences.edit { putString("preferred_dns_mode", currentMode) }
@@ -64,8 +69,8 @@ class DnsToggleApplication : Application() {
     }
 
     private fun isWifiMonitoringRequired(): Boolean {
-        val sharedPreferences = getSharedPreferences("app_prefs", MODE_PRIVATE)
-        val blacklistSet = sharedPreferences.getStringSet("ssid_blacklist", emptySet()) ?: emptySet()
+        val sharedPreferences = getPrefs()
+        val blacklistSet = sharedPreferences.getStringSet("ssid_blacklist", emptySet<String>()) ?: emptySet()
         val isAutoManagementEnabled = sharedPreferences.getBoolean("auto_blacklist", false) || 
                                       sharedPreferences.getBoolean("auto_whitelist", false)
         
