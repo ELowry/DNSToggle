@@ -1,0 +1,6 @@
+- Ajout de l'autorisation `INTERNET` pour vérifier la disponibilité des adresses DNS personnalisées.
+- Ajout d'une option pour désactiver le test DNS pour les fournisseurs DNS stricts.
+- Mise à jour des services en arrière-plan pour la compatibilité avec Android 14.
+- Protection contre la perte possible des paramètres de la liste de blocage lors d'un changement des paramètres de sécurité de l'appareil.
+- Correction du spam de notifications lors de déconnexions et reconnexions fréquentes au Wi-Fi.
+- Améliorations des performances.

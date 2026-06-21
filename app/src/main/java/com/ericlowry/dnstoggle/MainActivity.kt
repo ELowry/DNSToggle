@@ -61,6 +61,7 @@ class MainActivity : AppCompatActivity() {
     
     private lateinit var switchAutoBlacklist: MaterialSwitch
     private lateinit var switchAutoWhitelist: MaterialSwitch
+    private lateinit var switchDisableDnsTest: MaterialSwitch
     private lateinit var switchHideLauncher: MaterialSwitch
     private lateinit var permissionNoticeText: TextView
     private lateinit var btnGrantPermission: Button
@@ -177,6 +178,7 @@ class MainActivity : AppCompatActivity() {
 
         switchAutoBlacklist = findViewById(R.id.switchAutoBlacklist)
         switchAutoWhitelist = findViewById(R.id.switchAutoWhitelist)
+        switchDisableDnsTest = findViewById(R.id.switchDisableDnsTest)
         switchHideLauncher = findViewById(R.id.switchHideLauncher)
         permissionNoticeText = findViewById(R.id.tvPermissionNotice)
         btnGrantPermission = findViewById(R.id.btnGrantPermission)
@@ -217,6 +219,10 @@ class MainActivity : AppCompatActivity() {
             switchAutoWhitelist.isChecked = enabled
         }
 
+        dnsViewModel.disableDnsTest.observe(this) { disabled ->
+            switchDisableDnsTest.isChecked = disabled
+        }
+
         dnsViewModel.hideLauncherIcon.observe(this) { isHidden ->
             switchHideLauncher.isChecked = isHidden
             updateLauncherComponentState(isHidden)
@@ -229,6 +235,12 @@ class MainActivity : AppCompatActivity() {
         dnsViewModel.hasPermissionError.observe(this) { hasError ->
             if (hasError) {
                 showInitialPermissionDialog()
+            }
+        }
+
+        dnsViewModel.isKeyInvalidated.observe(this) { invalidated ->
+            if (invalidated) {
+                showKeyInvalidatedDialog()
             }
         }
 
@@ -294,6 +306,10 @@ class MainActivity : AppCompatActivity() {
             if (isChecked) {
                 checkSsidPermissions(requestIfNotGranted = true)
             }
+        }
+
+        switchDisableDnsTest.setOnCheckedChangeListener { _, isChecked ->
+            dnsViewModel.setDisableDnsTest(isChecked)
         }
 
         switchHideLauncher.setOnCheckedChangeListener { _, isChecked ->
@@ -628,6 +644,17 @@ class MainActivity : AppCompatActivity() {
                 PackageManager.DONT_KILL_APP
             )
         }
+    }
+
+    private fun showKeyInvalidatedDialog() {
+        AlertDialog.Builder(this)
+            .setTitle(R.string.keystore_error_title)
+            .setMessage(R.string.keystore_error_message)
+            .setPositiveButton(R.string.ok) { _, _ ->
+                dnsViewModel.dismissKeyInvalidatedAlert()
+            }
+            .setCancelable(false)
+            .show()
     }
 
     private fun showInitialPermissionDialog() {

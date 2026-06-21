@@ -1,0 +1,6 @@
+- Added `INTERNET` permission to ping and verify custom DNS address reachability.
+- Added a "Disable DNS Test" toggle for strict DNS providers.
+- Updated background services for Android 14 compatibility.
+- Prevent the possible loss of blocklist settings upon device security settings change.
+- Fixed notification spam when frequently disconnecting and reconnecting to Wi-Fi.
+- Performance improvements.

@@ -64,19 +64,25 @@ object EncryptionManager {
         return Base64.encodeToString(combined, Base64.NO_WRAP)
     }
 
-    fun decrypt(encryptedBase64: String): String? {
+    sealed class DecryptResult {
+        data class Success(val data: String) : DecryptResult()
+        object KeyInvalidated : DecryptResult()
+        object Failed : DecryptResult()
+    }
+
+    fun decrypt(encryptedBase64: String): DecryptResult {
         return try {
             val combined = Base64.decode(encryptedBase64, Base64.NO_WRAP)
-            if (combined.isEmpty()) return null
+            if (combined.isEmpty()) return DecryptResult.Failed
             
             val ivSize = combined[0].toInt()
-            if (ivSize <= 0 || ivSize > combined.size - 1) return null
+            if (ivSize <= 0 || ivSize > combined.size - 1) return DecryptResult.Failed
             
             val iv = ByteArray(ivSize)
             System.arraycopy(combined, 1, iv, 0, ivSize)
             
             val encryptedDataSize = combined.size - 1 - ivSize
-            if (encryptedDataSize <= 0) return null
+            if (encryptedDataSize <= 0) return DecryptResult.Failed
             
             val encryptedData = ByteArray(encryptedDataSize)
             System.arraycopy(combined, 1 + ivSize, encryptedData, 0, encryptedDataSize)
@@ -85,20 +91,20 @@ object EncryptionManager {
             val spec = GCMParameterSpec(128, iv)
             cipher.init(Cipher.DECRYPT_MODE, getKey(), spec)
             
-            String(cipher.doFinal(encryptedData), Charsets.UTF_8)
+            DecryptResult.Success(String(cipher.doFinal(encryptedData), Charsets.UTF_8))
         } catch (e: KeyPermanentlyInvalidatedException) {
             Log.e(TAG, "Key was permanently invalidated. Recreating...", e)
             deleteKey()
-            null
+            DecryptResult.KeyInvalidated
         } catch (e: AEADBadTagException) {
             Log.e(TAG, "Decryption failed: AEAD tag mismatch. The data might be corrupted or the key is wrong.", e)
-            null
+            DecryptResult.Failed
         } catch (e: GeneralSecurityException) {
             Log.e(TAG, "Cryptographic error during decryption", e)
-            null
+            DecryptResult.Failed
         } catch (e: Exception) {
             Log.e(TAG, "Unexpected error during decryption", e)
-            null
+            DecryptResult.Failed
         }
     }
 

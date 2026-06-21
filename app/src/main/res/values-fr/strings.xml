@@ -23,6 +23,8 @@
 	<string name="error_invalid_dns_host">Format d\'adresse d\'hôte DNS non valide</string>
 	<string name="warning_unreachable_dns">Serveur DNS injoignable sur le port 853 (DoT). Android peut possiblement s\'y connecter par d\'autres méthodes.</string>
 	<string name="status_testing_dns">Test de connexion…</string>
+	<string name="disable_dns_test">Ignorer le test de connexion</string>
+	<string name="disable_dns_test_summary">Activez ceci uniquement si votre DNS fonctionne, mais que l\'app l\'affiche comme injoignable.</string>
 
 	<!-- SSID Blacklist -->
 	<string name="ssid_blacklist_title">Liste des SSID bloqués</string>
@@ -31,11 +33,15 @@
 	<string name="grant_permission_notice">L\'autorisation de localisation/proximité (y compris en arrière-plan) est requise pour vérifier le nom du Wi-Fi.</string>
 	<string name="grant_permission_button">Accorder les autorisations</string>
 	<string name="notification_permission_explanation">Pour vous avertir lorsque le DNS privé est automatiquement activé en arrière-plan, et pour garantir la vérification en arrière-plan, veuillez autoriser les notifications.</string>
-	<string name="background_location_explanation">Pour que l\'application puisse vérifier l\'état du WiFi en arrière-plan, veuillez sélectionner \"Toujours autoriser\" sur l\'écran suivant.</string>
+	<string name="background_location_explanation">Pour que l\'application puisse vérifier l\'état du Wi-Fi en arrière-plan, veuillez sélectionner \"Toujours autoriser\" sur l\'écran suivant.</string>
 	<string name="add_ssid">Ajouter un SSID</string>
 	<string name="edit_ssid">Modifier le SSID</string>
 	<string name="ssid_hint">SSID (Nom du Wi-Fi)</string>
 	<string name="delete_ssid_confirm">Retirer ce SSID de la liste?</string>
+
+	<!-- Keystore Errors -->
+	<string name="keystore_error_title">Réinitialisation de sécurité</string>
+	<string name="keystore_error_message">En raison d\'un changement dans les paramètres de sécurité de votre appareil (comme la modification du verrouillage de l\'écran), votre liste de SSID bloqués a été réinitialisée pour protéger vos données. Vous devrez rajouter vos réseaux à la liste.</string>
 
 	<!-- Notifications -->
 	<string name="notif_channel_name">État du réseau</string>

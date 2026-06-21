@@ -10,26 +10,16 @@ import android.os.Build
 import android.provider.Settings.Global
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
-import android.util.Log
 import android.widget.Toast
-
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.edit
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class DnsToggleService : TileService() {
-
-	companion object {
-		private const val TAG = "DnsToggleService"
-		private const val NOTIFICATION_ID_STATUS = 1001
-		private const val CHANNEL_ID_ALERT = "network_status"
-	}
 
 	private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
@@ -45,7 +35,7 @@ class DnsToggleService : TileService() {
 	override fun onClick() {
 		super.onClick()
 
-		serviceScope.launch {
+		serviceScope.launch(Dispatchers.IO) {
 			if (checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) != PackageManager.PERMISSION_GRANTED) {
 				// Attempt root grant
 				if ((RootUtils.grantSecureSettingsPermission(packageName)) &&
@@ -54,104 +44,35 @@ class DnsToggleService : TileService() {
 					// Success
 				} else {
 					// Failed or missing root
-					showPermissionRequiredDialog()
+					withContext(Dispatchers.Main) {
+						showPermissionRequiredDialog()
+					}
 					return@launch
 				}
 			}
 
 			val resolver = contentResolver
+			val currentMode = Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
+			val isEnabling = currentMode != Constants.DNS_MODE_HOSTNAME
 
-			try {
-				val currentMode = Global.getString(resolver, "private_dns_mode")
-				val isEnabling = currentMode != "hostname"
+			val result = DnsManager.togglePrivateDns(this@DnsToggleService, isEnabling)
 
-				if (isEnabling) {
-					val specifier = Global.getString(resolver, "private_dns_specifier")
-					if (specifier.isNullOrEmpty() || !NetworkUtils.isValidDnsHostname(specifier)) {
+			withContext(Dispatchers.Main) {
+				when (result) {
+					is DnsManager.ToggleResult.Success -> {
+						updateTileState(if (isEnabling) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE)
+					}
+					is DnsManager.ToggleResult.MissingHostname -> {
 						Toast.makeText(this@DnsToggleService, R.string.error_empty_dns_host, Toast.LENGTH_LONG).show()
 						launchMainActivity(focusDnsInput = true)
-						return@launch
+					}
+					is DnsManager.ToggleResult.PermissionRequired -> {
+						showPermissionRequiredDialog()
+					}
+					is DnsManager.ToggleResult.Error -> {
+						// Logged in DnsManager
 					}
 				}
-
-				val newMode = if (isEnabling) "hostname" else "opportunistic"
-
-				val sharedPreferences = getPrefs()
-
-				val currentSsid = NetworkUtils.getCurrentWifiSsid(this@DnsToggleService)
-
-				var handledByAuto = false
-
-				if (currentSsid != null) {
-					if (!isEnabling && sharedPreferences.getBoolean("auto_blacklist", false)) {
-						addToBlacklist(currentSsid)
-						handledByAuto = true
-					} else if (isEnabling && sharedPreferences.getBoolean("auto_whitelist", false)) {
-						removeFromBlacklist(currentSsid)
-						handledByAuto = true
-					}
-				}
-
-				if (!handledByAuto) {
-					sharedPreferences.edit { putString("preferred_dns_mode", newMode) }
-				}
-
-				Global.putString(resolver, "private_dns_mode", newMode)
-				updateTileState(if (isEnabling) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE)
-
-			} catch (e: SecurityException) {
-				Log.e(TAG, "Failed to update private DNS mode from tile", e)
-			}
-		}
-	}
-
-	private fun addToBlacklist(ssid: String) {
-		val prefs = getPrefs()
-		val encryptedBlacklist = prefs.getStringSet("ssid_blacklist", emptySet()) ?: emptySet()
-		val blacklist = encryptedBlacklist.asSequence()
-			.mapNotNull { EncryptionManager.decrypt(it) }
-			.toMutableSet()
-		
-		if (blacklist.add(ssid)) {
-			val newEncryptedSet = blacklist.map { EncryptionManager.encrypt(it) }.toSet()
-			prefs.edit { putStringSet("ssid_blacklist", newEncryptedSet) }
-			displayStatusNotification(getString(R.string.notif_ssid_added, ssid))
-			(application as DnsToggleApplication).updateWifiMonitoringRegistration()
-		}
-	}
-
-	private fun removeFromBlacklist(ssid: String) {
-		val prefs = getPrefs()
-		val encryptedBlacklist = prefs.getStringSet("ssid_blacklist", emptySet()) ?: emptySet()
-		val blacklist = encryptedBlacklist.asSequence()
-			.mapNotNull { EncryptionManager.decrypt(it) }
-			.toMutableSet()
-
-		if (blacklist.remove(ssid)) {
-			val newEncryptedSet = blacklist.map { EncryptionManager.encrypt(it) }.toSet()
-			prefs.edit { putStringSet("ssid_blacklist", newEncryptedSet) }
-			displayStatusNotification(getString(R.string.notif_ssid_removed, ssid))
-			(application as DnsToggleApplication).updateWifiMonitoringRegistration()
-		}
-	}
-
-	private fun displayStatusNotification(message: String) {
-		val notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID_ALERT)
-			.setSmallIcon(R.drawable.ic_qs_dns)
-			.setContentTitle(getString(R.string.app_name))
-			.setContentText(message)
-			.setPriority(NotificationCompat.PRIORITY_DEFAULT)
-			.setAutoCancel(true)
-
-		with(NotificationManagerCompat.from(this)) {
-			val hasNotificationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-				checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-			} else {
-				true
-			}
-
-			if (hasNotificationPermission) {
-				notify(NOTIFICATION_ID_STATUS, notificationBuilder.build())
 			}
 		}
 	}
@@ -160,8 +81,8 @@ class DnsToggleService : TileService() {
 		super.onStartListening()
 
 		try {
-			val currentMode = Global.getString(contentResolver, "private_dns_mode")
-			val tileState = if (currentMode == "hostname") Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+			val currentMode = Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
+			val tileState = if (currentMode == Constants.DNS_MODE_HOSTNAME) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
 			updateTileState(tileState)
 		} catch (_: SecurityException) {
 			// Keep the tile clickable so the user can be prompted for permissions
@@ -174,7 +95,7 @@ class DnsToggleService : TileService() {
 			tile.state = state
 
 			val sharedPreferences = getPrefs()
-			val dynamicAppName = sharedPreferences.getString("dynamic_app_name", getString(R.string.app_name))
+			val dynamicAppName = sharedPreferences.getString(Constants.PREF_DYNAMIC_APP_NAME, getString(R.string.app_name))
 
 			tile.label = dynamicAppName
 

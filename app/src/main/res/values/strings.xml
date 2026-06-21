@@ -23,6 +23,8 @@
 	<string name="error_invalid_dns_host">Invalid DNS host address format</string>
 	<string name="warning_unreachable_dns">DNS server unreachable on port 853 (DoT). Android may still successfully connect via other methods.</string>
 	<string name="status_testing_dns">Testing connection…</string>
+	<string name="disable_dns_test">Skip connection test</string>
+	<string name="disable_dns_test_summary">Enable this only if your DNS works but the app shows it as unreachable.</string>
 
 	<!-- SSID Blacklist -->
 	<string name="ssid_blacklist_title">SSID Blacklist</string>
@@ -36,6 +38,10 @@
 	<string name="edit_ssid">Edit SSID</string>
 	<string name="ssid_hint">SSID (Wi-Fi Name)</string>
 	<string name="delete_ssid_confirm">Remove this SSID from blacklist?</string>
+
+	<!-- Keystore Errors -->
+	<string name="keystore_error_title">Security Reset</string>
+	<string name="keystore_error_message">Due to a change in your device\'s security settings (like changing your screen lock), your Wi-Fi blacklist was reset to protect your data. You will need to re-add your blacklisted networks.</string>
 
 	<!-- Notifications -->
 	<string name="notif_channel_name">Network Status</string>
