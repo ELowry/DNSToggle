@@ -1,14 +1,22 @@
-DNS Toggle est une micro-application Android qui permet d'activer/désactiver facilement le DNS privé de votre téléphone via les tuiles de paramètres rapides.
+DNS Toggle est une petite application Android qui vous permet d'activer et de désactiver facilement le DNS privé de votre téléphone via le panneau des paramètres rapides.
 
-IMPORTANT:
-Pour modifier les paramètres système du DNS privé, cette application nécessite la permission WRITE_SECURE_SETTINGS. Vous devez soit avoir un appareil rooté, soit accorder manuellement la permission via la commande ADB:
+**IMPORTANT:**
 
-adb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS
+Pour modifier les paramètres système du DNS privé, cette application nécessite l'autorisation _WRITE_SECURE_SETTINGS_. Vous devez soit avoir un appareil rooté, soit l'accorder manuellement via la commande ADB suivante:
 
-Fonctionnalités:
-- Tuile de paramètres rapides: Activez/désactivez le DNS privé d'une seule pression depuis votre volet de notifications.
-- Fournisseur DNS personnalisé: Définissez un nom d'hôte de fournisseur DNS personnalisé (ex: dns.adguard.com) à utiliser lorsque le DNS privé est actif.
-- Étiquetage de la tuile: Renommez l'étiquette de la tuile de paramètres rapides.
-- Liste noire de SSID: Désactivez automatiquement le DNS privé lors de la connexion à des réseaux Wi-Fi spécifiques.
-- Masquer l'icône de l'application: Fonctionnalité optionnelle pour masquer l'application de votre tiroir d'applications, gardant votre écran d'accueil propre tout en conservant l'accès via la tuile de paramètres rapides.
-- Données personnelles: Pas de suivi, pas de publicité et pas de collecte de données.
+_adb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS_
+
+**Fonctionnalités**
+
+- **Tuile de paramètres rapides**: Activez/désactivez le DNS privé directement depuis le panneau de configuration rapide.
+- **Fournisseur DNS personnalisé**: Définissez votre nom d'hôte préféré (ex: dns.nextdns.io).
+- **Filtrage par SSID**: Désactivez automatiquement le DNS privé lors de la connexion à des réseaux Wi-Fi spécifiques.
+- **Mise à jour automatique du filtrage**: Ajoutez/supprimez automatiquement le SSID actuel des filtres lors du basculement manuel de la tuile.
+- **Étiquetage dynamique de la tuile**: Renommez l'étiquette des paramètres rapides.
+- **Notifications d'état**: Recevez une notification lorsque le DNS privé est activé ou désactivé automatiquement.
+- **Masquer l'icône de l'application**: Gardez votre écran d'accueil propre tout en conservant l'accès via la tuile de paramètres rapides.
+
+**Confidentialité et autorisations**
+
+- **Respect de la vie privée**: Pas de suivi, pas de publicité et pas de collecte de données.
+- **Autorisation de localisation**: Uniquement utilisée pour identifier les noms des réseaux Wi-Fi pour la fonctionnalité de filtrage par SSID. Elle n'est jamais utilisée pour suivre votre position physique.

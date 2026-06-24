@@ -27,10 +27,6 @@ A tiny Android app that allows you to easily toggle your phone's Private DNS thr
 
 Adds a Quick Settings tile to toggle your Private DNS on and off with a single tap from your notification shade.
 
-> [!NOTE]
->
-> The app does not create an app drawer icon, as it is meant for use through the Quick Settings panel.
-
 #### Additional Options
 
 By long-pressing the Quick Settings tile, you can access the configuration menu to:
@@ -40,7 +36,8 @@ By long-pressing the Quick Settings tile, you can access the configuration menu 
 - **Auto-Update Blocklist**: Optionally add or remove the current SSID from the blocklist automatically when manually toggling the Quick Settings tile.
 - **Status Notifications**: Receive notifications when Private DNS settings are automatically adjusted.
 - **Dynamic Tile Labeling**: Rename the Quick Settings tile label via the settings menu.
-**Disable DNS Test**: Optionally bypass the automatic reachability check if you are using a strict custom DNS provider that blocks raw ping requests.
+- **Hide App Icon**: Optionally hide the app from your launcher drawer to keep your home screen clean.
+- **Disable DNS Test**: Optionally bypass the automatic reachability check if you are using a strict custom DNS provider.
 
 ## Usage
 

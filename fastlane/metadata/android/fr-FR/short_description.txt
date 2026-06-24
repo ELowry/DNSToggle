@@ -1,1 +1,1 @@
-Une micro-application pour basculer le DNS privé via les réglages rapides
+Activez/désactivez facilement l'option DNS privé via les paramètres rapides.

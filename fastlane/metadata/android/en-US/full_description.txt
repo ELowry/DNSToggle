@@ -1,14 +1,22 @@
-DNS Toggle is a tiny Android app that allows you to easily toggle your phone's Private DNS through the Quick Settings panel.
+DNS Toggle is a small Android app that allows you to easily toggle and automate your phone's Private DNS through the Quick Settings panel.
 
-IMPORTANT:
-To modify Private DNS system settings, this app requires the WRITE_SECURE_SETTINGS permission. You must either have a rooted device or manually grant the permission using the ADB command:
+**IMPORTANT:**
 
-adb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS
+To modify Private DNS system settings, this app requires the WRITE_SECURE_SETTINGS permission. You must either have a rooted device or manually grant it via ADB:
 
-Features:
-- Quick Settings Tile: Toggle Private DNS on/off with a single tap from your notification shade.
-- Custom DNS Provider: Define a custom provider hostname (e.g., dns.adguard.com) to use when Private DNS is active.
-- Dynamic Tile Labeling: Rename the quick-settings label to fit your preference.
-- SSID Blacklist: Automatically disable Private DNS when connected to specific Wi-Fi networks.
-- Hide App Icon: Optional feature to hide the app from your launcher drawer, keeping your home screen clean while maintaining access via the Quick Settings tile.
-- Privacy-Focused: No tracking, no ads, and no data collection.
+_adb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS_
+
+**Features**
+
+- **Quick Settings Tile**: Toggle Private DNS on/off directly from the Quick Settings panel.
+- **Custom DNS Provider**: Define your preferred hostname (e.g., dns.nextdns.io).
+- **Wi-Fi Filtering**: Automatically disable Private DNS when connected to specific Wi-Fi networks.
+- **Auto-Update Filtering**: Optionally add/remove the current SSID from the filter list automatically when manually toggling the tile.
+- **Dynamic Tile Labeling**: Rename the quick-settings label.
+- **Status Notifications**: Get notified when Private DNS is automatically toggled.
+- **Hide App Icon**: Keep your home screen clean while maintaining access via the Quick Settings tile.
+
+**Privacy & Permissions**
+
+- No tracking, no ads, and no data collection.
+- Location permissions are optional, and only used to identify Wi-Fi network names for the SSID Filter feature. They are never used to track your physical location.
