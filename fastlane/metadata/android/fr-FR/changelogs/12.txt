@@ -1,0 +1,2 @@
+- Le dossier fastlane a été déplacé vers la racine du projet.
+- L'explication d'usage (optionnel) de la permission de localisation "toujours autorisée" a été mise à jour.

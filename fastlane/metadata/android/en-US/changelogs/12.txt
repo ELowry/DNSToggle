@@ -1,0 +1,2 @@
+- Moved fastlane folder to project root
+- Updated the explanation for the (optional) "all the time" location access.

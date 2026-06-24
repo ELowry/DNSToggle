@@ -22,7 +22,7 @@ jobs:
 
       - name: Verify Fastlane Structure and Content
         run: |
-          METADATA_DIR="app/fastlane/metadata/android"
+          METADATA_DIR="fastlane/metadata/android"
           FAILED=0
           
           # Check for en-US at minimum

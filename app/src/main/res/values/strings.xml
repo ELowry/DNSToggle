@@ -33,7 +33,7 @@
 	<string name="grant_permission_notice">Location/Nearby permission (including background) required to verify the Wi-Fi SSID.</string>
 	<string name="grant_permission_button">Grant Permissions</string>
 	<string name="notification_permission_explanation">To notify you when Private DNS is automatically toggled in the background, and ensure monitoring remains active, please allow notifications.</string>
-	<string name="background_location_explanation">To monitor Wi-Fi while the app is closed, please select \"Allow all the time\" on the next screen.</string>
+	<string name="background_location_explanation">To monitor Wi-Fi while the app is closed, Android requires \"Allow all the time\" location access. DNS Toggle only uses this to see the Wi-Fi name, and never tracks your physical location or uses GPS.</string>
 	<string name="add_ssid">Add SSID</string>
 	<string name="edit_ssid">Edit SSID</string>
 	<string name="ssid_hint">SSID (Wi-Fi Name)</string>

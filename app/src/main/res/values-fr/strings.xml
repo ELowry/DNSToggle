@@ -33,7 +33,7 @@
 	<string name="grant_permission_notice">L\'autorisation de localisation/proximité (y compris en arrière-plan) est requise pour vérifier le nom du Wi-Fi.</string>
 	<string name="grant_permission_button">Accorder les autorisations</string>
 	<string name="notification_permission_explanation">Pour vous avertir lorsque le DNS privé est automatiquement activé en arrière-plan, et pour garantir la vérification en arrière-plan, veuillez autoriser les notifications.</string>
-	<string name="background_location_explanation">Pour que l\'application puisse vérifier l\'état du Wi-Fi en arrière-plan, veuillez sélectionner \"Toujours autoriser\" sur l\'écran suivant.</string>
+	<string name="background_location_explanation">Pour surveiller le Wi-Fi lorsque l\'application est fermée, Android nécessite l\'accès à la position \"Toujours autoriser\". DNS Toggle utilise uniquement cela pour voir le nom du Wi-Fi et ne suit jamais votre position physique ni n\'utilise le GPS.</string>
 	<string name="add_ssid">Ajouter un SSID</string>
 	<string name="edit_ssid">Modifier le SSID</string>
 	<string name="ssid_hint">SSID (Nom du Wi-Fi)</string>
