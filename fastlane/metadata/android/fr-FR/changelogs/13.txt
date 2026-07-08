@@ -1,0 +1,2 @@
+- Taille de l'application réduite par minification R8 et "legacy DEX compression".
+- Amélioration de la sécurité et de la gestion des builds.

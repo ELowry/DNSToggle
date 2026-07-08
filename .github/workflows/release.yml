@@ -62,7 +62,7 @@ jobs:
                   echo "$SIGNING_KEY" | base64 --decode > release.keystore
 
                   # Build and sign natively with Gradle
-                  ./gradlew assembleRelease \
+                  ./gradlew clean assembleRelease --no-build-cache --no-daemon \
                     -Pandroid.injected.signing.store.file=$(pwd)/release.keystore \
                     -Pandroid.injected.signing.store.password=$KEY_STORE_PASSWORD \
                     -Pandroid.injected.signing.key.alias=$KEY_ALIAS \

@@ -10,13 +10,14 @@ android {
 		applicationId = "com.ericlowry.dnstoggle"
 		minSdk = 28
 		targetSdk = 36
-		versionCode = 12
-		versionName = "1.4.1"
+		versionCode = 13
+		versionName = "1.4.2"
 	}
 
 	buildTypes {
 		release {
-			isMinifyEnabled = false
+			isMinifyEnabled = true
+			isShrinkResources = true
 			proguardFiles(
 				getDefaultProguardFile("proguard-android-optimize.txt"),
 				"proguard-rules.pro"
@@ -30,6 +31,12 @@ android {
 	dependenciesInfo {
 		includeInApk = false
 		includeInBundle = false
+	}
+
+	packaging {
+		dex {
+			useLegacyPackaging = true
+		}
 	}
 }
 

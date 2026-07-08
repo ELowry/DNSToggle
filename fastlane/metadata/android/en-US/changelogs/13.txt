@@ -1,0 +1,2 @@
+- Reduced apk size using R8 minification and  legacy DEX compression.
+- Build maintenance and security improvements.
