@@ -56,9 +56,9 @@ By long-pressing the Quick Settings tile, you can access the configuration menu 
 ## Permissions
 
 - **WRITE_SECURE_SETTINGS**: Required to modify system Private DNS settings. Must be granted via root or using ADB.
-- **INTERNET** *(optional)*: Used to verify that your Custom DNS Provider is online and reachable before applying it.
-- **Location & Nearby Devices** *(optional)*: Required only for **Wi-Fi Blocklist** automation. Used to identify the Wi-Fi network name (SSID) locally.
-- **Notifications** *(optional)*: Used for status alerts when Private DNS is automatically adjusted.
+- **INTERNET** _(optional)_: Used to verify that your Custom DNS Provider is online and reachable before applying it.
+- **Location & Nearby Devices** _(optional)_: Required only for **Wi-Fi Blocklist** automation. Used to identify the Wi-Fi network name (SSID) locally.
+- **Notifications** _(optional)_: Used for status alerts when Private DNS is automatically adjusted.
 
 ## Privacy
 
@@ -67,3 +67,11 @@ This app is a shortcut for existing system settings. It does not store, collect,
 ## Building from Source
 
 You can build the app yourself by opening this project in Android Studio or by running `./gradlew assembleDebug` using your prefered command line tool.
+
+## Help Translate DNS Toggle
+
+[![Translation status](https://hosted.weblate.org/widget/dns-toggle/multi-red.svg)](https://hosted.weblate.org/engage/dns-toggle/)
+
+Want to see DNS Toggle in your native language? Contributions are always welcome!
+
+You don't need any coding experience to help out, just click the chart above to start translating right from your browser using [Weblate](https://weblate.org/).
