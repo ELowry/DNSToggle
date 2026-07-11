@@ -1,5 +1,6 @@
 package com.ericlowry.dnstoggle
 
+import android.Manifest
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -8,6 +9,7 @@ import android.app.Service
 import android.content.ComponentName
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.database.ContentObserver
 import android.net.ConnectivityManager
@@ -25,7 +27,7 @@ import android.provider.Settings.Global
 import android.util.Log
 
 import androidx.core.app.NotificationCompat
-
+import androidx.core.content.edit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -37,207 +39,370 @@ import kotlin.time.Duration.Companion.seconds
 
 class WifiMonitoringService : Service() {
 
-    private lateinit var connectivityManager: ConnectivityManager
-    private var networkCallback: NetworkCallback? = null
-    private var cachedDnsMode: String? = null
-    private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
-    private var debounceJob: Job? = null
+	private lateinit var connectivityManager: ConnectivityManager
+	private var networkCallback: NetworkCallback? = null
+	private var cachedDnsMode: String? = null
+	private val activeNetworks = mutableMapOf<Network, NetworkCapabilities>()
+	private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+	private var debounceJob: Job? = null
 
-    private val dnsSettingsObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
-        override fun onChange(selfChange: Boolean) {
-            cachedDnsMode = Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
-            TileServiceCompat.requestListeningState(
-                this@WifiMonitoringService,
-                ComponentName(this@WifiMonitoringService, DnsToggleService::class.java)
-            )
-        }
-    }
+	private val dnsSettingsObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
+		override fun onChange(selfChange: Boolean) {
+			cachedDnsMode = Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
+			TileServiceCompat.requestListeningState(
+				this@WifiMonitoringService,
+				ComponentName(this@WifiMonitoringService, DnsToggleService::class.java)
+			)
+		}
+	}
 
-    companion object {
-        private const val TAG = "WifiMonitoringService"
-    }
+	companion object {
+		private const val TAG = "WifiMonitoringService"
+	}
 
-    private fun getPrefs(): SharedPreferences {
-        return (application as DnsToggleApplication).getPrefs()
-    }
+	private fun getPrefs(): SharedPreferences {
+		return (application as DnsToggleApplication).getPrefs()
+	}
 
-    override fun onCreate() {
-        super.onCreate()
-        connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-        initializeNotificationChannel()
-        // Initialize cache and register observer
-        cachedDnsMode = Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
-        contentResolver.registerContentObserver(
-            Global.getUriFor(Constants.SETTINGS_PRIVATE_DNS_MODE),
-            false,
-            dnsSettingsObserver
-        )
-    }
+	private val preferenceChangeListener =
+		SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+			if (key == Constants.PREF_VPN_OVERRIDE_ENABLED || key == Constants.PREF_VPN_DNS_HOSTNAME) {
+				evaluateActiveNetworks()
+			}
+		}
 
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val notification = createPersistentNotification()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-            startForeground(
-                Constants.NOTIFICATION_ID_FOREGROUND,
-                notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
-            )
-        } else {
-            startForeground(Constants.NOTIFICATION_ID_FOREGROUND, notification)
-        }
-        registerNetworkCallback()
-        return START_STICKY
-    }
+	override fun onCreate() {
+		super.onCreate()
+		connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+		initializeNotificationChannel()
+		// Initialize cache and register observer
+		cachedDnsMode = Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
+		contentResolver.registerContentObserver(
+			Global.getUriFor(Constants.SETTINGS_PRIVATE_DNS_MODE),
+			false,
+			dnsSettingsObserver
+		)
 
-    override fun onDestroy() {
-        serviceScope.cancel()
-        unregisterNetworkCallback()
-        contentResolver.unregisterContentObserver(dnsSettingsObserver)
-        (application as DnsToggleApplication).detectedSsid = null
-        super.onDestroy()
-    }
+		getPrefs().registerOnSharedPreferenceChangeListener(preferenceChangeListener)
 
-    override fun onBind(intent: Intent?): IBinder? = null
+		serviceScope.launch {
+			DnsSettingsRepository.blacklist.collect {
+				evaluateActiveNetworks()
+			}
+		}
+	}
 
-    private fun initializeNotificationChannel() {
-        val channelName = getString(R.string.service_notif_title)
-        val importance = NotificationManager.IMPORTANCE_LOW
-        val channel = NotificationChannel(Constants.CHANNEL_ID_SERVICE, channelName, importance).apply {
-            setShowBadge(false)
-        }
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(channel)
-    }
+	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+		val notification = createPersistentNotification()
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+			startForeground(
+				Constants.NOTIFICATION_ID_FOREGROUND,
+				notification,
+				ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE,
+			)
+		} else {
+			startForeground(Constants.NOTIFICATION_ID_FOREGROUND, notification)
+		}
+		registerNetworkCallback()
+		return START_STICKY
+	}
 
-    private fun createPersistentNotification(): Notification {
-        val launchIntent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(this, 0, launchIntent, PendingIntent.FLAG_IMMUTABLE)
+	override fun onDestroy() {
+		serviceScope.cancel()
+		unregisterNetworkCallback()
+		contentResolver.unregisterContentObserver(dnsSettingsObserver)
+		getPrefs().unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
 
-        return NotificationCompat.Builder(this, Constants.CHANNEL_ID_SERVICE)
-            .setContentTitle(getString(R.string.service_notif_title))
-            .setContentText(getString(R.string.service_notif_text))
-            .setSmallIcon(R.drawable.ic_qs_dns)
-            .setContentIntent(pendingIntent)
-            .setOngoing(true)
-            .setCategory(Notification.CATEGORY_SERVICE)
-            .build()
-    }
+		val prefs = getPrefs()
+		if (prefs.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)) {
+			prefs.edit(true) { putBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false) }
+		}
+		if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != null) {
+			restorePreferredDns()
+			prefs.edit(true) { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) }
+		}
 
-    private fun registerNetworkCallback() {
-        if (networkCallback != null) return
+		(application as DnsToggleApplication).detectedSsid = null
+		super.onDestroy()
+	}
 
-        val networkRequest = NetworkRequest.Builder()
-            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-            .addTransportType(NetworkCapabilities.TRANSPORT_VPN)
-            .build()
+	override fun onBind(intent: Intent?): IBinder? = null
 
-        networkCallback = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            object : NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
-                override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
-                    evaluateNetworkCapabilities(caps)
-                }
-                override fun onLost(network: Network) {
-                    (application as DnsToggleApplication).detectedSsid = null
-                    clearStatusNotification()
-                    restorePreferredDns()
-                }
-            }
-        } else {
-            object : NetworkCallback() {
-                override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
-                    evaluateNetworkCapabilities(caps)
-                }
-                override fun onLost(network: Network) {
-                    (application as DnsToggleApplication).detectedSsid = null
-                    clearStatusNotification()
-                    restorePreferredDns()
-                }
-            }
-        }
+	private fun initializeNotificationChannel() {
+		val channelName = getString(R.string.service_notif_title)
+		val importance = NotificationManager.IMPORTANCE_LOW
+		val channel =
+			NotificationChannel(Constants.CHANNEL_ID_SERVICE, channelName, importance).apply {
+				setShowBadge(false)
+			}
+		val manager = getSystemService(NotificationManager::class.java)
+		manager.createNotificationChannel(channel)
+	}
 
-        try {
-            connectivityManager.registerNetworkCallback(networkRequest, networkCallback!!)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to register network callback", e)
-        }
-    }
+	private fun createPersistentNotification(): Notification {
+		val launchIntent = Intent(this, MainActivity::class.java)
+		val pendingIntent =
+			PendingIntent.getActivity(this, 0, launchIntent, PendingIntent.FLAG_IMMUTABLE)
 
-    private fun evaluateNetworkCapabilities(networkCapabilities: NetworkCapabilities) {
-        val currentSsid = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            val wifiInfo = networkCapabilities.transportInfo as? WifiInfo
-            wifiInfo?.ssid?.let { NetworkUtils.run { it.stripSsidQuotes() } }
-        } else {
-            val wm = getSystemService(WIFI_SERVICE) as WifiManager
-            @Suppress("DEPRECATION")
-            wm.connectionInfo?.ssid?.let { NetworkUtils.run { it.stripSsidQuotes() } }
-        }
+		return NotificationCompat.Builder(this, Constants.CHANNEL_ID_SERVICE)
+			.setContentTitle(getString(R.string.service_notif_title))
+			.setContentText(getString(R.string.service_notif_text))
+			.setSmallIcon(R.drawable.ic_qs_dns)
+			.setContentIntent(pendingIntent)
+			.setOngoing(true)
+			.setCategory(Notification.CATEGORY_SERVICE)
+			.build()
+	}
 
-        val app = application as DnsToggleApplication
-        if ((currentSsid == null) || (currentSsid == "<unknown ssid>") || currentSsid.isEmpty()) {
-            app.detectedSsid = null
-            clearStatusNotification()
-            restorePreferredDns()
-            return
-        }
-        
-        app.detectedSsid = currentSsid
-        
-        val blacklist = DnsSettingsRepository.blacklist.value ?: emptySet()
-        if (blacklist.contains(currentSsid)) {
-            applyOpportunisticDns(currentSsid)
-        } else {
-            clearStatusNotification()
-            restorePreferredDns()
-        }
-    }
+	private fun registerNetworkCallback() {
+		if (networkCallback != null) return
 
-    private fun unregisterNetworkCallback() {
-        networkCallback?.let { callback ->
-            try {
-                connectivityManager.unregisterNetworkCallback(callback)
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to unregister network callback", e)
-            }
-        }
-        networkCallback = null
-    }
+		val networkRequest = NetworkRequest.Builder()
+			.removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
+			.removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
+			.build()
 
-    private fun applyOpportunisticDns(ssid: String) {
-        debounceJob?.cancel()
-        updateDnsSetting(Constants.DNS_MODE_OPPORTUNISTIC, ssid)
-    }
+		val hasLocationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+			checkSelfPermission(Manifest.permission.NEARBY_WIFI_DEVICES) == PackageManager.PERMISSION_GRANTED
+		} else {
+			checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+		}
 
-    private fun restorePreferredDns() {
-        debounceJob?.cancel()
-        debounceJob = serviceScope.launch {
-            delay(5.seconds) // Wait 5 seconds to ensure we aren't just "bouncing" on the edge of coverage
-            val sharedPreferences = getPrefs()
-            val preferredMode = sharedPreferences.getString(Constants.PREF_PREFERRED_DNS_MODE, Constants.DNS_MODE_HOSTNAME) ?: Constants.DNS_MODE_HOSTNAME
-            updateDnsSetting(preferredMode, null)
-        }
-    }
+		networkCallback = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+			val flags = if (hasLocationPermission) NetworkCallback.FLAG_INCLUDE_LOCATION_INFO else 0
+			object : NetworkCallback(flags) {
+				override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
+					activeNetworks[network] = caps
+					evaluateActiveNetworks()
+				}
 
-    private fun updateDnsSetting(newMode: String, ssidForNotification: String?) {
-        try {
-            val resolver = contentResolver
-            if (cachedDnsMode != newMode) {
-                Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE, newMode)
-                cachedDnsMode = newMode
-                ssidForNotification?.let { 
-                    dispatchStatusNotification(getString(R.string.notif_dns_disabled_auto, it)) 
-                }
-                TileServiceCompat.requestListeningState(this, ComponentName(this, DnsToggleService::class.java))
-            }
-        } catch (e: SecurityException) {
-            Log.e(TAG, "Failed to update DNS setting", e)
-        }
-    }
+				override fun onLost(network: Network) {
+					activeNetworks.remove(network)
+					evaluateActiveNetworks()
+				}
+			}
+		} else {
+			object : NetworkCallback() {
+				override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
+					activeNetworks[network] = caps
+					evaluateActiveNetworks()
+				}
 
-    private fun dispatchStatusNotification(message: String) {
-        NotificationUtils.showStatusNotification(this, message)
-    }
+				override fun onLost(network: Network) {
+					activeNetworks.remove(network)
+					evaluateActiveNetworks()
+				}
+			}
+		}
 
-    private fun clearStatusNotification() {
-        NotificationUtils.cancelStatusNotification(this)
-    }
+		try {
+			connectivityManager.registerNetworkCallback(networkRequest, networkCallback!!)
+		} catch (e: Exception) {
+			Log.e(TAG, "Failed to register network callback", e)
+		}
+	}
+
+	private fun evaluateActiveNetworks() {
+		val allCaps = activeNetworks.values
+		val isVpnActive = allCaps.any { it.hasTransport(NetworkCapabilities.TRANSPORT_VPN) }
+		val wifiCaps = allCaps.find { it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) }
+
+		val hasLocationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+			checkSelfPermission(Manifest.permission.NEARBY_WIFI_DEVICES) == PackageManager.PERMISSION_GRANTED
+		} else {
+			checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+		}
+
+		val currentSsid = if (hasLocationPermission) {
+			wifiCaps?.let { caps ->
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+					(caps.transportInfo as? WifiInfo)?.ssid?.stripSsidQuotes()
+				} else {
+					val wm = getSystemService(WIFI_SERVICE) as WifiManager
+					@Suppress("DEPRECATION") wm.connectionInfo?.ssid?.stripSsidQuotes()
+				}
+			}
+		} else null
+
+		val app = application as DnsToggleApplication
+		app.detectedSsid =
+			if (currentSsid == "<unknown ssid>" || currentSsid?.isEmpty() == true) null else currentSsid
+
+		val prefs = getPrefs()
+		val vpnOverrideEnabled = prefs.getBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, false)
+		val isInVpnOverride = prefs.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)
+
+		if (isVpnActive && vpnOverrideEnabled) {
+			if (!isInVpnOverride) {
+				// Enter VPN override
+				saveCurrentDnsState()
+				prefs.edit(true) {
+					putBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, true)
+					putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null)
+				}
+			}
+			applyVpnDns()
+			return
+		} else if (!isVpnActive && isInVpnOverride) {
+			// Exit VPN override
+			prefs.edit(true) { putBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false) }
+			dispatchStatusNotification(getString(R.string.notif_vpn_dns_restored))
+		}
+
+		// Normal Wi-Fi logic
+		if (currentSsid == null || currentSsid == "<unknown ssid>" || currentSsid.isEmpty()) {
+			if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != null) {
+				prefs.edit(true) { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) }
+			}
+			restorePreferredDns()
+			return
+		}
+
+		val blacklist = DnsSettingsRepository.blacklist.value ?: emptySet()
+		if (blacklist.contains(currentSsid)) {
+			if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != currentSsid) {
+				prefs.edit(true) { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, currentSsid) }
+			}
+			applyOpportunisticDns(currentSsid)
+		} else {
+			if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != null) {
+				prefs.edit(true) { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) }
+			}
+			restorePreferredDns()
+		}
+	}
+
+	private fun saveCurrentDnsState() {
+		val resolver = contentResolver
+		val currentMode = Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
+		val currentSpecifier = Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
+		getPrefs().edit(true) {
+			putString(Constants.PREF_PRE_VPN_DNS_MODE, currentMode)
+			putString(Constants.PREF_PRE_VPN_DNS_SPECIFIER, currentSpecifier)
+		}
+	}
+
+	private fun applyVpnDns() {
+		val prefs = getPrefs()
+		val encryptedVpnDns = prefs.getString(Constants.PREF_VPN_DNS_HOSTNAME, null)
+		val vpnDns = if (encryptedVpnDns == null) {
+			"off"
+		} else {
+			when (val result = EncryptionManager.decrypt(encryptedVpnDns)) {
+				is EncryptionManager.DecryptResult.Success -> result.data
+				else -> "off"
+			}
+		}
+
+		val resolver = contentResolver
+		val currentMode = Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
+		val currentSpecifier = Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
+
+		if (vpnDns == "off") {
+			if (currentMode != Constants.DNS_MODE_OPPORTUNISTIC) {
+				updateDnsSetting(Constants.DNS_MODE_OPPORTUNISTIC, null)
+				dispatchStatusNotification(getString(R.string.notif_vpn_dns_applied))
+			}
+		} else {
+			// Hostname mode
+			if (currentMode != Constants.DNS_MODE_HOSTNAME || currentSpecifier != vpnDns) {
+				try {
+					Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER, vpnDns)
+					updateDnsSetting(Constants.DNS_MODE_HOSTNAME, null)
+					dispatchStatusNotification(getString(R.string.notif_vpn_dns_applied))
+				} catch (e: SecurityException) {
+					Log.e(TAG, "Failed to apply VPN DNS hostname", e)
+				}
+			}
+		}
+	}
+
+	private fun unregisterNetworkCallback() {
+		networkCallback?.let { callback ->
+			try {
+				connectivityManager.unregisterNetworkCallback(callback)
+			} catch (e: Exception) {
+				Log.e(TAG, "Failed to unregister network callback", e)
+			}
+		}
+		networkCallback = null
+	}
+
+	private fun applyOpportunisticDns(ssid: String) {
+		debounceJob?.cancel()
+		updateDnsSetting(Constants.DNS_MODE_OPPORTUNISTIC, ssid)
+	}
+
+	private fun restorePreferredDns() {
+		debounceJob?.cancel()
+		debounceJob = serviceScope.launch {
+			delay(2.seconds) // Wait to avoid rapid ping-pong
+			val sharedPreferences = getPrefs()
+
+			if (sharedPreferences.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false) &&
+				sharedPreferences.getBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, false)
+			) {
+				return@launch
+			}
+
+			val preferredMode = sharedPreferences.getString(
+				Constants.PREF_PREFERRED_DNS_MODE,
+				Constants.DNS_MODE_HOSTNAME
+			) ?: Constants.DNS_MODE_HOSTNAME
+
+			if (preferredMode == Constants.DNS_MODE_HOSTNAME) {
+				// Try to restore from last used hostname
+				val encryptedHostname =
+					sharedPreferences.getString(Constants.PREF_LAST_USED_HOSTNAME, null)
+				val hostname = encryptedHostname?.let {
+					when (val result = EncryptionManager.decrypt(it)) {
+						is EncryptionManager.DecryptResult.Success -> result.data
+						else -> null
+					}
+				}
+				if (hostname != null) {
+					try {
+						Global.putString(
+							contentResolver,
+							Constants.SETTINGS_PRIVATE_DNS_SPECIFIER,
+							hostname
+						)
+					} catch (e: SecurityException) {
+						Log.e(TAG, "Failed to restore preferred DNS specifier", e)
+					}
+				}
+			}
+
+			updateDnsSetting(preferredMode, null)
+		}
+	}
+
+	private fun updateDnsSetting(newMode: String, ssidForNotification: String?) {
+		try {
+			val resolver = contentResolver
+			if (cachedDnsMode != newMode) {
+				Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE, newMode)
+				cachedDnsMode = newMode
+				ssidForNotification?.let {
+					dispatchStatusNotification(getString(R.string.notif_dns_disabled_auto, it))
+				}
+				TileServiceCompat.requestListeningState(
+					this,
+					ComponentName(this, DnsToggleService::class.java)
+				)
+			}
+		} catch (e: SecurityException) {
+			Log.e(TAG, "Failed to update DNS setting", e)
+		}
+	}
+
+	private fun dispatchStatusNotification(message: String) {
+		NotificationUtils.showStatusNotification(this, message)
+		if (getPrefs().getBoolean(Constants.PREF_SHOW_TOAST, true)) {
+			Handler(Looper.getMainLooper()).post {
+				android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT)
+					.show()
+			}
+		}
+	}
 }

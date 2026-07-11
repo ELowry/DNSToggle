@@ -6,6 +6,10 @@ material = "1.14.0"
 activity = "1.13.0"
 constraintlayout = "2.2.1"
 lifecycle = "2.11.0"
+junit = "4.13.2"
+robolectric = "4.16.1"
+coroutines = "1.11.0"
+androidx-test-core = "1.7.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -14,6 +18,10 @@ material = { group = "com.google.android.material", name = "material", version.r
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidx-test-core" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

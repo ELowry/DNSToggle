@@ -11,12 +11,11 @@ _adb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETT
 - **Tuile de paramètres rapides**: Activez/désactivez le DNS privé directement depuis le panneau de configuration rapide.
 - **Fournisseur DNS personnalisé**: Définissez votre nom d'hôte préféré (ex: dns.nextdns.io).
 - **Filtrage par SSID**: Désactivez automatiquement le DNS privé lors de la connexion à des réseaux Wi-Fi spécifiques.
-- **Mise à jour automatique du filtrage**: Ajoutez/supprimez automatiquement le SSID actuel des filtres lors du basculement manuel de la tuile.
+- **Détection de VPN**: DNS Toggle détecte automatiquement l'utilisation d'un VPN et applique la configuration DNS privé de votre choix.
 - **Étiquetage dynamique de la tuile**: Renommez l'étiquette des paramètres rapides.
-- **Notifications d'état**: Recevez une notification lorsque le DNS privé est activé ou désactivé automatiquement.
 - **Masquer l'icône de l'application**: Gardez votre écran d'accueil propre tout en conservant l'accès via la tuile de paramètres rapides.
 
 **Confidentialité et autorisations**
 
-- **Respect de la vie privée**: Pas de suivi, pas de publicité et pas de collecte de données.
-- **Autorisation de localisation**: Uniquement utilisée pour identifier les noms des réseaux Wi-Fi pour la fonctionnalité de filtrage par SSID. Elle n'est jamais utilisée pour suivre votre position physique.
+- Pas de suivi, pas de publicité et pas de collecte de données.
+- Les autorisations de localisation sont uniquement utilisées pour identifier les noms des réseaux Wi-Fi pour la fonctionnalité de filtrage par SSID. Elles ne sont jamais utilisées pour suivre votre position physique.

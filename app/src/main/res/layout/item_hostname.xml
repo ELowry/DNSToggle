@@ -4,10 +4,11 @@
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:layout_marginVertical="4dp"
-	app:cardBackgroundColor="?attr/colorSurfaceVariant"
+	app:cardBackgroundColor="?attr/colorSurface"
 	app:cardCornerRadius="8dp"
 	app:cardElevation="0dp"
-	app:strokeWidth="0dp">
+	app:strokeColor="?attr/colorOutlineVariant"
+	app:strokeWidth="1dp">
 
 	<LinearLayout
 		android:layout_width="match_parent"
@@ -18,29 +19,43 @@
 		android:paddingStart="12dp"
 		android:paddingEnd="4dp">
 
-		<TextView
-			android:id="@+id/tvSsidName"
+		<LinearLayout
 			android:layout_width="0dp"
 			android:layout_height="wrap_content"
 			android:layout_weight="1"
-			android:textAppearance="?attr/textAppearanceBodyLarge"
-			android:textColor="?attr/colorOnSurfaceVariant" />
+			android:orientation="vertical">
+
+			<TextView
+				android:id="@+id/tvHostname"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textAppearance="?attr/textAppearanceBodyLarge"
+				android:textColor="?attr/colorOnSurface"
+				android:textStyle="bold" />
+
+			<TextView
+				android:id="@+id/tvStatus"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textAppearance="?attr/textAppearanceBodySmall"
+				android:visibility="gone" />
+		</LinearLayout>
 
 		<ImageButton
-			android:id="@+id/btnEditSsid"
+			android:id="@+id/btnEditHostname"
 			android:layout_width="48dp"
 			android:layout_height="48dp"
 			android:background="?attr/selectableItemBackgroundBorderless"
-			android:contentDescription="@string/edit_ssid"
+			android:contentDescription="@string/edit_hostname"
 			android:src="@drawable/ic_edit"
 			app:tint="?attr/colorOnSurfaceVariant" />
 
 		<ImageButton
-			android:id="@+id/btnDeleteSsid"
+			android:id="@+id/btnDeleteHostname"
 			android:layout_width="48dp"
 			android:layout_height="48dp"
 			android:background="?attr/selectableItemBackgroundBorderless"
-			android:contentDescription="@string/delete_ssid_confirm"
+			android:contentDescription="@string/delete_hostname_confirm"
 			android:src="@drawable/ic_delete"
 			app:tint="?attr/colorOnSurfaceVariant" />
 

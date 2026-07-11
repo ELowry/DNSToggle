@@ -25,4 +25,24 @@
 		<item name="android:statusBarColor">?attr/colorSurface</item>
 		<item name="android:windowLightStatusBar">true</item>
 	</style>
+
+	<!-- Floating Dialog Theme -->
+	<style name="Theme.DNSToggle.Dialog" parent="Theme.DNSToggle">
+		<!-- Transparent window -->
+		<item name="android:windowIsTranslucent">true</item>
+		<item name="android:windowBackground">@android:color/transparent</item>
+
+		<!-- Centered window sized based on contents -->
+		<item name="android:windowIsFloating">true</item>
+
+		<!-- Dimmed background of main UI behind the dialog -->
+		<item name="android:backgroundDimEnabled">true</item>
+		<item name="android:backgroundDimAmount">0.5</item>
+
+		<!-- Removes title bar -->
+		<item name="android:windowNoTitle">true</item>
+
+		<!-- Close on outside tap -->
+		<item name="android:windowCloseOnTouchOutside">true</item>
+	</style>
 </resources>

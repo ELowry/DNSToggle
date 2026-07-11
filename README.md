@@ -6,9 +6,9 @@ A tiny Android app that allows you to easily toggle your phone's Private DNS thr
 
 <p align="center">
   <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" alt="Screenshot of Private DNS being toggled on in the Quick Settings menu" width="24%" />
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" alt="Screenshot of Private DNS being toggled off in the Quick Settings menu" width="24%" />
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" alt="Screenshot of the Private DNS hostname quick-switch popup" width="24%" />
   <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" alt="Screenshot of the DNS Toggle configuration menu" width="24%" />
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" alt="Screenshot of the DNS Toggle configuration menu's rename popup" width="24%" />
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" alt="Screenshot of the second half of the DNS Toggle configuration menu" width="24%" />
 </p>
 
 > [!WARNING]
@@ -31,13 +31,13 @@ Adds a Quick Settings tile to toggle your Private DNS on and off with a single t
 
 By long-pressing the Quick Settings tile, you can access the configuration menu to:
 
-- **Custom DNS Provider**: Set a custom hostname for Private DNS (e.g., `dns.adguard.com`).
+- **Custom DNS Provider**: Set one or more custom Private DNS hostnames you can easily toggle between (e.g., `dns.adguard.com`).
+  - Optional automatic DNS hostname reachability check.
 - **Wi-Fi Blocklist**: Automatically disable Private DNS when connected to specific Wi-Fi networks.
-- **Auto-Update Blocklist**: Optionally add or remove the current SSID from the blocklist automatically when manually toggling the Quick Settings tile.
-- **Status Notifications**: Receive notifications when Private DNS settings are automatically adjusted.
-- **Dynamic Tile Labeling**: Rename the Quick Settings tile label via the settings menu.
+  - Optional automated addition/removal of the current Wi-Fi SSID from the blocklist when manually toggling the Quick Settings tile.
+- **VPN toggling**: Automatically set a DNS hostname or toggle Private DNS when a VPN is in use on the device.
+- **Dynamic Tile Labeling**: Rename the Quick Settings tile.
 - **Hide App Icon**: Optionally hide the app from your launcher drawer to keep your home screen clean.
-- **Disable DNS Test**: Optionally bypass the automatic reachability check if you are using a strict custom DNS provider.
 
 ## Usage
 
@@ -47,11 +47,20 @@ By long-pressing the Quick Settings tile, you can access the configuration menu 
 4. Long-press the tile to open the configuration UI to set your custom DNS hostname.
 5. Tap the tile to toggle the Private DNS on or off!
 
+> [!NOTE]
+>
+> **Saved networks may disappear**
+>
+> Android's secure Keystore protects your saved Wi-Fi networks and hostnames. If you change your device's lock screen PIN, pattern, or biometric settings, Android may delete the stored data.
+
 ## Troubleshooting
+
+If you encounter issues not covered here, please [open a support ticket](https://github.com/ELowry/DNSToggle/issues/new/choose).
 
 - **ADB Command Fails**: Ensure USB Debugging is enabled in Developer Options, and that your device is recognized by running the `adb devices` command.
 - **Tile is Grayed Out**: This usually means the permission was not granted correctly. See the warning above.
 - **Custom DNS is marked as "Unreachable"**: Some strict DNS providers block automatic connection tests. If you are certain the address is correct, you can toggle on the `Disable DNS Test` just option below.
+- **Automation stops working**: Some Android devices aggressively kill background apps to save battery. If the Wi-Fi Blocklist or VPN Override features stop working while the app is closed, you may need to manually disable `Battery Optimizations` or enable `Autostart` for DNS Toggle in your device's settings.
 
 ## Permissions
 

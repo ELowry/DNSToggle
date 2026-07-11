@@ -9,11 +9,10 @@ _adb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETT
 **Features**
 
 - **Quick Settings Tile**: Toggle Private DNS on/off directly from the Quick Settings panel.
-- **Custom DNS Provider**: Define your preferred hostname (e.g., dns.nextdns.io).
+- **Custom DNS Providers**: Define one or more preferred hostnames (e.g., dns.nextdns.io) and seamlessly switch between them.
 - **Wi-Fi Filtering**: Automatically disable Private DNS when connected to specific Wi-Fi networks.
-- **Auto-Update Filtering**: Optionally add/remove the current SSID from the filter list automatically when manually toggling the tile.
-- **Dynamic Tile Labeling**: Rename the quick-settings label.
-- **Status Notifications**: Get notified when Private DNS is automatically toggled.
+- **VPN Override**: Automatically enforce a specific DNS hostname or disable Private DNS entirely whenever a VPN is active on your device.
+- **Dynamic Tile Labeling**: Rename the Quick Settings tile.
 - **Hide App Icon**: Keep your home screen clean while maintaining access via the Quick Settings tile.
 
 **Privacy & Permissions**

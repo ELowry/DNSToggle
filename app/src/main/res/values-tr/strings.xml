@@ -11,7 +11,7 @@
 	<string name="retry_root">Root\'u Yeniden Dene</string>
 	<string name="root_grant_failed">Root izni başarısız oldu veya reddedildi</string>
 	<string name="hide_launcher_icon">Uygulama simgesini gizle</string>
-    <string name="hide_launcher_icon_summary">Etkinleştirildiğinde, uygulama menünden gizlenir. Hızlı Ayarlar kutucuğuna uzun basarak ayarlara yine de erişebilirsin.</string>
+	<string name="hide_launcher_icon_summary">Etkinleştirildiğinde, uygulama menünden gizlenir. Hızlı Ayarlar kutucuğuna uzun basarak ayarlara yine de erişebilirsin.</string>
 	<string name="ok">Tamam</string>
 	<string name="cancel">İptal</string>
 	<string name="on_label">Açık</string>

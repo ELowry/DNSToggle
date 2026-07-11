@@ -10,8 +10,8 @@ android {
 		applicationId = "com.ericlowry.dnstoggle"
 		minSdk = 28
 		targetSdk = 36
-		versionCode = 13
-		versionName = "1.4.2"
+		versionCode = 14
+		versionName = "1.5.0"
 	}
 
 	buildTypes {
@@ -22,6 +22,11 @@ android {
 				getDefaultProguardFile("proguard-android-optimize.txt"),
 				"proguard-rules.pro"
 			)
+		}
+	}
+	testOptions {
+		unitTests {
+			isIncludeAndroidResources = true
 		}
 	}
 	compileOptions {
@@ -47,4 +52,8 @@ dependencies {
 	implementation(libs.androidx.activity)
 	implementation(libs.androidx.constraintlayout)
 	implementation(libs.androidx.lifecycle.viewmodel.ktx)
+	testImplementation(libs.junit)
+	testImplementation(libs.robolectric)
+	testImplementation(libs.kotlinx.coroutines.test)
+	testImplementation(libs.androidx.test.core)
 }
