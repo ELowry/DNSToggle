@@ -2,6 +2,8 @@ name: Bug Report
 description: Report any bugs or issues with the app.
 title: '[Bug]: '
 labels: ['bug']
+assignees:
+    - ELowry
 body:
     - type: markdown
       attributes:
