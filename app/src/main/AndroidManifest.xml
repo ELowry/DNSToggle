@@ -2,14 +2,18 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools">
 
-	<uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" tools:ignore="ProtectedPermissions"/>
+	<uses-permission
+		android:name="android.permission.WRITE_SECURE_SETTINGS"
+		tools:ignore="ProtectedPermissions" />
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 	<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-	<uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" tools:targetApi="33" />
+	<uses-permission
+		android:name="android.permission.NEARBY_WIFI_DEVICES"
+		tools:targetApi="33" />
 	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
@@ -34,6 +38,16 @@
 			android:theme="@style/Theme.DNSToggle">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
+			</intent-filter>
+		</activity>
+
+		<activity
+			android:name=".DnsSelectionActivity"
+			android:excludeFromRecents="true"
+			android:exported="true"
+			android:taskAffinity=""
+			android:theme="@style/Theme.DNSToggle.Dialog">
+			<intent-filter>
 				<action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
 			</intent-filter>
 		</activity>
@@ -51,11 +65,12 @@
 			</intent-filter>
 		</activity-alias>
 
-		<service android:name=".DnsToggleService"
-			android:label="@string/app_name"
+		<service
+			android:name=".DnsToggleService"
+			android:exported="true"
 			android:icon="@drawable/ic_qs_dns"
-			android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
-			android:exported="true">
+			android:label="@string/app_name"
+			android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
 			<intent-filter>
 				<action android:name="android.service.quicksettings.action.QS_TILE" />
 			</intent-filter>
@@ -63,8 +78,8 @@
 
 		<service
 			android:name=".WifiMonitoringService"
-			android:foregroundServiceType="specialUse"
-			android:exported="false">
+			android:exported="false"
+			android:foregroundServiceType="specialUse">
 			<property
 				android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
 				android:value="Monitoring Wi-Fi network connectivity to automate Private DNS mode toggling based on user-defined SSID blacklist." />

@@ -1,340 +1,387 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="false"
-    tools:context=".MainActivity">
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/main"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:fitsSystemWindows="false"
+	tools:context=".MainActivity">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/appBarLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:fitsSystemWindows="true">
+	<com.google.android.material.appbar.AppBarLayout
+		android:id="@+id/appBarLayout"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:fitsSystemWindows="true">
 
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/topAppBar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:title="@string/app_name" />
+		<com.google.android.material.appbar.MaterialToolbar
+			android:id="@+id/topAppBar"
+			android:layout_width="match_parent"
+			android:layout_height="?attr/actionBarSize"
+			app:title="@string/app_name" />
 
-    </com.google.android.material.appbar.AppBarLayout>
+	</com.google.android.material.appbar.AppBarLayout>
 
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+	<androidx.core.widget.NestedScrollView
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="16dp">
+		<androidx.constraintlayout.widget.ConstraintLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:padding="16dp">
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardMainPermission"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                app:cardBackgroundColor="?attr/colorSecondaryContainer"
-                app:strokeColor="?attr/warning_color"
-                app:strokeWidth="1.5dp"
-                app:cardElevation="0dp"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+			<com.google.android.material.card.MaterialCardView
+				android:id="@+id/cardMainPermission"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:visibility="gone"
+				app:cardBackgroundColor="?attr/colorSecondaryContainer"
+				app:cardElevation="0dp"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintTop_toTopOf="parent"
+				app:strokeColor="?attr/warning_color"
+				app:strokeWidth="1.5dp">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="12dp"
-                    android:gravity="center_vertical">
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:gravity="center_vertical"
+					android:orientation="horizontal"
+					android:padding="12dp">
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/ic_warning"
-                        android:contentDescription="@null"
-                        app:tint="?attr/warning_color" />
+					<ImageView
+						android:layout_width="24dp"
+						android:layout_height="24dp"
+						android:contentDescription="@null"
+						android:src="@drawable/ic_warning"
+						app:tint="?attr/warning_color" />
 
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="12dp"
-                        android:layout_marginEnd="12dp">
+					<LinearLayout
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_marginStart="12dp"
+						android:layout_marginEnd="12dp"
+						android:layout_weight="1"
+						android:orientation="vertical">
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/main_permission_title"
-                            android:textStyle="bold"
-                            android:textColor="?attr/colorOnSecondaryContainer" />
+						<TextView
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:text="@string/main_permission_title"
+							android:textColor="?attr/colorOnSecondaryContainer"
+							android:textStyle="bold" />
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/main_permission_message"
-                            android:textSize="12sp"
-                            android:textColor="?attr/colorOnSecondaryContainer" />
-                    </LinearLayout>
+						<TextView
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:text="@string/main_permission_message"
+							android:textAppearance="?attr/textAppearanceBodySmall"
+							android:textColor="?attr/colorOnSecondaryContainer" />
+					</LinearLayout>
 
-                    <Button
-                        android:id="@+id/btnFixMainPermission"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/btn_fix_permission"
-                        android:textColor="?attr/warning_color" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+					<Button
+						android:id="@+id/btnFixMainPermission"
+						style="@style/Widget.Material3.Button.TextButton"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/btn_fix_permission"
+						android:textColor="?attr/warning_color" />
+				</LinearLayout>
+			</com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardDnsSettings"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/colorOutline"
-                app:layout_constraintTop_toBottomOf="@id/cardMainPermission"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+			<com.google.android.material.card.MaterialCardView
+				android:id="@+id/cardDnsSettings"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="24dp"
+				app:cardCornerRadius="12dp"
+				app:cardElevation="0dp"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintTop_toBottomOf="@id/cardMainPermission"
+				app:strokeColor="?attr/colorOutline"
+				app:strokeWidth="1dp">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="16dp">
+				<androidx.constraintlayout.widget.ConstraintLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:padding="16dp">
 
-                    <TextView
-                        android:id="@+id/tvToggleLabel"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:text="@string/private_dns"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        app:layout_constraintTop_toTopOf="@id/switchPrivateDns"
-                        app:layout_constraintBottom_toBottomOf="@id/switchPrivateDns"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toStartOf="@id/progressRootAction" />
+					<TextView
+						android:id="@+id/tvToggleLabel"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:text="@string/private_dns"
+						android:textAppearance="?attr/textAppearanceTitleMedium"
+						android:textStyle="bold"
+						app:layout_constraintBottom_toBottomOf="@id/switchPrivateDns"
+						app:layout_constraintEnd_toStartOf="@id/progressRootAction"
+						app:layout_constraintStart_toStartOf="parent"
+						app:layout_constraintTop_toTopOf="@id/switchPrivateDns" />
 
-                    <com.google.android.material.progressindicator.CircularProgressIndicator
-                        android:id="@+id/progressRootAction"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:indeterminate="true"
-                        android:visibility="gone"
-                        app:indicatorSize="24dp"
-                        android:layout_marginEnd="8dp"
-                        app:layout_constraintTop_toTopOf="@id/switchPrivateDns"
-                        app:layout_constraintBottom_toBottomOf="@id/switchPrivateDns"
-                        app:layout_constraintEnd_toStartOf="@id/switchPrivateDns" />
+					<com.google.android.material.progressindicator.CircularProgressIndicator
+						android:id="@+id/progressRootAction"
+						android:layout_width="24dp"
+						android:layout_height="24dp"
+						android:layout_marginEnd="8dp"
+						android:indeterminate="true"
+						android:visibility="gone"
+						app:indicatorSize="24dp"
+						app:layout_constraintBottom_toBottomOf="@id/switchPrivateDns"
+						app:layout_constraintEnd_toStartOf="@id/switchPrivateDns"
+						app:layout_constraintTop_toTopOf="@id/switchPrivateDns" />
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switchPrivateDns"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent" />
+					<com.google.android.material.materialswitch.MaterialSwitch
+						android:id="@+id/switchPrivateDns"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						app:layout_constraintEnd_toEndOf="parent"
+						app:layout_constraintTop_toTopOf="parent" />
 
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilCustomDns"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:hint="@string/custom_dns_provider"
-                        app:errorEnabled="true"
-                        app:errorIconDrawable="@drawable/ic_warning"
-                        app:helperTextEnabled="true"
-                        app:layout_constraintTop_toBottomOf="@id/switchPrivateDns"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent">
+					<LinearLayout
+						android:id="@+id/dnsHostnamesHeader"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_marginTop="16dp"
+						android:gravity="center_vertical"
+						android:orientation="horizontal"
+						app:layout_constraintTop_toBottomOf="@id/switchPrivateDns">
 
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/inputCustomDns"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textUri" />
-                    </com.google.android.material.textfield.TextInputLayout>
+						<TextView
+							android:layout_width="0dp"
+							android:layout_height="wrap_content"
+							android:layout_weight="1"
+							android:text="@string/custom_dns_provider"
+							android:textAppearance="?attr/textAppearanceBodyMedium"
+							android:textStyle="bold" />
 
-                    <com.google.android.material.divider.MaterialDivider
-                        android:id="@+id/dividerDnsSettings"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        app:layout_constraintTop_toBottomOf="@id/tilCustomDns"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent" />
+						<ImageButton
+							android:id="@+id/btnAddHostname"
+							android:layout_width="48dp"
+							android:layout_height="48dp"
+							android:background="?attr/selectableItemBackgroundBorderless"
+							android:contentDescription="@string/add_hostname"
+							android:src="@drawable/ic_add" />
+					</LinearLayout>
 
-                    <LinearLayout
-                        android:id="@+id/rowDisableDnsTest"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        app:layout_constraintTop_toBottomOf="@id/dividerDnsSettings"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintEnd_toEndOf="parent">
+					<LinearLayout
+						android:id="@+id/dnsHostnameListContainer"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:orientation="vertical"
+						app:layout_constraintTop_toBottomOf="@id/dnsHostnamesHeader" />
 
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
+					<com.google.android.material.divider.MaterialDivider
+						android:id="@+id/dividerDnsSettings"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_marginTop="8dp"
+						app:layout_constraintEnd_toEndOf="parent"
+						app:layout_constraintStart_toStartOf="parent"
+						app:layout_constraintTop_toBottomOf="@id/dnsHostnameListContainer" />
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/disable_dns_test"
-                                android:textAppearance="?attr/textAppearanceBodyMedium" />
+					<LinearLayout
+						android:id="@+id/rowDisableDnsTest"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_marginTop="12dp"
+						android:gravity="center_vertical"
+						android:orientation="horizontal"
+						app:layout_constraintEnd_toEndOf="parent"
+						app:layout_constraintStart_toStartOf="parent"
+						app:layout_constraintTop_toBottomOf="@id/dividerDnsSettings">
 
-                            <TextView
-                                android:id="@+id/tvDisableDnsTestSummary"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="@string/disable_dns_test_summary"
-                                android:textAppearance="?attr/textAppearanceBodySmall"
-                                android:textColor="?attr/colorOnSurfaceVariant" />
-                        </LinearLayout>
+						<LinearLayout
+							android:layout_width="0dp"
+							android:layout_height="wrap_content"
+							android:layout_weight="1"
+							android:orientation="vertical">
 
-                        <com.google.android.material.materialswitch.MaterialSwitch
-                            android:id="@+id/switchDisableDnsTest"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="16dp" />
-                    </LinearLayout>
-                </androidx.constraintlayout.widget.ConstraintLayout>
-            </com.google.android.material.card.MaterialCardView>
+							<TextView
+								android:layout_width="wrap_content"
+								android:layout_height="wrap_content"
+								android:text="@string/disable_dns_test"
+								android:textAppearance="?attr/textAppearanceBodyMedium" />
 
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardSsidBlacklist"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                app:cardCornerRadius="12dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="?attr/colorOutline"
-                app:layout_constraintTop_toBottomOf="@id/cardDnsSettings"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
+							<TextView
+								android:id="@+id/tvDisableDnsTestSummary"
+								android:layout_width="wrap_content"
+								android:layout_height="wrap_content"
+								android:text="@string/disable_dns_test_summary"
+								android:textAppearance="?attr/textAppearanceBodySmall"
+								android:textColor="?attr/colorOnSurfaceVariant" />
+						</LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+						<com.google.android.material.materialswitch.MaterialSwitch
+							android:id="@+id/switchDisableDnsTest"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_marginStart="16dp" />
+					</LinearLayout>
+				</androidx.constraintlayout.widget.ConstraintLayout>
+			</com.google.android.material.card.MaterialCardView>
 
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+			<com.google.android.material.card.MaterialCardView
+				android:id="@+id/cardSsidBlacklist"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="24dp"
+				app:cardCornerRadius="12dp"
+				app:cardElevation="0dp"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintTop_toBottomOf="@id/cardDnsSettings"
+				app:strokeColor="?attr/colorOutline"
+				app:strokeWidth="1dp">
 
-                        <TextView
-                            android:id="@+id/tvSsidBlacklistTitle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/ssid_blacklist_title"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:layout_centerVertical="true"
-                            android:layout_alignParentStart="true" />
+				<LinearLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:orientation="vertical"
+					android:padding="16dp">
 
-                        <ImageButton
-                            android:id="@+id/btnSsidInfo"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:layout_toEndOf="@id/tvSsidBlacklistTitle"
-                            android:layout_centerVertical="true"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@drawable/ic_info"
-                            android:contentDescription="@string/info_content_description" />
+					<RelativeLayout
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content">
 
-                        <ImageButton
-                            android:id="@+id/btnAddSsid"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            android:layout_alignParentEnd="true"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:src="@drawable/ic_add"
-                            android:contentDescription="@string/add_ssid" />
-                    </RelativeLayout>
+						<TextView
+							android:id="@+id/tvSsidBlacklistTitle"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_alignParentStart="true"
+							android:layout_centerVertical="true"
+							android:text="@string/ssid_blacklist_title"
+							android:textAppearance="?attr/textAppearanceTitleMedium"
+							android:textStyle="bold" />
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switchAutoBlacklist"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="@string/auto_blacklist_on_disable" />
+						<ImageButton
+							android:id="@+id/btnSsidInfo"
+							android:layout_width="48dp"
+							android:layout_height="48dp"
+							android:layout_centerVertical="true"
+							android:layout_toEndOf="@id/tvSsidBlacklistTitle"
+							android:background="?attr/selectableItemBackgroundBorderless"
+							android:contentDescription="@string/info_content_description"
+							android:src="@drawable/ic_info" />
 
-                    <com.google.android.material.materialswitch.MaterialSwitch
-                        android:id="@+id/switchAutoWhitelist"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:text="@string/auto_whitelist_on_enable" />
+						<ImageButton
+							android:id="@+id/btnAddSsid"
+							android:layout_width="48dp"
+							android:layout_height="48dp"
+							android:layout_alignParentEnd="true"
+							android:background="?attr/selectableItemBackgroundBorderless"
+							android:contentDescription="@string/add_ssid"
+							android:src="@drawable/ic_add" />
+					</RelativeLayout>
 
-                    <TextView
-                        android:id="@+id/tvPermissionNotice"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="@string/grant_permission_notice"
-                        android:textColor="?attr/colorError"
-                        android:visibility="gone" />
+					<com.google.android.material.materialswitch.MaterialSwitch
+						android:id="@+id/switchAutoBlacklist"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_marginTop="8dp"
+						android:text="@string/auto_blacklist_on_disable" />
 
-                    <Button
-                        android:id="@+id/btnGrantPermission"
-                        style="@style/Widget.Material3.Button.TextButton"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/grant_permission_button"
-                        android:visibility="gone" />
+					<com.google.android.material.materialswitch.MaterialSwitch
+						android:id="@+id/switchAutoWhitelist"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_marginTop="4dp"
+						android:text="@string/auto_whitelist_on_enable" />
 
-                    <View
-                        android:id="@+id/dividerSsidList"
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginTop="16dp"
-                        android:background="?attr/colorOutlineVariant" />
+					<TextView
+						android:id="@+id/tvPermissionNotice"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_marginTop="8dp"
+						android:text="@string/grant_permission_notice"
+						android:textColor="?attr/colorError"
+						android:visibility="gone" />
 
-                    <LinearLayout
-                        android:id="@+id/ssidListContainer"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_marginTop="8dp" />
+					<Button
+						android:id="@+id/btnGrantPermission"
+						style="@style/Widget.Material3.Button.TextButton"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/grant_permission_button"
+						android:visibility="gone" />
 
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+					<View
+						android:id="@+id/dividerSsidList"
+						android:layout_width="match_parent"
+						android:layout_height="1dp"
+						android:layout_marginTop="16dp"
+						android:background="?attr/colorOutlineVariant" />
 
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/switchHideLauncher"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="@string/hide_launcher_icon"
-                app:layout_constraintTop_toBottomOf="@id/cardSsidBlacklist"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+					<LinearLayout
+						android:id="@+id/ssidListContainer"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_marginTop="8dp"
+						android:orientation="vertical" />
 
-            <TextView
-                android:id="@+id/tvHideLauncherSummary"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="@string/hide_launcher_icon_summary"
-                android:textSize="12sp"
-                android:textColor="?attr/colorOnSurfaceVariant"
-                app:layout_constraintTop_toBottomOf="@id/switchHideLauncher"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
+				</LinearLayout>
+			</com.google.android.material.card.MaterialCardView>
 
-        </androidx.constraintlayout.widget.ConstraintLayout>
-    </androidx.core.widget.NestedScrollView>
+			<TextView
+				android:id="@+id/tvOptionsTitle"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="24dp"
+				android:text="@string/options_title"
+				android:textAppearance="?attr/textAppearanceTitleMedium"
+				android:textStyle="bold"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintTop_toBottomOf="@id/cardSsidBlacklist" />
+
+			<com.google.android.material.materialswitch.MaterialSwitch
+				android:id="@+id/switchShowToast"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="12dp"
+				android:text="@string/show_toast_notif"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintTop_toBottomOf="@id/tvOptionsTitle" />
+
+			<TextView
+				android:id="@+id/tvShowToastSummary"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="2dp"
+				android:text="@string/show_toast_notif_summary"
+				android:textAppearance="?attr/textAppearanceBodySmall"
+				android:textColor="?attr/colorOnSurfaceVariant"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintTop_toBottomOf="@id/switchShowToast" />
+
+			<com.google.android.material.materialswitch.MaterialSwitch
+				android:id="@+id/switchHideLauncher"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="16dp"
+				android:text="@string/hide_launcher_icon"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintTop_toBottomOf="@id/tvShowToastSummary" />
+
+			<TextView
+				android:id="@+id/tvHideLauncherSummary"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="2dp"
+				android:text="@string/hide_launcher_icon_summary"
+				android:textAppearance="?attr/textAppearanceBodySmall"
+				android:textColor="?attr/colorOnSurfaceVariant"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintTop_toBottomOf="@id/switchHideLauncher" />
+
+		</androidx.constraintlayout.widget.ConstraintLayout>
+	</androidx.core.widget.NestedScrollView>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,7 +1,7 @@
 <resources>
 	<string name="app_name">DNS Toggle</string>
 	<string name="private_dns">DNS privé</string>
-	<string name="custom_dns_provider">Fournisseur DNS personnalisé</string>
+	<string name="custom_dns_provider">Fournisseur(s) DNS personnalisé</string>
 	<string name="rename_app">"Renommer l\'application</string>
 	<string name="rename_app_message">Choisissez un nom qui vous convient. Il sera affiché sur l\'icône de l\'application et la tuile des paramètres rapides.</string>
 	<string name="permission_required">Autorisation requise</string>
@@ -10,17 +10,27 @@
 	<string name="cancel">Annuler</string>
 	<string name="copy_command">Copier la commande</string>
 	<string name="command_copied">Commande copiée dans le presse-papiers</string>
+	<string name="adb_command_label">Commande ADB</string>
 	<string name="retry_root">Réessayer en root</string>
 	<string name="root_grant_failed">L\'autorisation root a échoué ou a été refusée</string>
+	<string name="permission_granted">Autorisation accordée</string>
 	<string name="hide_launcher_icon">"Masquer l\'icône de l\'application</string>
-    <string name="hide_launcher_icon_summary">"Une fois activée, l\'application sera masquée de votre tiroir d\'applications. Vous pourrez toujours y accéder en effectuant un appui long sur la tuile des paramètres rapides.</string>
+	<string name="hide_launcher_icon_summary">"Une fois activée, l\'application sera masquée de votre tiroir d\'applications. Vous pourrez toujours y accéder en effectuant un appui long sur la tuile des paramètres rapides.</string>
+	<string name="options_title">Options</string>
+	<string name="show_toast_notif">Afficher les notifications toast</string>
+	<string name="show_toast_notif_summary">Afficher une notification toast lors des changements de mode de DNS privé.</string>
 	<string name="on_label">Activé</string>
+	<string name="status_active_reachable">Actif &amp; Joignable</string>
 	<string name="off_label">Désactivé</string>
 	<string name="main_permission_title">Autorisation système requise</string>
 	<string name="main_permission_message">L\'application requiert une autorisation spéciale pour modifier les paramètres DNS privés.</string>
 	<string name="btn_fix_permission">Fixer</string>
 	<string name="error_empty_dns_host">Le DNS privé ne peut être active tant que l\'adresse de l\'hôte est vide</string>
 	<string name="error_invalid_dns_host">Format d\'adresse d\'hôte DNS non valide</string>
+	<string name="add_hostname">Ajouter une addresse DNS</string>
+	<string name="edit_hostname">Modifier l\'addresse</string>
+	<string name="dns_hostname_hint">Addresse DNS (ex: dns.nextdns.io)</string>
+	<string name="delete_hostname_confirm">Supprimer cette addresse?</string>
 	<string name="warning_unreachable_dns">Serveur DNS injoignable sur le port 853 (DoT). Android peut possiblement s\'y connecter par d\'autres méthodes.</string>
 	<string name="status_testing_dns">Test de connexion…</string>
 	<string name="disable_dns_test">Ignorer le test de connexion</string>
@@ -32,8 +42,11 @@
 	<string name="auto_whitelist_on_enable">Retrait automatique de la liste des SSID bloqués lors de l\'activation</string>
 	<string name="grant_permission_notice">L\'autorisation de localisation/proximité (y compris en arrière-plan) est requise pour vérifier le nom du Wi-Fi.</string>
 	<string name="grant_permission_button">Accorder les autorisations</string>
+	<string name="open_settings">Ouvrez les paramètres</string>
+	<string name="permissions_permanently_denied">Les autorisations de localisation et d\'appareils à proximité ont été refusées précédemment. Veuillez ouvrir les paramètres de l\'application pour lui donner les autorisations nécessaires afin d\'utiliser cette fonctionnalité.</string>
 	<string name="notification_permission_explanation">Pour vous avertir lorsque le DNS privé est automatiquement activé en arrière-plan, et pour garantir la vérification en arrière-plan, veuillez autoriser les notifications.</string>
 	<string name="background_location_explanation">Pour surveiller le Wi-Fi lorsque l\'application est fermée, Android nécessite l\'accès à la position \"Toujours autoriser\". DNS Toggle utilise uniquement cela pour voir le nom du Wi-Fi et ne suit jamais votre position physique ni n\'utilise le GPS.</string>
+	<string name="vpn_disclaimer_explanation">\n\nRemarque: L\'utilisation d\'un VPN peut masquer le nom de votre réseau Wi-Fi, ce qui désactive temporairement l\'ajout ou le retrait automatique de SSID.</string>
 	<string name="add_ssid">Ajouter un SSID</string>
 	<string name="edit_ssid">Modifier le SSID</string>
 	<string name="ssid_hint">SSID (Nom du Wi-Fi)</string>
@@ -48,10 +61,13 @@
 	<string name="notif_dns_disabled_auto">DNS privé désactivé automatiquement pour %s</string>
 	<string name="notif_ssid_added">%s ajouté à la liste</string>
 	<string name="notif_ssid_removed">%s retiré de la liste</string>
+	<string name="toast_dns_changed">DNS privé: %s</string>
 
 	<!-- Foreground Service -->
 	<string name="service_notif_title">Surveillance du SSID activée</string>
 	<string name="service_notif_text">DNS Toggle est actif pour automatiser le mode DNS privé.</string>
+	<string name="automatic_off">Automatique (Désactivé)</string>
+	<string name="settings">Paramètres</string>
 
 	<!-- Wi-Fi Monitoring Info -->
 	<string name="wifi_monitoring_info_title">Info sur la surveillance du SSID</string>
