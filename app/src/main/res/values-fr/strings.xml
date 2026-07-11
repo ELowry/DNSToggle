@@ -15,7 +15,7 @@
 	<string name="root_grant_failed">L\'autorisation root a échoué ou a été refusée</string>
 	<string name="permission_granted">Autorisation accordée</string>
 	<string name="hide_launcher_icon">"Masquer l\'icône de l\'application</string>
-	<string name="hide_launcher_icon_summary">"Une fois activée, l\'application sera masquée de votre tiroir d\'applications. Vous pourrez toujours y accéder en effectuant un appui long sur la tuile des paramètres rapides.</string>
+	<string name="hide_launcher_icon_summary">"Une fois activée, l\'application sera masquée de votre tiroir d\'applications. Vous pourrez toujours y accéder en effectuant un appui long sur la tuile des paramètres rapides. Note: certains appareils refusent parfois de masquer les applications entièrement.</string>
 	<string name="options_title">Options</string>
 	<string name="show_toast_notif">Afficher les notifications toast</string>
 	<string name="show_toast_notif_summary">Afficher une notification toast lors des changements de mode de DNS privé.</string>

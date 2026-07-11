@@ -13,7 +13,7 @@
 	<string name="root_grant_failed">Root grant failed or denied</string>
 	<string name="permission_granted">Permission granted</string>
 	<string name="hide_launcher_icon">Hide app icon</string>
-	<string name="hide_launcher_icon_summary">When enabled, the app will be hidden from your app drawer. You can still access settings by long-pressing the Quick Settings tile.</string>
+	<string name="hide_launcher_icon_summary">When enabled, the app will be hidden from your app drawer. You can still access settings by long-pressing the Quick Settings tile. Note: on some launchers this option may not fully hide the icon.</string>
 	<string name="options_title">Options</string>
 	<string name="show_toast_notif">Show toast notifications</string>
 	<string name="show_toast_notif_summary">Show a status notification when Private DNS is toggled via the Quick Settings tile.</string>
