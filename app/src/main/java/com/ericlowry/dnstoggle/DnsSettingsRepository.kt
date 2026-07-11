@@ -28,12 +28,36 @@ object DnsSettingsRepository {
 	private val _isKeyInvalidated = MutableStateFlow(false)
 	val isKeyInvalidated: StateFlow<Boolean> = _isKeyInvalidated.asStateFlow()
 
+	private val _vpnOverrideEnabled = MutableStateFlow(false)
+	val vpnOverrideEnabled: StateFlow<Boolean> = _vpnOverrideEnabled.asStateFlow()
+
+	private val _vpnDnsHostname = MutableStateFlow<String?>(null)
+	val vpnDnsHostname: StateFlow<String?> = _vpnDnsHostname.asStateFlow()
+
 	fun initialize(context: Context) {
 		if (::app.isInitialized) return
 		app = context.applicationContext as DnsToggleApplication
 		sharedPreferences = app.getPrefs()
 		loadBlacklist()
 		loadHostnames()
+		_vpnOverrideEnabled.value =
+			sharedPreferences.getBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, false)
+
+		val encryptedVpnHostname =
+			sharedPreferences.getString(Constants.PREF_VPN_DNS_HOSTNAME, null)
+		_vpnDnsHostname.value = if (encryptedVpnHostname == null) {
+			"off"
+		} else {
+			when (val result = EncryptionManager.decrypt(encryptedVpnHostname)) {
+				is EncryptionManager.DecryptResult.Success -> result.data
+				is EncryptionManager.DecryptResult.KeyInvalidated -> {
+					_isKeyInvalidated.value = true
+					"off"
+				}
+
+				else -> "off"
+			}
+		}
 	}
 
 	private fun loadBlacklist() {
@@ -165,6 +189,17 @@ object DnsSettingsRepository {
 			val safeCurrent = current ?: emptySet()
 			if (hostname !in safeCurrent || safeCurrent.size <= 1) return@update safeCurrent
 			val next = safeCurrent - hostname
+
+			// Check if the removed hostname was being used for VPN override
+			if (_vpnDnsHostname.value == hostname) {
+				updateVpnDnsHostname("off")
+				sharedPreferences.edit {
+					putBoolean(Constants.PREF_VPN_HOSTNAME_REMOVED_WARNING, true)
+				}
+			} else if (next.size == 1 && _vpnDnsHostname.value != "off") {
+				updateVpnDnsHostname("off")
+			}
+
 			saveHostnamesAsync(next)
 			next
 		}
@@ -175,9 +210,25 @@ object DnsSettingsRepository {
 			val safeCurrent = current ?: emptySet()
 			if (oldHostname !in safeCurrent) return@update safeCurrent
 			val next = safeCurrent - oldHostname + newHostname
+
+			if (_vpnDnsHostname.value == oldHostname) {
+				updateVpnDnsHostname(newHostname)
+			}
+
 			saveHostnamesAsync(next)
 			next
 		}
+	}
+
+	fun updateVpnOverrideEnabled(enabled: Boolean) {
+		_vpnOverrideEnabled.value = enabled
+		sharedPreferences.edit { putBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, enabled) }
+	}
+
+	fun updateVpnDnsHostname(hostname: String) {
+		_vpnDnsHostname.value = hostname
+		val encrypted = EncryptionManager.encrypt(hostname)
+		sharedPreferences.edit { putString(Constants.PREF_VPN_DNS_HOSTNAME, encrypted) }
 	}
 
 	private fun saveHostnamesAsync(list: Set<String>) {

@@ -1,20 +1,15 @@
 package com.ericlowry.dnstoggle
 
-import android.Manifest
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
-import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
-
 import com.google.android.material.color.DynamicColors
-
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -27,7 +22,10 @@ class DnsToggleApplication : Application() {
 
 	private val preferenceChangeListener =
 		SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-			if (key == Constants.PREF_AUTO_BLACKLIST || key == Constants.PREF_AUTO_WHITELIST) {
+			if (key == Constants.PREF_AUTO_BLACKLIST ||
+				key == Constants.PREF_AUTO_WHITELIST ||
+				key == Constants.PREF_VPN_OVERRIDE_ENABLED
+			) {
 				updateWifiMonitoringRegistration()
 			}
 		}
@@ -85,41 +83,31 @@ class DnsToggleApplication : Application() {
 	}
 
 	fun updateWifiMonitoringRegistration() {
-		val serviceIntent = Intent(this, WifiMonitoringService::class.java)
+		applicationScope.launch(Dispatchers.Default) {
+			val serviceIntent = Intent(this@DnsToggleApplication, WifiMonitoringService::class.java)
 
-		if (isWifiMonitoringRequired()) {
-			try {
-				ContextCompat.startForegroundService(this, serviceIntent)
-			} catch (e: Exception) {
-				Log.e("DnsToggleApplication", "Failed to start foreground service", e)
+			if (isWifiMonitoringRequired()) {
+				try {
+					ContextCompat.startForegroundService(this@DnsToggleApplication, serviceIntent)
+				} catch (e: Exception) {
+					Log.e("DnsToggleApplication", "Failed to start foreground service", e)
+				}
+			} else {
+				stopService(serviceIntent)
+				detectedSsid = null
 			}
-		} else {
-			stopService(serviceIntent)
-			detectedSsid = null
 		}
 	}
 
 	private fun isWifiMonitoringRequired(): Boolean {
 		val sharedPreferences = getPrefs()
-		val isAutoManagementEnabled =
-			sharedPreferences.getBoolean(Constants.PREF_AUTO_BLACKLIST, false) ||
-					sharedPreferences.getBoolean(Constants.PREF_AUTO_WHITELIST, false)
+		val vpnEnabled = sharedPreferences.getBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, false)
+		val autoEnabled = sharedPreferences.getBoolean(Constants.PREF_AUTO_BLACKLIST, false) ||
+				sharedPreferences.getBoolean(Constants.PREF_AUTO_WHITELIST, false)
 
 		val blacklist = DnsSettingsRepository.blacklist.value
-		if (blacklist == null || (blacklist.isEmpty() && !isAutoManagementEnabled)) return false
+		val hasActiveBlacklist = !blacklist.isNullOrEmpty()
 
-		val hasFineLocation = ContextCompat.checkSelfPermission(
-			this, Manifest.permission.ACCESS_FINE_LOCATION
-		) == PackageManager.PERMISSION_GRANTED
-
-		val hasNearbyWifi = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-			ContextCompat.checkSelfPermission(
-				this, Manifest.permission.NEARBY_WIFI_DEVICES
-			) == PackageManager.PERMISSION_GRANTED
-		} else {
-			true
-		}
-
-		return hasFineLocation && hasNearbyWifi
+		return vpnEnabled || autoEnabled || hasActiveBlacklist
 	}
 }

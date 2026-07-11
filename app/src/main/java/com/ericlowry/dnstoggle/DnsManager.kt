@@ -61,6 +61,16 @@ object DnsManager {
 		val newMode = if (enabled) Constants.DNS_MODE_HOSTNAME else Constants.DNS_MODE_OPPORTUNISTIC
 		val currentSsid = NetworkUtils.getCurrentWifiSsid(context)
 
+		if (sharedPreferences.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)) {
+			if (enabled) {
+				effectiveHostname?.let { hostname ->
+					DnsSettingsRepository.updateVpnDnsHostname(hostname)
+				}
+			} else {
+				DnsSettingsRepository.updateVpnDnsHostname("off")
+			}
+		}
+
 		var handledByAuto = false
 
 		if (currentSsid != null) {

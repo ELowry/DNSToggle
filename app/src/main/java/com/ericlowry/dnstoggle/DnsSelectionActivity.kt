@@ -160,7 +160,7 @@ class DnsSelectionActivity : AppCompatActivity() {
 		if (isFinishingAnimated) {
 			super.finish()
 			if (android.os.Build.VERSION.SDK_INT >= 34) {
-				overrideActivityTransition(android.app.Activity.OVERRIDE_TRANSITION_CLOSE, 0, 0)
+				overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, 0, 0)
 			} else {
 				@Suppress("DEPRECATION")
 				overridePendingTransition(0, 0)

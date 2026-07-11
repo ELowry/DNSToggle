@@ -64,6 +64,21 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	private val _showToastEnabled = MutableLiveData<Boolean>()
 	val showToastEnabled: LiveData<Boolean> = _showToastEnabled
 
+	private val _vpnOverrideEnabled = MutableLiveData<Boolean>()
+	val vpnOverrideEnabled: LiveData<Boolean> = _vpnOverrideEnabled
+
+	private val _vpnDnsHostname = MutableLiveData<String?>()
+	val vpnDnsHostname: LiveData<String?> = _vpnDnsHostname
+
+	private val _vpnHostnameRemovedWarning = MutableLiveData<Boolean>()
+	val vpnHostnameRemovedWarning: LiveData<Boolean> = _vpnHostnameRemovedWarning
+
+	private val _isInVpnOverride = MutableLiveData<Boolean>()
+	val isInVpnOverride: LiveData<Boolean> = _isInVpnOverride
+
+	private val _activeSsidOverride = MutableLiveData<String?>()
+	val activeSsidOverride: LiveData<String?> = _activeSsidOverride
+
 	private val _isKeyInvalidated = MutableLiveData(false)
 	val isKeyInvalidated: LiveData<Boolean> = _isKeyInvalidated
 
@@ -84,7 +99,9 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 				Constants.PREF_AUTO_WHITELIST,
 				Constants.PREF_HIDE_LAUNCHER_ICON,
 				Constants.PREF_DISABLE_DNS_TEST,
-				Constants.PREF_SHOW_TOAST -> loadSettings()
+				Constants.PREF_SHOW_TOAST,
+				Constants.PREF_IS_IN_VPN_OVERRIDE,
+				Constants.PREF_ACTIVE_SSID_OVERRIDE -> loadSettings()
 			}
 		}
 
@@ -177,6 +194,38 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 					true
 				)
 			)
+			_vpnOverrideEnabled.postValue(DnsSettingsRepository.vpnOverrideEnabled.value)
+			_vpnDnsHostname.postValue(DnsSettingsRepository.vpnDnsHostname.value)
+			_vpnHostnameRemovedWarning.postValue(
+				sharedPreferences.getBoolean(
+					Constants.PREF_VPN_HOSTNAME_REMOVED_WARNING,
+					false
+				)
+			)
+			_isInVpnOverride.postValue(
+				sharedPreferences.getBoolean(
+					Constants.PREF_IS_IN_VPN_OVERRIDE,
+					false
+				)
+			)
+			_activeSsidOverride.postValue(
+				sharedPreferences.getString(
+					Constants.PREF_ACTIVE_SSID_OVERRIDE,
+					null
+				)
+			)
+		}
+
+		viewModelScope.launch {
+			DnsSettingsRepository.vpnOverrideEnabled.collect {
+				_vpnOverrideEnabled.postValue(it)
+			}
+		}
+
+		viewModelScope.launch {
+			DnsSettingsRepository.vpnDnsHostname.collect {
+				_vpnDnsHostname.postValue(it)
+			}
 		}
 	}
 
@@ -302,6 +351,19 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	fun setDisableDnsTest(disabled: Boolean) {
 		sharedPreferences.edit { putBoolean(Constants.PREF_DISABLE_DNS_TEST, disabled) }
 		_disableDnsTest.value = disabled
+	}
+
+	fun setVpnOverrideEnabled(enabled: Boolean) {
+		DnsSettingsRepository.updateVpnOverrideEnabled(enabled)
+	}
+
+	fun setVpnDnsHostname(hostname: String) {
+		DnsSettingsRepository.updateVpnDnsHostname(hostname)
+	}
+
+	fun dismissVpnHostnameWarning() {
+		sharedPreferences.edit { remove(Constants.PREF_VPN_HOSTNAME_REMOVED_WARNING) }
+		_vpnHostnameRemovedWarning.value = false
 	}
 
 	fun dismissKeyInvalidatedAlert() {

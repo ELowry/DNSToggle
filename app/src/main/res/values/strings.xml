@@ -33,8 +33,17 @@
 	<string name="delete_hostname_confirm">Remove this hostname?</string>
 	<string name="warning_unreachable_dns">DNS server unreachable on port 853 (DoT). Android may still successfully connect via other methods.</string>
 	<string name="status_testing_dns">Testing connection…</string>
+	<string name="status_override_vpn">VPN Override Active</string>
+	<string name="status_override_ssid">SSID Blacklist Active (%s)</string>
 	<string name="disable_dns_test">Skip connection test</string>
 	<string name="disable_dns_test_summary">Enable this only if your DNS works but the app shows it as unreachable.</string>
+
+	<!-- VPN Settings -->
+	<string name="vpn_override_title">VPN Override</string>
+	<string name="vpn_override_summary">Automatically change Private DNS when a VPN is connected.</string>
+	<string name="vpn_dns_label">DNS on VPN</string>
+	<string name="vpn_permission_notice">Notification permission is required for background automation.</string>
+	<string name="vpn_hostname_removed_warning">The DNS hostname previously used for VPN was removed. VPN Override has been disabled.</string>
 
 	<!-- SSID Blacklist -->
 	<string name="ssid_blacklist_title">SSID Blacklist</string>
@@ -59,14 +68,16 @@
 	<!-- Notifications -->
 	<string name="notif_channel_name">Network Status</string>
 	<string name="notif_dns_disabled_auto">Private DNS disabled automatically for %s</string>
+	<string name="notif_vpn_dns_applied">Private DNS adjusted for VPN</string>
+	<string name="notif_vpn_dns_restored">Private DNS restored after VPN</string>
 	<string name="notif_ssid_added">Added %s to blacklist</string>
 	<string name="notif_ssid_removed">Removed %s from blacklist</string>
 	<string name="toast_dns_changed">Private DNS changed to %s</string>
 
 	<!-- Foreground Service -->
-	<string name="service_notif_title">Monitoring Wi-Fi</string>
+	<string name="service_notif_title">Monitoring Network Status</string>
 	<string name="service_notif_text">DNS Toggle is active to automate Private DNS mode.</string>
-	<string name="automatic_off">Automatic (Off)</string>
+	<string name="automatic_off">Automatic (off)</string>
 	<string name="settings">Settings</string>
 
 	<!-- Wi-Fi Monitoring Info -->
@@ -75,4 +86,9 @@
 	<string name="battery_optimization_explanation">Some devices kill background monitoring to save battery. If automation stops working, disable restrictions for this app.</string>
 	<string name="ignore_battery_optimizations">Disable battery restrictions</string>
 	<string name="info_content_description">More information</string>
+
+	<!-- App Information -->
+	<string name="github">GitHub (source code)</string>
+	<string name="support">Get Support</string>
+	<string name="app_version_format">App version: %s</string>
 </resources>

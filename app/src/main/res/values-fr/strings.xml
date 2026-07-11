@@ -33,8 +33,17 @@
 	<string name="delete_hostname_confirm">Supprimer cette addresse?</string>
 	<string name="warning_unreachable_dns">Serveur DNS injoignable sur le port 853 (DoT). Android peut possiblement s\'y connecter par d\'autres méthodes.</string>
 	<string name="status_testing_dns">Test de connexion…</string>
+	<string name="status_override_vpn">Override VPN en cours</string>
+	<string name="status_override_ssid">Bloqué par le SSID (%s)</string>
 	<string name="disable_dns_test">Ignorer le test de connexion</string>
 	<string name="disable_dns_test_summary">Activez ceci uniquement si votre DNS fonctionne, mais que l\'app l\'affiche comme injoignable.</string>
+
+	<!-- VPN Settings -->
+	<string name="vpn_override_title">Override VPN</string>
+	<string name="vpn_override_summary">Changer automatiquement le DNS privé lorsqu\'un VPN est connecté.</string>
+	<string name="vpn_dns_label">DNS lorsque VPN</string>
+	<string name="vpn_permission_notice">L\'autorisation d\'afficher des notifications est requise pour les options d\'automatisation.</string>
+	<string name="vpn_hostname_removed_warning">L\'addresse DNS précédemment utilisé pour le VPN a été supprimé. L\'override VPN a été désactivé.</string>
 
 	<!-- SSID Blacklist -->
 	<string name="ssid_blacklist_title">Liste des SSID bloqués</string>
@@ -59,14 +68,16 @@
 	<!-- Notifications -->
 	<string name="notif_channel_name">État du réseau</string>
 	<string name="notif_dns_disabled_auto">DNS privé désactivé automatiquement pour %s</string>
+	<string name="notif_vpn_dns_applied">DNS privé défini par le VPN</string>
+	<string name="notif_vpn_dns_restored">DNS privé restauré post-VPN</string>
 	<string name="notif_ssid_added">%s ajouté à la liste</string>
 	<string name="notif_ssid_removed">%s retiré de la liste</string>
 	<string name="toast_dns_changed">DNS privé: %s</string>
 
 	<!-- Foreground Service -->
-	<string name="service_notif_title">Surveillance du SSID activée</string>
+	<string name="service_notif_title">Surveillance du réseau activée</string>
 	<string name="service_notif_text">DNS Toggle est actif pour automatiser le mode DNS privé.</string>
-	<string name="automatic_off">Automatique (Désactivé)</string>
+	<string name="automatic_off">Automatique (désactivé)</string>
 	<string name="settings">Paramètres</string>
 
 	<!-- Wi-Fi Monitoring Info -->
@@ -75,4 +86,9 @@
 	<string name="battery_optimization_explanation">Certains appareils arrêtent la surveillance en arrière-plan pour économiser la batterie. Si l\'automatisation cesse de fonctionner, désactivez les restrictions pour cette application.</string>
 	<string name="ignore_battery_optimizations">Désactiver les restrictions de batterie</string>
 	<string name="info_content_description">Plus d\'informations</string>
+
+	<!-- App Information -->
+	<string name="github">GitHub (code source)</string>
+	<string name="support">Obtenir de l\'aide</string>
+	<string name="app_version_format">Version de l\'application: %s</string>
 </resources>

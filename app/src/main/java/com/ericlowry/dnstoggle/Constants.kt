@@ -21,6 +21,15 @@ object Constants {
 	const val PREF_SHOW_TOAST = "show_toast_notification"
 	const val PREF_LAST_USED_HOSTNAME = "last_used_hostname"
 
+	// VPN Override Keys
+	const val PREF_VPN_OVERRIDE_ENABLED = "vpn_override_enabled"
+	const val PREF_VPN_DNS_HOSTNAME = "vpn_dns_hostname"
+	const val PREF_PRE_VPN_DNS_MODE = "pre_vpn_dns_mode"
+	const val PREF_PRE_VPN_DNS_SPECIFIER = "pre_vpn_dns_specifier"
+	const val PREF_IS_IN_VPN_OVERRIDE = "is_in_vpn_override"
+	const val PREF_ACTIVE_SSID_OVERRIDE = "active_ssid_override"
+	const val PREF_VPN_HOSTNAME_REMOVED_WARNING = "vpn_hostname_removed_warning"
+
 	// Notification Channels
 	const val CHANNEL_ID_SERVICE = "wifi_monitoring"
 	const val CHANNEL_ID_ALERT = "network_status"

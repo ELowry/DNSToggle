@@ -16,6 +16,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -33,8 +34,12 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.listitem.ListItemCardView
+import com.google.android.material.listitem.ListItemLayout
 import com.google.android.material.materialswitch.MaterialSwitch
+import com.google.android.material.radiobutton.MaterialRadioButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.delay
@@ -61,11 +66,19 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var switchDisableDnsTest: MaterialSwitch
 	private lateinit var switchShowToast: MaterialSwitch
 	private lateinit var switchHideLauncher: MaterialSwitch
+	private lateinit var switchVpnOverride: MaterialSwitch
+	private lateinit var rowVpnDns: View
+	private lateinit var tvVpnDnsValue: TextView
+	private lateinit var vpnPermissionNoticeText: TextView
+	private lateinit var btnGrantVpnPermission: Button
+	private lateinit var cardOverrideStatus: com.google.android.material.card.MaterialCardView
+	private lateinit var tvOverrideStatus: TextView
 	private lateinit var permissionNoticeText: TextView
 	private lateinit var btnGrantPermission: Button
 	private lateinit var ssidListContainer: LinearLayout
 	private lateinit var addSsidButton: ImageButton
 	private lateinit var btnSsidInfo: ImageButton
+	private lateinit var btnVpnInfo: ImageButton
 	private lateinit var dividerSsidList: View
 
 	private lateinit var cardMainPermission: com.google.android.material.card.MaterialCardView
@@ -97,7 +110,8 @@ class MainActivity : AppCompatActivity() {
 	private val notificationPermissionLauncher = registerForActivityResult(
 		ActivityResultContracts.RequestPermission()
 	) { _ ->
-		// Choice recorded by rationale or system, service will handle permission check
+		updateVpnUiState(hasNotificationPermission())
+		(application as DnsToggleApplication).updateWifiMonitoringRegistration()
 	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -122,6 +136,7 @@ class MainActivity : AppCompatActivity() {
 		super.onResume()
 		updateMainPermissionUiState()
 		updateSsidUiState(hasSsidPermissions())
+		updateVpnUiState(hasNotificationPermission())
 	}
 
 	override fun onNewIntent(intent: Intent) {
@@ -177,17 +192,34 @@ class MainActivity : AppCompatActivity() {
 		switchDisableDnsTest = findViewById(R.id.switchDisableDnsTest)
 		switchShowToast = findViewById(R.id.switchShowToast)
 		switchHideLauncher = findViewById(R.id.switchHideLauncher)
+		switchVpnOverride = findViewById(R.id.switchVpnOverride)
+		rowVpnDns = findViewById(R.id.rowVpnDns)
+		tvVpnDnsValue = findViewById(R.id.tvVpnDnsValue)
+		vpnPermissionNoticeText = findViewById(R.id.tvVpnPermissionNotice)
+		btnGrantVpnPermission = findViewById(R.id.btnGrantVpnPermission)
+		cardOverrideStatus = findViewById(R.id.cardOverrideStatus)
+		tvOverrideStatus = findViewById(R.id.tvOverrideStatus)
 		permissionNoticeText = findViewById(R.id.tvPermissionNotice)
 		btnGrantPermission = findViewById(R.id.btnGrantPermission)
 		ssidListContainer = findViewById(R.id.ssidListContainer)
 		addSsidButton = findViewById(R.id.btnAddSsid)
 		btnSsidInfo = findViewById(R.id.btnSsidInfo)
+		btnVpnInfo = findViewById(R.id.btnVpnInfo)
 		dividerSsidList = findViewById(R.id.dividerSsidList)
 
 		cardMainPermission = findViewById(R.id.cardMainPermission)
 		btnFixMainPermission = findViewById(R.id.btnFixMainPermission)
 
 		privateDnsLabel.text = getString(R.string.private_dns)
+
+		val tvAppVersion = findViewById<TextView>(R.id.tvAppVersion)
+
+		try {
+			val pInfo = packageManager.getPackageInfo(packageName, 0)
+			tvAppVersion.text = getString(R.string.app_version_format, pInfo.versionName)
+		} catch (_: Exception) {
+			tvAppVersion.visibility = View.GONE
+		}
 	}
 
 	private fun observeViewModel() {
@@ -224,6 +256,34 @@ class MainActivity : AppCompatActivity() {
 		dnsViewModel.showToastEnabled.observe(this) { enabled ->
 			switchShowToast.isChecked = enabled
 		}
+
+		dnsViewModel.vpnOverrideEnabled.observe(this) { enabled ->
+			switchVpnOverride.isChecked = enabled
+			updateVpnUiState(hasNotificationPermission())
+		}
+
+		dnsViewModel.vpnDnsHostname.observe(this) { hostname ->
+			tvVpnDnsValue.text = if (hostname == "off") {
+				getString(R.string.automatic_off)
+			} else {
+				hostname
+			}
+		}
+
+		dnsViewModel.vpnHostnameRemovedWarning.observe(this) { show ->
+			if (show) {
+				AlertDialog.Builder(this)
+					.setTitle(R.string.vpn_override_title)
+					.setMessage(R.string.vpn_hostname_removed_warning)
+					.setPositiveButton(R.string.ok) { _, _ ->
+						dnsViewModel.dismissVpnHostnameWarning()
+					}
+					.show()
+			}
+		}
+
+		dnsViewModel.isInVpnOverride.observe(this) { _ -> updateOverrideStatusUi() }
+		dnsViewModel.activeSsidOverride.observe(this) { _ -> updateOverrideStatusUi() }
 
 		dnsViewModel.hideLauncherIcon.observe(this) { isHidden ->
 			switchHideLauncher.isChecked = isHidden
@@ -306,6 +366,18 @@ class MainActivity : AppCompatActivity() {
 			dnsViewModel.setHideLauncherIcon(isChecked)
 		}
 
+		switchVpnOverride.setOnCheckedChangeListener { _, isChecked ->
+			dnsViewModel.setVpnOverrideEnabled(isChecked)
+		}
+
+		rowVpnDns.setOnClickListener {
+			showVpnDnsSelectionDialog()
+		}
+
+		btnGrantVpnPermission.setOnClickListener {
+			checkNotificationPermission()
+		}
+
 		addSsidButton.setOnClickListener {
 			if (hasSsidPermissions()) {
 				showAddSsidDialog()
@@ -315,6 +387,17 @@ class MainActivity : AppCompatActivity() {
 		}
 		btnGrantPermission.setOnClickListener { requestSsidPermissions() }
 		btnSsidInfo.setOnClickListener { showWifiMonitoringInfoDialog() }
+		btnVpnInfo.setOnClickListener { showWifiMonitoringInfoDialog() }
+
+		val btnGithub = findViewById<Button>(R.id.btnGithub)
+		val btnSupport = findViewById<Button>(R.id.btnSupport)
+
+		btnGithub.setOnClickListener {
+			openUrl("https://github.com/ELowry/DNSToggle")
+		}
+		btnSupport.setOnClickListener {
+			openUrl("https://github.com/ELowry/DNSToggle/issues/new/choose")
+		}
 
 		btnFixMainPermission.setOnClickListener {
 			if (hasSecureSettingsPermission()) {
@@ -336,6 +419,27 @@ class MainActivity : AppCompatActivity() {
 						).show()
 					}
 				}
+			}
+		}
+	}
+
+	private fun updateOverrideStatusUi() {
+		val vpnActive = dnsViewModel.isInVpnOverride.value == true
+		val activeSsid = dnsViewModel.activeSsidOverride.value
+
+		when {
+			vpnActive -> {
+				cardOverrideStatus.visibility = View.VISIBLE
+				tvOverrideStatus.text = getString(R.string.status_override_vpn)
+			}
+
+			activeSsid != null -> {
+				cardOverrideStatus.visibility = View.VISIBLE
+				tvOverrideStatus.text = getString(R.string.status_override_ssid, activeSsid)
+			}
+
+			else -> {
+				cardOverrideStatus.visibility = View.GONE
 			}
 		}
 	}
@@ -443,34 +547,45 @@ class MainActivity : AppCompatActivity() {
 
 	private fun checkNotificationPermission() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-			val sharedPreferences = (application as DnsToggleApplication).getPrefs()
-			val alreadyHandled = sharedPreferences.getBoolean("notif_permission_handled", false)
 			val isGranted = ContextCompat.checkSelfPermission(
 				this,
 				Manifest.permission.POST_NOTIFICATIONS
 			) == PackageManager.PERMISSION_GRANTED
 
-			if (!isGranted && !alreadyHandled) {
-				showNotificationPermissionRationale()
+			if (!isGranted) {
+				val prefs = (application as DnsToggleApplication).getPrefs()
+				val hasRequestedBefore = prefs.getBoolean("has_requested_notif_perms", false)
+
+				if (hasRequestedBefore && !shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+					// Permanently denied
+					MaterialAlertDialogBuilder(this)
+						.setTitle(getString(R.string.permission_required))
+						.setMessage(getString(R.string.permissions_permanently_denied))
+						.setPositiveButton(getString(R.string.open_settings)) { _, _ -> openAppSettings() }
+						.setNegativeButton(getString(R.string.cancel), null)
+						.show()
+				} else if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+					showNotificationPermissionRationale()
+				} else {
+					prefs.edit { putBoolean("has_requested_notif_perms", true) }
+					notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+				}
 			}
 		}
 	}
 
 	private fun showNotificationPermissionRationale() {
-		val sharedPreferences = (application as DnsToggleApplication).getPrefs()
-
 		MaterialAlertDialogBuilder(this)
 			.setTitle(getString(R.string.permission_required))
 			.setMessage(getString(R.string.notification_permission_explanation))
 			.setPositiveButton(getString(R.string.ok)) { _, _ ->
-				sharedPreferences.edit { putBoolean("notif_permission_handled", true) }
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+					val prefs = (application as DnsToggleApplication).getPrefs()
+					prefs.edit { putBoolean("has_requested_notif_perms", true) }
 					notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
 				}
 			}
-			.setNegativeButton(getString(R.string.cancel)) { _, _ ->
-				sharedPreferences.edit { putBoolean("notif_permission_handled", true) }
-			}
+			.setNegativeButton(getString(R.string.cancel), null)
 			.setCancelable(false)
 			.show()
 	}
@@ -490,6 +605,33 @@ class MainActivity : AppCompatActivity() {
 			switchAutoBlacklist.isEnabled = false
 			switchAutoWhitelist.isEnabled = false
 			ssidListContainer.alpha = 0.5f
+		}
+	}
+
+	private fun updateVpnUiState(hasPermission: Boolean) {
+		if (hasPermission) {
+			vpnPermissionNoticeText.visibility = View.GONE
+			btnGrantVpnPermission.visibility = View.GONE
+			switchVpnOverride.isEnabled = true
+			rowVpnDns.isEnabled = dnsViewModel.vpnOverrideEnabled.value == true
+			rowVpnDns.alpha = if (dnsViewModel.vpnOverrideEnabled.value == true) 1.0f else 0.5f
+		} else {
+			vpnPermissionNoticeText.visibility = View.VISIBLE
+			btnGrantVpnPermission.visibility = View.VISIBLE
+			switchVpnOverride.isEnabled = false
+			rowVpnDns.isEnabled = false
+			rowVpnDns.alpha = 0.5f
+		}
+	}
+
+	private fun hasNotificationPermission(): Boolean {
+		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+			ContextCompat.checkSelfPermission(
+				this,
+				Manifest.permission.POST_NOTIFICATIONS
+			) == PackageManager.PERMISSION_GRANTED
+		} else {
+			true
 		}
 	}
 
@@ -750,6 +892,44 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun requestIgnoreBatteryOptimizations() {
+		val manufacturer = Build.MANUFACTURER.lowercase()
+
+		if (manufacturer.contains("xiaomi") || manufacturer.contains("redmi") || manufacturer.contains(
+				"poco"
+			)
+		) {
+			try {
+				// Xiaomi "Hidden Apps / Battery Saver"
+				val intent = Intent().apply {
+					component = ComponentName(
+						"com.miui.powerkeeper",
+						"com.miui.powerkeeper.ui.HiddenAppsConfigActivity"
+					)
+					putExtra("package_name", packageName)
+					putExtra("package_label", getString(R.string.app_name))
+				}
+				startActivity(intent)
+				return
+			} catch (e: Exception) {
+				Log.e(TAG, "Failed to open HyperOS Battery Saver", e)
+			}
+
+			try {
+				// Xiaomi "Autostart" menu
+				val intent = Intent().apply {
+					component = ComponentName(
+						"com.miui.securitycenter",
+						"com.miui.permcenter.autostart.AutoStartManagementActivity"
+					)
+				}
+				startActivity(intent)
+				return
+			} catch (e: Exception) {
+				Log.e(TAG, "Failed to open HyperOS Autostart", e)
+			}
+		}
+
+		// Standard Android settings
 		try {
 			val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
 				data = "package:$packageName".toUri()
@@ -916,5 +1096,96 @@ class MainActivity : AppCompatActivity() {
 			data = android.net.Uri.fromParts("package", packageName, null)
 		}
 		startActivity(intent)
+	}
+
+	private fun showVpnDnsSelectionDialog() {
+		val hostnames = dnsViewModel.dnsHostnames.value ?: emptySet()
+		if (hostnames.isEmpty()) return
+
+		if (hostnames.size == 1) {
+			val hostname = hostnames.first()
+			val current = dnsViewModel.vpnDnsHostname.value ?: "off"
+			val newValue = if (current == hostname) "off" else hostname
+			dnsViewModel.setVpnDnsHostname(newValue)
+			return
+		}
+
+		val sortedHostnames = hostnames.toMutableList()
+		sortedHostnames.sortWith(String.CASE_INSENSITIVE_ORDER)
+
+		val dialogView = LayoutInflater.from(this)
+			.inflate(R.layout.dialog_dns_selection, findViewById(android.R.id.content), false)
+
+		val dialog = android.app.Dialog(this)
+		dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+		dialog.setContentView(dialogView)
+
+		val tvPopupTitle = dialogView.findViewById<TextView>(R.id.tvPopupTitle)
+		tvPopupTitle.text = getString(R.string.vpn_dns_label)
+
+		val listContainer = dialogView.findViewById<LinearLayout>(R.id.dnsListContainer)
+		val btnCancel = dialogView.findViewById<MaterialButton>(R.id.btnSettings)
+		btnCancel.text = getString(R.string.cancel)
+		btnCancel.setOnClickListener { dialog.dismiss() }
+
+		val currentVpnDns = dnsViewModel.vpnDnsHostname.value ?: "off"
+		val totalItems = sortedHostnames.size + 1
+
+		sortedHostnames.forEachIndexed { index, hostname ->
+			val isActive = (hostname == currentVpnDns)
+			val itemView = createDnsListItem(listContainer, hostname, isActive, index, totalItems) {
+				dnsViewModel.setVpnDnsHostname(hostname)
+				dialog.dismiss()
+			}
+			listContainer.addView(itemView)
+		}
+
+		val isAutoActive = (currentVpnDns == "off")
+		val autoItemView = createDnsListItem(
+			listContainer,
+			getString(R.string.automatic_off),
+			isAutoActive,
+			totalItems - 1,
+			totalItems
+		) {
+			dnsViewModel.setVpnDnsHostname("off")
+			dialog.dismiss()
+		}
+		listContainer.addView(autoItemView)
+
+		dialog.show()
+	}
+
+	private fun createDnsListItem(
+		parent: ViewGroup,
+		text: String,
+		isActive: Boolean,
+		position: Int,
+		totalItems: Int,
+		onClick: () -> Unit
+	): View {
+		val itemView = LayoutInflater.from(this).inflate(R.layout.item_dns_selection, parent, false)
+		val listItemLayout = itemView as ListItemLayout
+		val cardView = itemView.findViewById<ListItemCardView>(R.id.listItemCard)
+		val textView = itemView.findViewById<TextView>(R.id.tvHostname)
+		val radioButton = itemView.findViewById<MaterialRadioButton>(R.id.radioDns)
+
+		textView.text = text
+		cardView.isChecked = isActive
+		radioButton.isChecked = isActive
+
+		listItemLayout.updateAppearance(position, totalItems)
+		cardView.setOnClickListener { onClick() }
+
+		return itemView
+	}
+
+	private fun openUrl(url: String) {
+		try {
+			val intent = Intent(Intent.ACTION_VIEW, url.toUri())
+			startActivity(intent)
+		} catch (e: Exception) {
+			Log.e(TAG, "Failed to open URL", e)
+		}
 	}
 }
