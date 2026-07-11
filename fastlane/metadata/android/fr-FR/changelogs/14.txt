@@ -1,0 +1,7 @@
+- L'application peut à présent gérer plusieurs adresses DNS.
+- Lorsque plusieurs adresses DNS sont enregistrées, un appui long sur la tuile des paramètres rapides ouvre un menu contextuel permettant de choisir facilement parmi les adresses.
+- La tuile des paramètres rapides affiche maintenant l'adresse DNS sélectionnée.
+- Ajout d'une option pour activer/désactiver les notifications toast.
+- Ajout d'informations sur l'application et de liens utiles en bas de l'écran principal.
+- Mise à jour des éléments d'interface pour suivre le design Material 3.
+- Optimisation générale du code.

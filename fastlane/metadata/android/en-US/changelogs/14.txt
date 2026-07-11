@@ -1,0 +1,8 @@
+- Added support for toggling between multiple DNS hostnames.
+- When multiple DNS hostnames are registered, long-pressing the quick settings tile now opens a rapid-switch popup menu.
+- The quick settings tile label now includes the selected Private DNS value.
+- Added an option to toggle private DNS or change the hostname when a VPN is in use.
+- Added a toggle to disable toast notifications.
+- Added app information and useful links to the bottom of the main application screen.
+- Updated legacy UI elements to follow Material 3 standards.
+- General code optimization.
