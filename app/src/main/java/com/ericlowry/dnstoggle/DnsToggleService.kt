@@ -111,19 +111,16 @@ class DnsToggleService : TileService() {
 			tile.label = dynamicAppName
 
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-				// 1. Check our Override States
 				val isInVpn = sharedPreferences.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)
 				val ssidOverride =
 					sharedPreferences.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null)
 
-				// 2. Build a compact, universal prefix
 				val prefix = when {
 					isInVpn -> "🛡️ "
 					ssidOverride != null -> "🛜 "
 					else -> ""
 				}
 
-				// 3. Append it to the standard subtitle logic
 				tile.subtitle = if (state == Tile.STATE_ACTIVE) {
 					val specifier =
 						Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
