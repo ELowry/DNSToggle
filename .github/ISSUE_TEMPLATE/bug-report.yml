@@ -1,0 +1,80 @@
+name: Bug Report
+description: Report any bugs or issues with the app.
+title: '[Bug]: '
+labels: ['bug']
+body:
+    - type: markdown
+      attributes:
+          value: |
+              > [!IMPORTANT]  
+              > This template is for reporting bugs or issues encountered while using DNS Toggle.
+              > 
+              > Please use the [Feature Requests template](https://github.com/ELowry/DNSToggle/issues/new?template=feature-request.yml) for suggesting new features or improvements, and the Discussions tab for broader chats about DNS Toggle.
+
+    - type: input
+      id: app-version
+      attributes:
+          label: App Version
+          description: You can find this number at the bottom of the app's main menu.
+          placeholder: e.g. 1.5.0
+      validations:
+          required: true
+
+    - type: input
+      id: phone-model
+      attributes:
+          label: Phone Model
+          description: The model of your phone.
+          placeholder: e.g. Google Pixel 10a
+      validations:
+          required: true
+
+    - type: input
+      id: android-version
+      attributes:
+          label: Android Version
+          description: Your Android version can be found in the phone's settings, often under "About phone".
+          placeholder: e.g. 16
+      validations:
+          required: true
+
+    - type: input
+      id: os-version
+      attributes:
+          label: OS Version
+          description: Your OS version can usually be found in the phone's settings, often under "About phone".
+          placeholder: e.g. 3.0.301.0
+      validations:
+          required: true
+
+    - type: textarea
+      id: issue-description
+      attributes:
+          label: Describe the issue
+          description: Please describe the issue you encountered as clearly as possible.
+      validations:
+          required: true
+
+    - type: textarea
+      id: expected-behavior
+      attributes:
+          label: Expected behavior
+          description: If you think the app should have behaved differently, please describe it here.
+      validations:
+          required: true
+
+    - type: textarea
+      id: screenshots
+      attributes:
+          label: Screenshots
+          description: If this issue is visible, please include screenshots that can help us understand your problem. You can drag and drop images directly into this box.
+      validations:
+          required: false
+
+    - type: textarea
+      id: additional-info
+      attributes:
+          label: Additional Information
+          description: You can add any other relevant information here.
+      validations:
+          required: false

@@ -1,0 +1,43 @@
+name: Feature Request
+description: Suggest an idea for this project.
+title: '[Feature]: '
+labels: ['enhancement']
+body:
+    - type: markdown
+      attributes:
+          value: |
+              > [!IMPORTANT]  
+              > This template is for requesting new features or modifications to the existing DNS Toggle app.
+              > 
+              > Please use the [Bug Report](https://github.com/ELowry/DNSToggle/issues/new?template=bug-report.yml) template for reporting bugs or issues, and the Discussions tab for broader chats about DNS Toggle.
+
+              > [!NOTE]  
+              > DNS Toggle is a free open-source project and will not implement closed-source or paid services and APIs.
+    - type: textarea
+      id: summary
+      attributes:
+          label: Brief Summary
+          description: Please try to explain the general idea you wish for us to implement in a few short sentences.
+      validations:
+          required: true
+    - type: textarea
+      id: description
+      attributes:
+          label: Feature Description
+          description: Please try to break down your idea in as much detail as possible.
+      validations:
+          required: true
+    - type: textarea
+      id: conflicts
+      attributes:
+          label: Potential Conflicts
+          description: Is this feature likely to conflict with the app's existing logic and features?
+      validations:
+          required: false
+    - type: textarea
+      id: alternatives
+      attributes:
+          label: Alternatives
+          description: If you have thought of alternative ways to achieve your suggestion's goals, please describe them here.
+      validations:
+          required: false
