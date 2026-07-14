@@ -1,0 +1,4 @@
+- Added optional labels to DNS hostname entries.
+- DNS hostnames are now manually reorderable.
+- Added a hidden USB debugging tile.
+- Some performance optimizations.

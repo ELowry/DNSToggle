@@ -3,12 +3,23 @@ package com.ericlowry.dnstoggle
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.ComponentName
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
+import android.database.ContentObserver
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import com.ericlowry.dnstoggle.data.Constants
+import com.ericlowry.dnstoggle.data.DnsSettingsRepository
+import com.ericlowry.dnstoggle.service.DnsToggleService
+import com.ericlowry.dnstoggle.service.TileServiceCompat
+import com.ericlowry.dnstoggle.service.UsbDebuggingTileService
+import com.ericlowry.dnstoggle.service.WifiMonitoringService
 import com.google.android.material.color.DynamicColors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +39,34 @@ class DnsToggleApplication : Application() {
 			) {
 				updateWifiMonitoringRegistration()
 			}
+			if (key == Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED) {
+				updateUsbDebuggingTileAvailability()
+			}
 		}
+
+	private val devModeObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
+		override fun onChange(selfChange: Boolean) {
+			updateUsbDebuggingTileAvailability()
+		}
+	}
+
+	private val adbObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
+		override fun onChange(selfChange: Boolean) {
+			TileServiceCompat.requestListeningState(
+				this@DnsToggleApplication,
+				ComponentName(this@DnsToggleApplication, UsbDebuggingTileService::class.java)
+			)
+		}
+	}
+
+	private val dnsObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
+		override fun onChange(selfChange: Boolean) {
+			TileServiceCompat.requestListeningState(
+				this@DnsToggleApplication,
+				ComponentName(this@DnsToggleApplication, DnsToggleService::class.java)
+			)
+		}
+	}
 
 	override fun onCreate() {
 		super.onCreate()
@@ -38,6 +76,32 @@ class DnsToggleApplication : Application() {
 		initializePreferredDnsMode()
 
 		getPrefs().registerOnSharedPreferenceChangeListener(preferenceChangeListener)
+
+		contentResolver.registerContentObserver(
+			Settings.Global.getUriFor(Settings.Global.DEVELOPMENT_SETTINGS_ENABLED),
+			false,
+			devModeObserver
+		)
+
+		updateUsbDebuggingTileAvailability()
+
+		contentResolver.registerContentObserver(
+			Settings.Global.getUriFor(Constants.SETTINGS_PRIVATE_DNS_MODE),
+			false,
+			dnsObserver
+		)
+
+		contentResolver.registerContentObserver(
+			Settings.Global.getUriFor(Constants.SETTINGS_PRIVATE_DNS_SPECIFIER),
+			false,
+			dnsObserver
+		)
+
+		// Initial tile update
+		TileServiceCompat.requestListeningState(
+			this,
+			ComponentName(this, DnsToggleService::class.java)
+		)
 
 		applicationScope.launch {
 			DnsSettingsRepository.blacklist.collect { blacklist ->
@@ -64,9 +128,12 @@ class DnsToggleApplication : Application() {
 		val serviceChannel = NotificationChannel(
 			Constants.CHANNEL_ID_SERVICE,
 			getString(R.string.service_notif_title),
-			NotificationManager.IMPORTANCE_LOW,
+			NotificationManager.IMPORTANCE_MIN,
 		).apply {
 			setShowBadge(false)
+			enableLights(false)
+			enableVibration(false)
+			lockscreenVisibility = android.app.Notification.VISIBILITY_SECRET
 		}
 
 		manager.createNotificationChannels(listOf(statusChannel, serviceChannel))
@@ -96,6 +163,12 @@ class DnsToggleApplication : Application() {
 				stopService(serviceIntent)
 				detectedSsid = null
 			}
+
+			// Tile resync
+			TileServiceCompat.requestListeningState(
+				this@DnsToggleApplication,
+				ComponentName(this@DnsToggleApplication, DnsToggleService::class.java)
+			)
 		}
 	}
 
@@ -109,5 +182,52 @@ class DnsToggleApplication : Application() {
 		val hasActiveBlacklist = !blacklist.isNullOrEmpty()
 
 		return vpnEnabled || autoEnabled || hasActiveBlacklist
+	}
+
+	fun updateUsbDebuggingTileAvailability() {
+		val isDevMode = Settings.Global.getInt(
+			contentResolver,
+			Settings.Global.DEVELOPMENT_SETTINGS_ENABLED,
+			0
+		) != 0
+
+		val isAppUnlocked = getPrefs().getBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, false)
+
+		val componentName = ComponentName(this, UsbDebuggingTileService::class.java)
+
+		val newState = if (isDevMode && isAppUnlocked) {
+			PackageManager.COMPONENT_ENABLED_STATE_ENABLED
+		} else {
+			PackageManager.COMPONENT_ENABLED_STATE_DISABLED
+		}
+
+		if (packageManager.getComponentEnabledSetting(componentName) != newState) {
+			packageManager.setComponentEnabledSetting(
+				componentName,
+				newState,
+				PackageManager.DONT_KILL_APP
+			)
+
+			if (newState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+				contentResolver.registerContentObserver(
+					Settings.Global.getUriFor(Settings.Global.ADB_ENABLED),
+					false,
+					adbObserver
+				)
+				TileServiceCompat.requestListeningState(
+					this,
+					componentName
+				)
+			} else {
+				contentResolver.unregisterContentObserver(adbObserver)
+			}
+		} else if (newState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+			// Ensure observer is registered if it's already enabled (e.g. on app restart)
+			contentResolver.registerContentObserver(
+				Settings.Global.getUriFor(Settings.Global.ADB_ENABLED),
+				false,
+				adbObserver
+			)
+		}
 	}
 }

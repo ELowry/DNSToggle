@@ -6,7 +6,7 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:fitsSystemWindows="false"
-	tools:context=".MainActivity">
+	tools:context=".ui.MainActivity">
 
 	<com.google.android.material.appbar.AppBarLayout
 		android:id="@+id/appBarLayout"
@@ -196,12 +196,15 @@
 							android:src="@drawable/ic_add" />
 					</LinearLayout>
 
-					<LinearLayout
+					<androidx.recyclerview.widget.RecyclerView
 						android:id="@+id/dnsHostnameListContainer"
 						android:layout_width="match_parent"
 						android:layout_height="wrap_content"
+						android:nestedScrollingEnabled="false"
 						android:orientation="vertical"
-						app:layout_constraintTop_toBottomOf="@id/dnsHostnamesHeader" />
+						app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+						app:layout_constraintTop_toBottomOf="@id/dnsHostnamesHeader"
+						tools:listitem="@layout/item_hostname" />
 
 					<com.google.android.material.divider.MaterialDivider
 						android:id="@+id/dividerDnsSettings"
@@ -530,12 +533,36 @@
 				app:layout_constraintStart_toStartOf="parent"
 				app:layout_constraintTop_toBottomOf="@id/switchHideLauncher" />
 
+			<com.google.android.material.materialswitch.MaterialSwitch
+				android:id="@+id/switchUsbDebuggingTile"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="16dp"
+				android:text="@string/show_usb_debugging_tile"
+				android:visibility="gone"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintTop_toBottomOf="@id/tvHideLauncherSummary" />
+
+			<TextView
+				android:id="@+id/tvUsbDebuggingTileSummary"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:layout_marginTop="2dp"
+				android:text="@string/show_usb_debugging_tile_summary"
+				android:textAppearance="?attr/textAppearanceBodySmall"
+				android:textColor="?attr/colorOnSurfaceVariant"
+				android:visibility="gone"
+				app:layout_constraintEnd_toEndOf="parent"
+				app:layout_constraintStart_toStartOf="parent"
+				app:layout_constraintTop_toBottomOf="@id/switchUsbDebuggingTile" />
+
 			<com.google.android.material.divider.MaterialDivider
 				android:id="@+id/dividerFooter"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:layout_marginTop="48dp"
-				app:layout_constraintTop_toBottomOf="@id/tvHideLauncherSummary" />
+				app:layout_constraintTop_toBottomOf="@id/tvUsbDebuggingTileSummary" />
 
 			<LinearLayout
 				android:id="@+id/footerContainer"

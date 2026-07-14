@@ -15,7 +15,7 @@ _adb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETT
 - **Dynamic Tile Labeling**: Rename the Quick Settings tile.
 - **Hide App Icon**: Keep your home screen clean while maintaining access via the Quick Settings tile.
 
-**Privacy & Permissions**
+**Privacy & Permissions**
 
 - No tracking, no ads, and no data collection.
 - Location permissions are optional, and only used to identify Wi-Fi network names for the SSID Filter feature. They are never used to track your physical location.

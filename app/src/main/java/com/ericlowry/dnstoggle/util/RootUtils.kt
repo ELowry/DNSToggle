@@ -1,4 +1,4 @@
-package com.ericlowry.dnstoggle
+package com.ericlowry.dnstoggle.util
 
 import android.util.Log
 

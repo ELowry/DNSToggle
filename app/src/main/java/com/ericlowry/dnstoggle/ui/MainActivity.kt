@@ -1,17 +1,18 @@
-package com.ericlowry.dnstoggle
+package com.ericlowry.dnstoggle.ui
 
 import android.Manifest
+import android.app.Dialog
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
-import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -30,18 +31,28 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
+import com.ericlowry.dnstoggle.DnsToggleApplication
+import com.ericlowry.dnstoggle.R
+import com.ericlowry.dnstoggle.data.Constants
+import com.ericlowry.dnstoggle.data.DnsViewModel
+import com.ericlowry.dnstoggle.service.DnsToggleService
+import com.ericlowry.dnstoggle.service.TileServiceCompat
+import com.ericlowry.dnstoggle.util.NetworkUtils
+import com.ericlowry.dnstoggle.util.PermissionHelper
+import com.ericlowry.dnstoggle.util.RootUtils
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.card.MaterialCardView
 import com.google.android.material.listitem.ListItemCardView
 import com.google.android.material.listitem.ListItemLayout
 import com.google.android.material.materialswitch.MaterialSwitch
+import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.radiobutton.MaterialRadioButton
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
@@ -54,11 +65,12 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private lateinit var dnsViewModel: DnsViewModel
+	private lateinit var hostnamesAdapter: HostnamesAdapter
 
 	private lateinit var privateDnsLabel: TextView
 	private lateinit var dnsToggleSwitch: MaterialSwitch
-	private lateinit var progressRootAction: com.google.android.material.progressindicator.CircularProgressIndicator
-	private lateinit var dnsHostnameListContainer: LinearLayout
+	private lateinit var progressRootAction: CircularProgressIndicator
+	private lateinit var dnsHostnameListContainer: RecyclerView
 	private lateinit var addHostnameButton: ImageButton
 
 	private lateinit var switchAutoBlacklist: MaterialSwitch
@@ -71,7 +83,7 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var tvVpnDnsValue: TextView
 	private lateinit var vpnPermissionNoticeText: TextView
 	private lateinit var btnGrantVpnPermission: Button
-	private lateinit var cardOverrideStatus: com.google.android.material.card.MaterialCardView
+	private lateinit var cardOverrideStatus: MaterialCardView
 	private lateinit var tvOverrideStatus: TextView
 	private lateinit var permissionNoticeText: TextView
 	private lateinit var btnGrantPermission: Button
@@ -81,8 +93,14 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var btnVpnInfo: ImageButton
 	private lateinit var dividerSsidList: View
 
-	private lateinit var cardMainPermission: com.google.android.material.card.MaterialCardView
+	private lateinit var cardMainPermission: MaterialCardView
 	private lateinit var btnFixMainPermission: Button
+
+	private lateinit var switchUsbDebuggingTile: MaterialSwitch
+	private lateinit var tvUsbDebuggingTileSummary: TextView
+	private var devHitCount = 0
+	private var lastDevHitTime: Long = 0
+	private var devToast: Toast? = null
 
 	private var permissionDialog: AlertDialog? = null
 	private var isRedirectedFromTile = false
@@ -110,7 +128,7 @@ class MainActivity : AppCompatActivity() {
 	private val notificationPermissionLauncher = registerForActivityResult(
 		ActivityResultContracts.RequestPermission()
 	) { _ ->
-		updateVpnUiState(hasNotificationPermission())
+		updateVpnUiState(PermissionHelper.hasNotificationPermission(this))
 		(application as DnsToggleApplication).updateWifiMonitoringRegistration()
 	}
 
@@ -128,15 +146,15 @@ class MainActivity : AppCompatActivity() {
 
 		setupUserInteractions()
 		updateMainPermissionUiState()
-		updateSsidUiState(hasSsidPermissions())
+		updateSsidUiState(PermissionHelper.hasSsidPermissions(this))
 		handleIntentExtras(intent)
 	}
 
 	override fun onResume() {
 		super.onResume()
 		updateMainPermissionUiState()
-		updateSsidUiState(hasSsidPermissions())
-		updateVpnUiState(hasNotificationPermission())
+		updateSsidUiState(PermissionHelper.hasSsidPermissions(this))
+		updateVpnUiState(PermissionHelper.hasNotificationPermission(this))
 	}
 
 	override fun onNewIntent(intent: Intent) {
@@ -148,12 +166,12 @@ class MainActivity : AppCompatActivity() {
 		if (intent?.getBooleanExtra(
 				"show_permission_dialog",
 				false
-			) == true && !hasSecureSettingsPermission()
+			) == true && !PermissionHelper.hasSecureSettingsPermission(this)
 		) {
 			lifecycleScope.launch {
 				RootUtils.grantSecureSettingsPermission(packageName)
 				updateMainPermissionUiState()
-				if (!hasSecureSettingsPermission()) {
+				if (!PermissionHelper.hasSecureSettingsPermission(this@MainActivity)) {
 					showInitialPermissionDialog()
 				}
 			}
@@ -176,7 +194,7 @@ class MainActivity : AppCompatActivity() {
 
 	private fun setupToolbar() {
 		val toolbar =
-			findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.topAppBar)
+			findViewById<MaterialToolbar>(R.id.topAppBar)
 		setSupportActionBar(toolbar)
 	}
 
@@ -210,6 +228,9 @@ class MainActivity : AppCompatActivity() {
 		cardMainPermission = findViewById(R.id.cardMainPermission)
 		btnFixMainPermission = findViewById(R.id.btnFixMainPermission)
 
+		switchUsbDebuggingTile = findViewById(R.id.switchUsbDebuggingTile)
+		tvUsbDebuggingTileSummary = findViewById(R.id.tvUsbDebuggingTileSummary)
+
 		privateDnsLabel.text = getString(R.string.private_dns)
 
 		val tvAppVersion = findViewById<TextView>(R.id.tvAppVersion)
@@ -226,15 +247,30 @@ class MainActivity : AppCompatActivity() {
 		dnsViewModel.privateDnsMode.observe(this) { mode ->
 			val isEnabled = (mode == "hostname")
 			dnsToggleSwitch.isChecked = isEnabled
+			hostnamesAdapter.updateMetadata(
+				dnsViewModel.dnsReachability.value,
+				dnsViewModel.privateDnsSpecifier.value,
+				isEnabled
+			)
 		}
 
-		dnsViewModel.privateDnsSpecifier.observe(this) { _ ->
-			// Update hostname list to reflect active one
-			refreshHostnameListView(dnsViewModel.dnsHostnames.value ?: emptySet())
+		dnsViewModel.privateDnsSpecifier.observe(this) { specifier ->
+			hostnamesAdapter.updateMetadata(
+				dnsViewModel.dnsReachability.value,
+				specifier,
+				dnsToggleSwitch.isChecked
+			)
 		}
 
 		dnsViewModel.dnsHostnames.observe(this) { hostnames ->
-			refreshHostnameListView(hostnames)
+			(dnsHostnameListContainer.adapter as? HostnamesAdapter)?.submitList(hostnames)
+
+			// Also refresh VPN display name in case a label was added/changed
+			val vpnHostname = dnsViewModel.vpnDnsHostname.value
+			if (vpnHostname != null && vpnHostname != "off") {
+				tvVpnDnsValue.text = hostnames.find { it.hostname == vpnHostname }
+					?.getDisplayName() ?: vpnHostname
+			}
 		}
 
 		dnsViewModel.ssidBlacklist.observe(this) { blacklist ->
@@ -259,14 +295,16 @@ class MainActivity : AppCompatActivity() {
 
 		dnsViewModel.vpnOverrideEnabled.observe(this) { enabled ->
 			switchVpnOverride.isChecked = enabled
-			updateVpnUiState(hasNotificationPermission())
+			updateVpnUiState(PermissionHelper.hasNotificationPermission(this))
 		}
 
 		dnsViewModel.vpnDnsHostname.observe(this) { hostname ->
-			tvVpnDnsValue.text = if (hostname == "off") {
+			tvVpnDnsValue.text = if (hostname == "off" || hostname == null) {
 				getString(R.string.automatic_off)
 			} else {
-				hostname
+				dnsViewModel.dnsHostnames.value
+					?.find { it.hostname == hostname }
+					?.getDisplayName() ?: hostname
 			}
 		}
 
@@ -290,8 +328,12 @@ class MainActivity : AppCompatActivity() {
 			updateLauncherComponentState(isHidden)
 		}
 
-		dnsViewModel.dnsReachability.observe(this) { _ ->
-			refreshHostnameListView(dnsViewModel.dnsHostnames.value ?: emptySet())
+		dnsViewModel.dnsReachability.observe(this) { reachability ->
+			hostnamesAdapter.updateMetadata(
+				reachability,
+				dnsViewModel.privateDnsSpecifier.value,
+				dnsToggleSwitch.isChecked
+			)
 		}
 
 		dnsViewModel.hasPermissionError.observe(this) { hasError ->
@@ -313,7 +355,7 @@ class MainActivity : AppCompatActivity() {
 		dnsToggleSwitch.setOnClickListener {
 			val isChecked = dnsToggleSwitch.isChecked
 
-			if (hasSecureSettingsPermission()) {
+			if (PermissionHelper.hasSecureSettingsPermission(this)) {
 				dnsViewModel.togglePrivateDns(isChecked)
 				requestTileUpdate()
 			} else {
@@ -324,7 +366,7 @@ class MainActivity : AppCompatActivity() {
 					setLoadingState(false)
 					updateMainPermissionUiState()
 
-					if (hasSecureSettingsPermission()) {
+					if (PermissionHelper.hasSecureSettingsPermission(this@MainActivity)) {
 						dnsViewModel.togglePrivateDns(isChecked)
 						requestTileUpdate()
 					} else {
@@ -379,12 +421,14 @@ class MainActivity : AppCompatActivity() {
 		}
 
 		addSsidButton.setOnClickListener {
-			if (hasSsidPermissions()) {
+			if (PermissionHelper.hasSsidPermissions(this)) {
 				showAddSsidDialog()
 			} else {
 				requestSsidPermissions()
 			}
 		}
+
+		setupHostnamesRecyclerView()
 		btnGrantPermission.setOnClickListener { requestSsidPermissions() }
 		btnSsidInfo.setOnClickListener { showWifiMonitoringInfoDialog() }
 		btnVpnInfo.setOnClickListener { showWifiMonitoringInfoDialog() }
@@ -400,7 +444,7 @@ class MainActivity : AppCompatActivity() {
 		}
 
 		btnFixMainPermission.setOnClickListener {
-			if (hasSecureSettingsPermission()) {
+			if (PermissionHelper.hasSecureSettingsPermission(this)) {
 				updateMainPermissionUiState()
 			} else {
 				setLoadingState(true)
@@ -409,7 +453,7 @@ class MainActivity : AppCompatActivity() {
 					setLoadingState(false)
 					updateMainPermissionUiState()
 
-					if (!hasSecureSettingsPermission()) {
+					if (!PermissionHelper.hasSecureSettingsPermission(this@MainActivity)) {
 						showInitialPermissionDialog()
 					} else if (success) {
 						Toast.makeText(
@@ -420,6 +464,80 @@ class MainActivity : AppCompatActivity() {
 					}
 				}
 			}
+		}
+
+		val prefs = (application as DnsToggleApplication).getPrefs()
+		val isDevUnlocked = prefs.getBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, false)
+
+		if (isDevUnlocked) {
+			switchUsbDebuggingTile.visibility = View.VISIBLE
+			tvUsbDebuggingTileSummary.visibility = View.VISIBLE
+			switchUsbDebuggingTile.isChecked = true
+		}
+
+		val tvAppVersion = findViewById<TextView>(R.id.tvAppVersion)
+		tvAppVersion.setOnClickListener {
+			if (prefs.getBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, false)) {
+				return@setOnClickListener
+			}
+
+			val isDevMode = Settings.Global.getInt(
+				contentResolver,
+				Settings.Global.DEVELOPMENT_SETTINGS_ENABLED,
+				0
+			) != 0
+
+			if (!isDevMode) {
+				return@setOnClickListener
+			}
+
+			val currentTime = System.currentTimeMillis()
+			if (lastDevHitTime == 0L || (currentTime - lastDevHitTime) > 500) {
+				devHitCount = 1
+			} else {
+				devHitCount++
+			}
+			lastDevHitTime = currentTime
+
+			if (devHitCount in 1..4) {
+				val remaining = 5 - devHitCount
+				if (remaining <= 3) {
+					devToast?.cancel()
+					devToast = Toast.makeText(
+						this,
+						getString(R.string.usb_debugging_tile_steps, remaining),
+						Toast.LENGTH_SHORT
+					)
+					devToast?.show()
+				}
+			} else if (devHitCount >= 5) {
+				devToast?.cancel()
+				devToast = Toast.makeText(
+					this,
+					getString(R.string.usb_debugging_tile_enabled),
+					Toast.LENGTH_SHORT
+				)
+				devToast?.show()
+				prefs.edit { putBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, true) }
+
+				switchUsbDebuggingTile.visibility = View.VISIBLE
+				tvUsbDebuggingTileSummary.visibility = View.VISIBLE
+				switchUsbDebuggingTile.isChecked = true
+
+				(application as DnsToggleApplication).updateUsbDebuggingTileAvailability()
+			}
+		}
+
+		switchUsbDebuggingTile.setOnCheckedChangeListener { _, isChecked ->
+			prefs.edit { putBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, isChecked) }
+
+			if (!isChecked) {
+				switchUsbDebuggingTile.visibility = View.GONE
+				tvUsbDebuggingTileSummary.visibility = View.GONE
+				devHitCount = 0
+			}
+
+			(application as DnsToggleApplication).updateUsbDebuggingTileAvailability()
 		}
 	}
 
@@ -444,39 +562,16 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
-	private fun hasSecureSettingsPermission(): Boolean {
-		return checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED
-	}
-
 	private fun updateMainPermissionUiState() {
-		if (hasSecureSettingsPermission()) {
+		if (PermissionHelper.hasSecureSettingsPermission(this)) {
 			cardMainPermission.visibility = View.GONE
 		} else {
 			cardMainPermission.visibility = View.VISIBLE
 		}
 	}
 
-	private fun hasSsidPermissions(): Boolean {
-		val requiredPermissions = mutableListOf<String>()
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-			requiredPermissions.add(Manifest.permission.NEARBY_WIFI_DEVICES)
-			requiredPermissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
-		} else {
-			requiredPermissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
-			requiredPermissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
-		}
-
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-			requiredPermissions.add(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
-		}
-
-		return requiredPermissions.all { permission ->
-			ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
-		}
-	}
-
 	private fun checkSsidPermissions(requestIfNotGranted: Boolean = false) {
-		val allGranted = hasSsidPermissions()
+		val allGranted = PermissionHelper.hasSsidPermissions(this)
 		updateSsidUiState(allGranted)
 		if (!allGranted && requestIfNotGranted) {
 			requestSsidPermissions()
@@ -486,22 +581,10 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun requestSsidPermissions() {
-		val permissions = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-			arrayOf(
-				Manifest.permission.NEARBY_WIFI_DEVICES,
-				Manifest.permission.ACCESS_FINE_LOCATION
-			)
-		} else {
-			arrayOf(
-				Manifest.permission.ACCESS_FINE_LOCATION,
-				Manifest.permission.ACCESS_COARSE_LOCATION
-			)
-		}
-
+		val permissions = PermissionHelper.getForegroundSsidPermissions()
 		val prefs = (application as DnsToggleApplication).getPrefs()
-		val hasRequestedBefore = prefs.getBoolean("has_requested_ssid_perms", false)
 
-		if (hasRequestedBefore) {
+		if (prefs.getBoolean("has_requested_ssid_perms", false)) {
 			val isPermanentlyDenied = permissions.any { perm ->
 				ContextCompat.checkSelfPermission(
 					this,
@@ -509,34 +592,28 @@ class MainActivity : AppCompatActivity() {
 				) != PackageManager.PERMISSION_GRANTED &&
 						!shouldShowRequestPermissionRationale(perm)
 			}
-
 			if (isPermanentlyDenied) {
-				MaterialAlertDialogBuilder(this)
-					.setTitle(getString(R.string.permission_required))
-					.setMessage(getString(R.string.permissions_permanently_denied))
-					.setPositiveButton(getString(R.string.open_settings)) { _, _ -> openAppSettings() }
-					.setNegativeButton(getString(R.string.cancel), null)
-					.show()
+				DialogHelper.showPermissionDeniedDialog(this) { openAppSettings() }
 				return
 			}
 		}
-
 		prefs.edit { putBoolean("has_requested_ssid_perms", true) }
 		foregroundPermissionLauncher.launch(permissions)
 	}
 
 	private fun showBackgroundLocationRationale() {
-		MaterialAlertDialogBuilder(this)
-			.setTitle(getString(R.string.permission_required))
-			.setMessage(getString(R.string.background_location_explanation))
-			.setPositiveButton(getString(R.string.ok)) { _, _ ->
+		DialogHelper.showBackgroundLocationRationale(
+			context = this,
+			onAccept = {
 				requestBackgroundLocationPermission()
-			}
-			.setNegativeButton(getString(R.string.cancel)) { _, _ ->
-				updateSsidUiState(hasSsidPermissions())
+			},
+			onDecline = {
+				// If they decline, we just proceed with the foreground permissions they already granted
+				updateSsidUiState(true)
 				(application as DnsToggleApplication).updateWifiMonitoringRegistration()
+				checkNotificationPermission()
 			}
-			.show()
+		)
 	}
 
 	private fun requestBackgroundLocationPermission() {
@@ -547,47 +624,23 @@ class MainActivity : AppCompatActivity() {
 
 	private fun checkNotificationPermission() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-			val isGranted = ContextCompat.checkSelfPermission(
-				this,
-				Manifest.permission.POST_NOTIFICATIONS
-			) == PackageManager.PERMISSION_GRANTED
-
-			if (!isGranted) {
+			if (!PermissionHelper.hasNotificationPermission(this)) {
 				val prefs = (application as DnsToggleApplication).getPrefs()
 				val hasRequestedBefore = prefs.getBoolean("has_requested_notif_perms", false)
 
 				if (hasRequestedBefore && !shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
-					// Permanently denied
-					MaterialAlertDialogBuilder(this)
-						.setTitle(getString(R.string.permission_required))
-						.setMessage(getString(R.string.permissions_permanently_denied))
-						.setPositiveButton(getString(R.string.open_settings)) { _, _ -> openAppSettings() }
-						.setNegativeButton(getString(R.string.cancel), null)
-						.show()
+					DialogHelper.showPermissionDeniedDialog(this) { openAppSettings() }
 				} else if (shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
-					showNotificationPermissionRationale()
+					DialogHelper.showNotificationPermissionRationale(this) {
+						prefs.edit { putBoolean("has_requested_notif_perms", true) }
+						notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+					}
 				} else {
 					prefs.edit { putBoolean("has_requested_notif_perms", true) }
 					notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
 				}
 			}
 		}
-	}
-
-	private fun showNotificationPermissionRationale() {
-		MaterialAlertDialogBuilder(this)
-			.setTitle(getString(R.string.permission_required))
-			.setMessage(getString(R.string.notification_permission_explanation))
-			.setPositiveButton(getString(R.string.ok)) { _, _ ->
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-					val prefs = (application as DnsToggleApplication).getPrefs()
-					prefs.edit { putBoolean("has_requested_notif_perms", true) }
-					notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-				}
-			}
-			.setNegativeButton(getString(R.string.cancel), null)
-			.setCancelable(false)
-			.show()
 	}
 
 	private fun updateSsidUiState(hasPermission: Boolean) {
@@ -624,162 +677,75 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
-	private fun hasNotificationPermission(): Boolean {
-		return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-			ContextCompat.checkSelfPermission(
-				this,
-				Manifest.permission.POST_NOTIFICATIONS
-			) == PackageManager.PERMISSION_GRANTED
-		} else {
-			true
-		}
-	}
+	private fun setupHostnamesRecyclerView() {
+		hostnamesAdapter = HostnamesAdapter(
+			onEditClick = { hostname -> showAddHostnameDialog(hostname) },
+			onDeleteClick = { hostname -> showDeleteHostnameConfirmDialog(hostname) },
+			onItemClick = { hostname -> dnsViewModel.togglePrivateDns(true, hostname) }
+		)
+		dnsHostnameListContainer.adapter = hostnamesAdapter
 
-	private fun refreshHostnameListView(hostnames: Set<String>) {
-		dnsHostnameListContainer.removeAllViews()
-
-		val sortedList = hostnames.toMutableList()
-		sortedList.sortWith(String.CASE_INSENSITIVE_ORDER)
-
-		val layoutInflater = LayoutInflater.from(this)
-		val currentSpecifier = dnsViewModel.privateDnsSpecifier.value
-		val reachabilityMap = dnsViewModel.dnsReachability.value ?: emptyMap()
-
-		sortedList.forEach { hostname ->
-			val itemView = layoutInflater.inflate(
-				R.layout.item_hostname,
-				dnsHostnameListContainer,
-				false
-			) as com.google.android.material.card.MaterialCardView
-			val tvHostname = itemView.findViewById<TextView>(R.id.tvHostname)
-			val tvStatus = itemView.findViewById<TextView>(R.id.tvStatus)
-			val btnDelete = itemView.findViewById<View>(R.id.btnDeleteHostname)
-
-			tvHostname.text = hostname
-
-			val reachability = reachabilityMap[hostname] ?: DnsViewModel.ReachabilityState.IDLE
-			val isActive = (hostname == currentSpecifier && dnsToggleSwitch.isChecked)
-
-			if (isActive) {
-				itemView.strokeColor = getThemeColor(android.R.attr.colorPrimary)
-				itemView.strokeWidth = (2 * resources.displayMetrics.density).toInt()
-
-				tvStatus.visibility = View.VISIBLE
-				when (reachability) {
-					DnsViewModel.ReachabilityState.TESTING -> {
-						tvStatus.text = getString(R.string.status_testing_dns)
-						tvStatus.setTextColor(getThemeColor(android.R.attr.textColorSecondary))
-					}
-
-					DnsViewModel.ReachabilityState.REACHABLE -> {
-						tvStatus.text = getString(R.string.status_active_reachable)
-						tvStatus.setTextColor(getThemeColor(android.R.attr.colorPrimary))
-					}
-
-					DnsViewModel.ReachabilityState.UNREACHABLE -> {
-						tvStatus.text = getString(R.string.warning_unreachable_dns)
-						tvStatus.setTextColor(getThemeColor(R.attr.warning_color))
-					}
-
-					else -> tvStatus.visibility = View.GONE
-				}
-			} else {
-				itemView.strokeWidth = 0
-				when (reachability) {
-					DnsViewModel.ReachabilityState.TESTING -> {
-						tvStatus.visibility = View.VISIBLE
-						tvStatus.text = getString(R.string.status_testing_dns)
-						tvStatus.setTextColor(getThemeColor(android.R.attr.textColorSecondary))
-					}
-
-					DnsViewModel.ReachabilityState.UNREACHABLE -> {
-						tvStatus.visibility = View.VISIBLE
-						tvStatus.text = getString(R.string.warning_unreachable_dns)
-						tvStatus.setTextColor(getThemeColor(R.attr.warning_color))
-					}
-
-					else -> tvStatus.visibility = View.GONE
-				}
+		val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.SimpleCallback(
+			ItemTouchHelper.UP or ItemTouchHelper.DOWN, 0
+		) {
+			override fun isLongPressDragEnabled(): Boolean {
+				return (dnsHostnameListContainer.adapter?.itemCount ?: 0) > 1
 			}
 
-			itemView.findViewById<View>(R.id.btnEditHostname)
-				.setOnClickListener { showAddHostnameDialog(hostname) }
-
-			btnDelete.isEnabled = hostnames.size > 1
-			btnDelete.alpha = if (hostnames.size > 1) 1.0f else 0.5f
-			btnDelete.setOnClickListener {
-				showDeleteHostnameConfirmDialog(hostname)
+			override fun onMove(
+				recyclerView: RecyclerView,
+				viewHolder: RecyclerView.ViewHolder,
+				target: RecyclerView.ViewHolder
+			): Boolean {
+				val fromPos = viewHolder.bindingAdapterPosition
+				val toPos = target.bindingAdapterPosition
+				hostnamesAdapter.moveItem(fromPos, toPos)
+				return true
 			}
 
-			itemView.setOnClickListener {
-				if (!isActive) {
-					dnsViewModel.togglePrivateDns(true, hostname)
+			override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {}
+
+			override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
+				super.onSelectedChanged(viewHolder, actionState)
+				if (actionState == ItemTouchHelper.ACTION_STATE_IDLE) {
+					val currentList = hostnamesAdapter.currentList
+					dnsViewModel.dnsHostnames.value?.let { original ->
+						if (currentList != original.toList()) {
+							dnsViewModel.updateHostnameOrder(currentList)
+						}
+					}
 				}
 			}
-
-			dnsHostnameListContainer.addView(itemView)
-		}
-	}
-
-	private fun getThemeColor(attr: Int): Int {
-		val typedValue = TypedValue()
-		theme.resolveAttribute(attr, typedValue, true)
-		return typedValue.data
+		})
+		itemTouchHelper.attachToRecyclerView(dnsHostnameListContainer)
 	}
 
 	private fun showAddHostnameDialog(existingHostname: String? = null) {
-		val dialogView = LayoutInflater.from(this)
-			.inflate(R.layout.dialog_text_input, findViewById(android.R.id.content), false)
-		val textInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayout)
-		val inputTextField = dialogView.findViewById<TextInputEditText>(R.id.etInput)
-
-		textInputLayout.hint = getString(R.string.dns_hostname_hint)
-
-		if (existingHostname != null) {
-			inputTextField.setText(existingHostname)
-			inputTextField.setSelection(existingHostname.length)
+		val existingEntry = existingHostname?.let { host ->
+			dnsViewModel.dnsHostnames.value?.find { it.hostname == host }
 		}
 
-		val dialog = MaterialAlertDialogBuilder(this)
-			.setTitle(
-				if (existingHostname == null) getString(R.string.add_hostname) else getString(
-					R.string.edit_hostname
-				)
-			)
-			.setView(dialogView)
-			.setPositiveButton(getString(R.string.ok)) { _, _ ->
-				val newHostname = inputTextField.text.toString().trim()
-				if (newHostname.isNotEmpty() && NetworkUtils.isValidDnsHostname(newHostname)) {
-					if (existingHostname != null) {
-						dnsViewModel.updateHostname(existingHostname, newHostname)
-					} else {
-						dnsViewModel.addHostname(newHostname)
-					}
-				} else if (newHostname.isNotEmpty()) {
-					Toast.makeText(this, R.string.error_invalid_dns_host, Toast.LENGTH_SHORT).show()
+		DialogHelper.showAddHostnameDialog(
+			this,
+			existingHostname,
+			existingEntry?.label
+		) { newHostname, newLabel ->
+			if (NetworkUtils.isValidDnsHostname(newHostname)) {
+				if (existingHostname != null) {
+					dnsViewModel.updateHostname(existingHostname, newHostname, newLabel)
+				} else {
+					dnsViewModel.addHostname(newHostname, newLabel)
 				}
-			}
-			.setNegativeButton(getString(R.string.cancel), null)
-			.create()
-
-		dialog.setOnShowListener {
-			inputTextField.requestFocus()
-			dialog.window?.let { window ->
-				WindowCompat.getInsetsController(window, inputTextField)
-					.show(WindowInsetsCompat.Type.ime())
+			} else {
+				Toast.makeText(this, R.string.error_invalid_dns_host, Toast.LENGTH_SHORT).show()
 			}
 		}
-		dialog.show()
 	}
 
 	private fun showDeleteHostnameConfirmDialog(hostname: String) {
-		MaterialAlertDialogBuilder(this)
-			.setMessage(getString(R.string.delete_hostname_confirm))
-			.setPositiveButton(getString(R.string.ok)) { _, _ ->
-				dnsViewModel.removeHostname(hostname)
-			}
-			.setNegativeButton(getString(R.string.cancel), null)
-			.show()
+		DialogHelper.showDeleteConfirmation(this, R.string.delete_hostname_confirm) {
+			dnsViewModel.removeHostname(hostname)
+		}
 	}
 
 	private fun refreshSsidListView(blacklist: Set<String>) {
@@ -809,86 +775,33 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun showAddSsidDialog(existingSsid: String? = null) {
-		val dialogView = LayoutInflater.from(this)
-			.inflate(R.layout.dialog_text_input, findViewById(android.R.id.content), false)
-		val textInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayout)
-		val inputTextField = dialogView.findViewById<TextInputEditText>(R.id.etInput)
+		val currentSsid = NetworkUtils.getCurrentWifiSsid(this)
+		val blacklist = dnsViewModel.ssidBlacklist.value ?: emptySet()
+		val suggestedSsid =
+			if (currentSsid != null && !blacklist.contains(currentSsid)) currentSsid else null
 
-		textInputLayout.hint = getString(R.string.ssid_hint)
-
-		if (existingSsid != null) {
-			inputTextField.setText(existingSsid)
-			inputTextField.setSelection(existingSsid.length)
-		} else {
-			val currentSsid = NetworkUtils.getCurrentWifiSsid(this)
-			val blacklist = dnsViewModel.ssidBlacklist.value ?: emptySet()
-			if (currentSsid != null && !blacklist.contains(currentSsid)) {
-				inputTextField.setText(currentSsid)
-				inputTextField.setSelection(currentSsid.length)
+		DialogHelper.showAddSsidDialog(this, existingSsid, suggestedSsid) { newSsidName ->
+			if (existingSsid != null) {
+				dnsViewModel.updateSsidInBlacklist(existingSsid, newSsidName)
+			} else {
+				dnsViewModel.addToBlacklist(newSsidName)
 			}
 		}
-
-		val dialog = MaterialAlertDialogBuilder(this)
-			.setTitle(if (existingSsid == null) getString(R.string.add_ssid) else getString(R.string.edit_ssid))
-			.setView(dialogView)
-			.setPositiveButton(getString(R.string.ok)) { _, _ ->
-				val newSsidName =
-					inputTextField.text.toString().trim().removePrefix("\"").removeSuffix("\"")
-				if (newSsidName.isNotEmpty()) {
-					if (existingSsid != null) {
-						dnsViewModel.updateSsidInBlacklist(existingSsid, newSsidName)
-					} else {
-						dnsViewModel.addToBlacklist(newSsidName)
-					}
-				}
-			}
-			.setNegativeButton(getString(R.string.cancel), null)
-			.create()
-
-		dialog.setOnShowListener {
-			inputTextField.requestFocus()
-			dialog.window?.let { window ->
-				WindowCompat.getInsetsController(window, inputTextField)
-					.show(WindowInsetsCompat.Type.ime())
-			}
-		}
-		dialog.show()
 	}
 
 	private fun showDeleteConfirmDialog(ssidToDelete: String) {
-		MaterialAlertDialogBuilder(this)
-			.setMessage(getString(R.string.delete_ssid_confirm))
-			.setPositiveButton(getString(R.string.ok)) { _, _ ->
-				dnsViewModel.removeFromBlacklist(ssidToDelete)
-			}
-			.setNegativeButton(getString(R.string.cancel), null)
-			.show()
+		DialogHelper.showDeleteConfirmation(this, R.string.delete_ssid_confirm) {
+			dnsViewModel.removeFromBlacklist(ssidToDelete)
+		}
 	}
 
 	private fun showWifiMonitoringInfoDialog() {
-		val message = StringBuilder(getString(R.string.wifi_monitoring_info_text))
-
-		message.append(getString(R.string.vpn_disclaimer_explanation))
-
 		val powerManager = getSystemService(POWER_SERVICE) as PowerManager
 		val isIgnoringBattery = powerManager.isIgnoringBatteryOptimizations(packageName)
 
-		if (!isIgnoringBattery) {
-			message.append("\n\n").append(getString(R.string.battery_optimization_explanation))
+		DialogHelper.showWifiMonitoringInfo(this, isIgnoringBattery) {
+			requestIgnoreBatteryOptimizations()
 		}
-
-		val builder = MaterialAlertDialogBuilder(this)
-			.setTitle(getString(R.string.wifi_monitoring_info_title))
-			.setMessage(message.toString())
-			.setPositiveButton(getString(R.string.ok), null)
-
-		if (!isIgnoringBattery) {
-			builder.setNeutralButton(getString(R.string.ignore_battery_optimizations)) { _, _ ->
-				requestIgnoreBatteryOptimizations()
-			}
-		}
-
-		builder.show()
 	}
 
 	private fun requestIgnoreBatteryOptimizations() {
@@ -979,46 +892,36 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun showKeyInvalidatedDialog() {
-		MaterialAlertDialogBuilder(this)
-			.setTitle(R.string.keystore_error_title)
-			.setMessage(R.string.keystore_error_message)
-			.setPositiveButton(R.string.ok) { _, _ ->
-				dnsViewModel.dismissKeyInvalidatedAlert()
-			}
-			.setCancelable(false)
-			.show()
+		DialogHelper.showKeyInvalidatedDialog(this) {
+			dnsViewModel.dismissKeyInvalidatedAlert()
+		}
 	}
 
 	private fun showInitialPermissionDialog() {
 		if (permissionDialog?.isShowing == true) return
 
-		val adbCommand =
-			"adb shell pm grant $packageName android.permission.WRITE_SECURE_SETTINGS"
-		permissionDialog = MaterialAlertDialogBuilder(this)
-			.setTitle(getString(R.string.permission_required))
-			.setMessage(getString(R.string.permission_message))
-			.setPositiveButton(getString(R.string.copy_command)) { _, _ ->
+		permissionDialog = DialogHelper.showSecureSettingsPermissionDialog(
+			context = this,
+			packageName = packageName,
+			onCopyCommand = { adbCommand ->
 				val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
 				val clip = ClipData.newPlainText(getString(R.string.adb_command_label), adbCommand)
 				clipboard.setPrimaryClip(clip)
 				Toast.makeText(this, getString(R.string.command_copied), Toast.LENGTH_SHORT).show()
-			}
-			.setNeutralButton(R.string.retry_root) { _, _ ->
+			},
+			onRetryRoot = {
 				setLoadingState(true)
 				lifecycleScope.launch {
 					val startTime = System.currentTimeMillis()
 					RootUtils.grantSecureSettingsPermission(packageName)
 
-					// Artificial delay to prevent UI flicker and give visual confirmation
 					val elapsedTime = System.currentTimeMillis() - startTime
-					if (elapsedTime < 1000) {
-						delay(1000.milliseconds - elapsedTime.milliseconds)
-					}
+					if (elapsedTime < 1000) delay(1000.milliseconds - elapsedTime.milliseconds)
 
 					setLoadingState(false)
 					updateMainPermissionUiState()
 
-					if (!hasSecureSettingsPermission()) {
+					if (!PermissionHelper.hasSecureSettingsPermission(this@MainActivity)) {
 						Toast.makeText(
 							this@MainActivity,
 							R.string.root_grant_failed,
@@ -1028,8 +931,7 @@ class MainActivity : AppCompatActivity() {
 					}
 				}
 			}
-			.setNegativeButton(getString(R.string.ok), null)
-			.show()
+		)
 	}
 
 	override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -1049,74 +951,40 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun showRenameAppDialog() {
-		val dialogView = LayoutInflater.from(this)
-			.inflate(R.layout.dialog_text_input, findViewById(android.R.id.content), false)
-		val textInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayout)
-		val inputTextField = dialogView.findViewById<TextInputEditText>(R.id.etInput)
-
-		textInputLayout.hint = getString(R.string.app_name)
-
 		val sharedPreferences = (application as DnsToggleApplication).getPrefs()
 		val currentAppName =
 			sharedPreferences.getString("dynamic_app_name", getString(R.string.app_name))
 
-		if (currentAppName != null) {
-			inputTextField.setText(currentAppName)
-			inputTextField.setSelection(currentAppName.length)
+		DialogHelper.showRenameAppDialog(this, currentAppName) { newAppName ->
+			sharedPreferences.edit { putString("dynamic_app_name", newAppName) }
+			updateToolbarTitle()
+			requestTileUpdate()
 		}
-
-		val dialog = MaterialAlertDialogBuilder(this)
-			.setTitle(getString(R.string.rename_app))
-			.setMessage(getString(R.string.rename_app_message))
-			.setView(dialogView)
-			.setPositiveButton(getString(R.string.ok)) { d, _ ->
-				val newAppName = inputTextField.text.toString().trim()
-				if (newAppName.isNotEmpty()) {
-					sharedPreferences.edit { putString("dynamic_app_name", newAppName) }
-					updateToolbarTitle()
-					requestTileUpdate()
-				}
-				d.dismiss()
-			}
-			.setNegativeButton(getString(R.string.cancel)) { d, _ -> d.cancel() }
-			.create()
-
-		dialog.setOnShowListener {
-			inputTextField.requestFocus()
-			dialog.window?.let { window ->
-				WindowCompat.getInsetsController(window, inputTextField)
-					.show(WindowInsetsCompat.Type.ime())
-			}
-		}
-		dialog.show()
 	}
 
 	private fun openAppSettings() {
 		val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-			data = android.net.Uri.fromParts("package", packageName, null)
+			data = Uri.fromParts("package", packageName, null)
 		}
 		startActivity(intent)
 	}
 
 	private fun showVpnDnsSelectionDialog() {
-		val hostnames = dnsViewModel.dnsHostnames.value ?: emptySet()
+		val hostnames = dnsViewModel.dnsHostnames.value ?: emptyList()
 		if (hostnames.isEmpty()) return
 
 		if (hostnames.size == 1) {
-			val hostname = hostnames.first()
+			val hostname = hostnames.first().hostname
 			val current = dnsViewModel.vpnDnsHostname.value ?: "off"
 			val newValue = if (current == hostname) "off" else hostname
 			dnsViewModel.setVpnDnsHostname(newValue)
 			return
 		}
 
-		val sortedHostnames = hostnames.toMutableList()
-		sortedHostnames.sortWith(String.CASE_INSENSITIVE_ORDER)
-
 		val dialogView = LayoutInflater.from(this)
 			.inflate(R.layout.dialog_dns_selection, findViewById(android.R.id.content), false)
 
-		val dialog = android.app.Dialog(this)
+		val dialog = Dialog(this)
 		dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 		dialog.setContentView(dialogView)
 
@@ -1129,11 +997,19 @@ class MainActivity : AppCompatActivity() {
 		btnCancel.setOnClickListener { dialog.dismiss() }
 
 		val currentVpnDns = dnsViewModel.vpnDnsHostname.value ?: "off"
-		val totalItems = sortedHostnames.size + 1
+		val totalItems = hostnames.size + 1
 
-		sortedHostnames.forEachIndexed { index, hostname ->
+		hostnames.forEachIndexed { index, dnsEntry ->
+			val hostname = dnsEntry.hostname
 			val isActive = (hostname == currentVpnDns)
-			val itemView = createDnsListItem(listContainer, hostname, isActive, index, totalItems) {
+			val itemView = createDnsListItem(
+				listContainer,
+				dnsEntry.getDisplayName(),
+				dnsEntry.label?.let { hostname },
+				isActive,
+				index,
+				totalItems
+			) {
 				dnsViewModel.setVpnDnsHostname(hostname)
 				dialog.dismiss()
 			}
@@ -1144,6 +1020,7 @@ class MainActivity : AppCompatActivity() {
 		val autoItemView = createDnsListItem(
 			listContainer,
 			getString(R.string.automatic_off),
+			null,
 			isAutoActive,
 			totalItems - 1,
 			totalItems
@@ -1159,6 +1036,7 @@ class MainActivity : AppCompatActivity() {
 	private fun createDnsListItem(
 		parent: ViewGroup,
 		text: String,
+		secondaryText: String?,
 		isActive: Boolean,
 		position: Int,
 		totalItems: Int,
@@ -1168,9 +1046,16 @@ class MainActivity : AppCompatActivity() {
 		val listItemLayout = itemView as ListItemLayout
 		val cardView = itemView.findViewById<ListItemCardView>(R.id.listItemCard)
 		val textView = itemView.findViewById<TextView>(R.id.tvHostname)
+		val secondaryTextView = itemView.findViewById<TextView>(R.id.tvSecondaryHostname)
 		val radioButton = itemView.findViewById<MaterialRadioButton>(R.id.radioDns)
 
 		textView.text = text
+		if (secondaryText != null) {
+			secondaryTextView.text = secondaryText
+			secondaryTextView.visibility = View.VISIBLE
+		} else {
+			secondaryTextView.visibility = View.GONE
+		}
 		cardView.isChecked = isActive
 		radioButton.isChecked = isActive
 

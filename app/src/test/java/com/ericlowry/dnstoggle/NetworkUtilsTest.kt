@@ -1,5 +1,7 @@
 package com.ericlowry.dnstoggle
 
+import com.ericlowry.dnstoggle.util.NetworkUtils
+import com.ericlowry.dnstoggle.util.stripSsidQuotes
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

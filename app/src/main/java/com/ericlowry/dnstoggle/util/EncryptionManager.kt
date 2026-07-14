@@ -1,4 +1,4 @@
-package com.ericlowry.dnstoggle
+package com.ericlowry.dnstoggle.util
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyPermanentlyInvalidatedException
@@ -80,7 +80,6 @@ object EncryptionManager {
 		val iv = cipher.iv
 		val encryptedData = cipher.doFinal(data.toByteArray(Charsets.UTF_8))
 
-		// Combine IV and encrypted data: [IV length (1 byte)][IV][Encrypted Data]
 		val combined = ByteArray(1 + iv.size + encryptedData.size)
 		combined[0] = iv.size.toByte()
 		System.arraycopy(iv, 0, combined, 1, iv.size)

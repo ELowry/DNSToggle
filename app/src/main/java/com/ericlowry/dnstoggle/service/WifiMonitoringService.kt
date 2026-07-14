@@ -1,9 +1,7 @@
-package com.ericlowry.dnstoggle
+package com.ericlowry.dnstoggle.service
 
 import android.Manifest
 import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.ComponentName
@@ -25,9 +23,17 @@ import android.os.IBinder
 import android.os.Looper
 import android.provider.Settings.Global
 import android.util.Log
-
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.edit
+import com.ericlowry.dnstoggle.DnsToggleApplication
+import com.ericlowry.dnstoggle.R
+import com.ericlowry.dnstoggle.data.Constants
+import com.ericlowry.dnstoggle.data.DnsSettingsRepository
+import com.ericlowry.dnstoggle.ui.MainActivity
+import com.ericlowry.dnstoggle.util.EncryptionManager
+import com.ericlowry.dnstoggle.util.NotificationUtils
+import com.ericlowry.dnstoggle.util.stripSsidQuotes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -43,7 +49,7 @@ class WifiMonitoringService : Service() {
 	private var networkCallback: NetworkCallback? = null
 	private var cachedDnsMode: String? = null
 	private val activeNetworks = mutableMapOf<Network, NetworkCapabilities>()
-	private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+	private val serviceScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
 	private var debounceJob: Job? = null
 
 	private val dnsSettingsObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
@@ -74,7 +80,6 @@ class WifiMonitoringService : Service() {
 	override fun onCreate() {
 		super.onCreate()
 		connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-		initializeNotificationChannel()
 		// Initialize cache and register observer
 		cachedDnsMode = Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
 		contentResolver.registerContentObserver(
@@ -128,17 +133,6 @@ class WifiMonitoringService : Service() {
 
 	override fun onBind(intent: Intent?): IBinder? = null
 
-	private fun initializeNotificationChannel() {
-		val channelName = getString(R.string.service_notif_title)
-		val importance = NotificationManager.IMPORTANCE_LOW
-		val channel =
-			NotificationChannel(Constants.CHANNEL_ID_SERVICE, channelName, importance).apply {
-				setShowBadge(false)
-			}
-		val manager = getSystemService(NotificationManager::class.java)
-		manager.createNotificationChannel(channel)
-	}
-
 	private fun createPersistentNotification(): Notification {
 		val launchIntent = Intent(this, MainActivity::class.java)
 		val pendingIntent =
@@ -151,6 +145,9 @@ class WifiMonitoringService : Service() {
 			.setContentIntent(pendingIntent)
 			.setOngoing(true)
 			.setCategory(Notification.CATEGORY_SERVICE)
+			.setPriority(NotificationCompat.PRIORITY_MIN)
+			.setVisibility(NotificationCompat.VISIBILITY_SECRET)
+			.setForegroundServiceBehavior(NotificationCompat.FOREGROUND_SERVICE_IMMEDIATE)
 			.build()
 	}
 
@@ -158,6 +155,8 @@ class WifiMonitoringService : Service() {
 		if (networkCallback != null) return
 
 		val networkRequest = NetworkRequest.Builder()
+			.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+			.addTransportType(NetworkCapabilities.TRANSPORT_VPN)
 			.removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_VPN)
 			.removeCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
 			.build()
@@ -172,25 +171,35 @@ class WifiMonitoringService : Service() {
 			val flags = if (hasLocationPermission) NetworkCallback.FLAG_INCLUDE_LOCATION_INFO else 0
 			object : NetworkCallback(flags) {
 				override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
-					activeNetworks[network] = caps
-					evaluateActiveNetworks()
+					val oldCaps = activeNetworks[network]
+					if (hasMeaningfulChange(oldCaps, caps)) {
+						activeNetworks[network] = caps
+						evaluateActiveNetworks()
+					}
 				}
 
 				override fun onLost(network: Network) {
-					activeNetworks.remove(network)
-					evaluateActiveNetworks()
+					if (activeNetworks.containsKey(network)) {
+						activeNetworks.remove(network)
+						evaluateActiveNetworks()
+					}
 				}
 			}
 		} else {
 			object : NetworkCallback() {
 				override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
-					activeNetworks[network] = caps
-					evaluateActiveNetworks()
+					val oldCaps = activeNetworks[network]
+					if (hasMeaningfulChange(oldCaps, caps)) {
+						activeNetworks[network] = caps
+						evaluateActiveNetworks()
+					}
 				}
 
 				override fun onLost(network: Network) {
-					activeNetworks.remove(network)
-					evaluateActiveNetworks()
+					if (activeNetworks.containsKey(network)) {
+						activeNetworks.remove(network)
+						evaluateActiveNetworks()
+					}
 				}
 			}
 		}
@@ -200,6 +209,34 @@ class WifiMonitoringService : Service() {
 		} catch (e: Exception) {
 			Log.e(TAG, "Failed to register network callback", e)
 		}
+	}
+
+	private fun hasMeaningfulChange(
+		oldCaps: NetworkCapabilities?,
+		newCaps: NetworkCapabilities
+	): Boolean {
+		if (oldCaps == null) return true
+
+		// Check transport changes
+		if (oldCaps.hasTransport(NetworkCapabilities.TRANSPORT_VPN) != newCaps.hasTransport(
+				NetworkCapabilities.TRANSPORT_VPN
+			)
+		) return true
+		if (oldCaps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) != newCaps.hasTransport(
+				NetworkCapabilities.TRANSPORT_WIFI
+			)
+		) return true
+
+		// Check SSID changes
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			val oldInfo = oldCaps.transportInfo as? WifiInfo
+			val newInfo = newCaps.transportInfo as? WifiInfo
+			if (oldInfo?.ssid != newInfo?.ssid) return true
+		} else {
+			if (newCaps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) return true
+		}
+
+		return false
 	}
 
 	private fun evaluateActiveNetworks() {
@@ -236,7 +273,7 @@ class WifiMonitoringService : Service() {
 			if (!isInVpnOverride) {
 				// Enter VPN override
 				saveCurrentDnsState()
-				prefs.edit(true) {
+				prefs.edit {
 					putBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, true)
 					putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null)
 				}
@@ -245,14 +282,14 @@ class WifiMonitoringService : Service() {
 			return
 		} else if (!isVpnActive && isInVpnOverride) {
 			// Exit VPN override
-			prefs.edit(true) { putBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false) }
+			prefs.edit { putBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false) }
 			dispatchStatusNotification(getString(R.string.notif_vpn_dns_restored))
 		}
 
 		// Normal Wi-Fi logic
 		if (currentSsid == null || currentSsid == "<unknown ssid>" || currentSsid.isEmpty()) {
 			if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != null) {
-				prefs.edit(true) { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) }
+				prefs.edit { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) }
 			}
 			restorePreferredDns()
 			return
@@ -261,12 +298,12 @@ class WifiMonitoringService : Service() {
 		val blacklist = DnsSettingsRepository.blacklist.value ?: emptySet()
 		if (blacklist.contains(currentSsid)) {
 			if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != currentSsid) {
-				prefs.edit(true) { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, currentSsid) }
+				prefs.edit { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, currentSsid) }
 			}
 			applyOpportunisticDns(currentSsid)
 		} else {
 			if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != null) {
-				prefs.edit(true) { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) }
+				prefs.edit { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) }
 			}
 			restorePreferredDns()
 		}
@@ -283,16 +320,7 @@ class WifiMonitoringService : Service() {
 	}
 
 	private fun applyVpnDns() {
-		val prefs = getPrefs()
-		val encryptedVpnDns = prefs.getString(Constants.PREF_VPN_DNS_HOSTNAME, null)
-		val vpnDns = if (encryptedVpnDns == null) {
-			"off"
-		} else {
-			when (val result = EncryptionManager.decrypt(encryptedVpnDns)) {
-				is EncryptionManager.DecryptResult.Success -> result.data
-				else -> "off"
-			}
-		}
+		val vpnDns = DnsSettingsRepository.vpnDnsHostname.value ?: "off"
 
 		val resolver = contentResolver
 		val currentMode = Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
@@ -400,7 +428,7 @@ class WifiMonitoringService : Service() {
 		NotificationUtils.showStatusNotification(this, message)
 		if (getPrefs().getBoolean(Constants.PREF_SHOW_TOAST, true)) {
 			Handler(Looper.getMainLooper()).post {
-				android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT)
+				Toast.makeText(this, message, Toast.LENGTH_SHORT)
 					.show()
 			}
 		}
