@@ -38,7 +38,7 @@ By long-pressing the Quick Settings tile, you can access the configuration menu 
 - **VPN toggling**: Automatically set a DNS hostname or toggle Private DNS when a VPN is in use on the device.
 - **Dynamic Tile Labeling**: Rename the Quick Settings tile.
 - **Hide App Icon**: Optionally hide the app from your launcher drawer to keep your home screen clean.
-- **Developer Feature**: Tap the app version number at the bottom of the settings menu 5 times in quick succession to add a USB Debugging Quick Settings tile.
+- **USB Debugging Tile**: (_Required Developer Mode_) Tap the app version number at the bottom of the settings menu 5 times in quick succession to add a USB Debugging Quick Settings tile.
 
 ## Usage
 
