@@ -31,13 +31,14 @@ Adds a Quick Settings tile to toggle your Private DNS on and off with a single t
 
 By long-pressing the Quick Settings tile, you can access the configuration menu to:
 
-- **Custom DNS Provider**: Set one or more custom Private DNS hostnames you can easily toggle between (e.g., `dns.adguard.com`).
+- **Custom DNS Provider**: Set and label one or more custom Private DNS hostnames you can easily toggle between (e.g., `dns.adguard.com`).
   - Optional automatic DNS hostname reachability check.
 - **Wi-Fi Blocklist**: Automatically disable Private DNS when connected to specific Wi-Fi networks.
   - Optional automated addition/removal of the current Wi-Fi SSID from the blocklist when manually toggling the Quick Settings tile.
 - **VPN toggling**: Automatically set a DNS hostname or toggle Private DNS when a VPN is in use on the device.
 - **Dynamic Tile Labeling**: Rename the Quick Settings tile.
 - **Hide App Icon**: Optionally hide the app from your launcher drawer to keep your home screen clean.
+- **USB Debugging Tile**: (_Required Developer Mode_) Tap the app version number at the bottom of the settings menu 5 times in quick succession to add a USB Debugging Quick Settings tile.
 
 ## Usage
 
@@ -66,7 +67,7 @@ If you encounter issues not covered here, please [open a support ticket](https:/
 
 - **WRITE_SECURE_SETTINGS**: Required to modify system Private DNS settings. Must be granted via root or using ADB.
 - **INTERNET** _(optional)_: Used to verify that your Custom DNS Provider is online and reachable before applying it.
-- **Location & Nearby Devices** _(optional)_: Required only for **Wi-Fi Blocklist** automation. Used to identify the Wi-Fi network name (SSID) locally.
+- **Location & Nearby Devices** _(optional)_: Required only for **Wi-Fi Blocklist** automation. Used to identify the Wi-Fi network name (SSID) locally.
 - **Notifications** _(optional)_: Used for status alerts when Private DNS is automatically adjusted.
 
 ## Privacy

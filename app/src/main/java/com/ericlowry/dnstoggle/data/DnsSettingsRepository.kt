@@ -1,10 +1,13 @@
-package com.ericlowry.dnstoggle
+package com.ericlowry.dnstoggle.data
 
 import android.content.Context
 import android.content.SharedPreferences
 import android.provider.Settings
+import android.util.Log
 import androidx.core.content.edit
-
+import com.ericlowry.dnstoggle.DnsToggleApplication
+import com.ericlowry.dnstoggle.util.EncryptionManager
+import com.ericlowry.dnstoggle.util.NetworkUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -13,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.json.JSONArray
 
 object DnsSettingsRepository {
 	private lateinit var app: DnsToggleApplication
@@ -22,8 +26,8 @@ object DnsSettingsRepository {
 	private val _blacklist = MutableStateFlow<Set<String>?>(null)
 	val blacklist: StateFlow<Set<String>?> = _blacklist.asStateFlow()
 
-	private val _dnsHostnames = MutableStateFlow<Set<String>?>(null)
-	val dnsHostnames: StateFlow<Set<String>?> = _dnsHostnames.asStateFlow()
+	private val _dnsHostnames = MutableStateFlow<List<DnsHostname>?>(null)
+	val dnsHostnames: StateFlow<List<DnsHostname>?> = _dnsHostnames.asStateFlow()
 
 	private val _isKeyInvalidated = MutableStateFlow(false)
 	val isKeyInvalidated: StateFlow<Boolean> = _isKeyInvalidated.asStateFlow()
@@ -89,22 +93,59 @@ object DnsSettingsRepository {
 
 	private fun loadHostnames() {
 		scope.launch {
-			val encryptedSet =
-				sharedPreferences.getStringSet(Constants.PREF_DNS_HOSTNAMES, emptySet())
-					?: emptySet()
+			val rawData = sharedPreferences.all[Constants.PREF_DNS_HOSTNAMES]
 
 			var keyInvalidated = false
-			val decryptedSet = encryptedSet.mapNotNull {
-				when (val result = EncryptionManager.decrypt(it)) {
-					is EncryptionManager.DecryptResult.Success -> result.data
-					is EncryptionManager.DecryptResult.KeyInvalidated -> {
-						keyInvalidated = true
-						null
+			val resultList = mutableListOf<DnsHostname>()
+
+			if (rawData is Set<*>) {
+				// Legacy StringSet migration
+				@Suppress("UNCHECKED_CAST")
+				val encryptedSet = rawData as? Set<String> ?: emptySet()
+				encryptedSet.forEach {
+					when (val result = EncryptionManager.decrypt(it)) {
+						is EncryptionManager.DecryptResult.Success -> {
+							resultList.add(DnsHostname.fromSerializedString(result.data))
+						}
+
+						is EncryptionManager.DecryptResult.KeyInvalidated -> keyInvalidated = true
+						else -> {}
+					}
+				}
+				// Initial sort for legacy data
+				resultList.sortWith { a, b ->
+					String.CASE_INSENSITIVE_ORDER.compare(
+						a.getDisplayName(),
+						b.getDisplayName()
+					)
+				}
+				if (resultList.isNotEmpty() && !keyInvalidated) {
+					saveHostnamesAsync(resultList)
+				}
+			} else if (rawData is String) {
+				// New JSON format
+				when (val result = EncryptionManager.decrypt(rawData)) {
+					is EncryptionManager.DecryptResult.Success -> {
+						try {
+							val jsonArray = JSONArray(result.data)
+							for (i in 0 until jsonArray.length()) {
+								resultList.add(
+									DnsHostname.fromSerializedString(
+										jsonArray.getString(
+											i
+										)
+									)
+								)
+							}
+						} catch (e: Exception) {
+							Log.e("DnsSettingsRepository", "Failed to parse hostnames JSON", e)
+						}
 					}
 
-					else -> null
+					is EncryptionManager.DecryptResult.KeyInvalidated -> keyInvalidated = true
+					else -> {}
 				}
-			}.toSet()
+			}
 
 			if (keyInvalidated) {
 				_isKeyInvalidated.value = true
@@ -115,8 +156,7 @@ object DnsSettingsRepository {
 				}
 			}
 
-			var resultHostnames = decryptedSet
-			if (resultHostnames.isEmpty()) {
+			if (resultList.isEmpty()) {
 				val legacyHostname = Settings.Global.getString(
 					app.contentResolver,
 					Constants.SETTINGS_PRIVATE_DNS_SPECIFIER
@@ -125,11 +165,12 @@ object DnsSettingsRepository {
 						legacyHostname
 					)
 				) {
-					resultHostnames = setOf(legacyHostname)
-					saveHostnamesAsync(resultHostnames)
+					val entry = DnsHostname(legacyHostname)
+					resultList.add(entry)
+					saveHostnamesAsync(resultList)
 				}
 			}
-			_dnsHostnames.value = resultHostnames
+			_dnsHostnames.value = resultList
 		}
 	}
 
@@ -174,11 +215,20 @@ object DnsSettingsRepository {
 		}
 	}
 
-	fun addHostname(hostname: String) {
+	fun addHostname(hostname: String, label: String? = null) {
 		_dnsHostnames.update { current ->
-			val safeCurrent = current ?: emptySet()
-			if (hostname in safeCurrent) return@update safeCurrent
-			val next = safeCurrent + hostname
+			val safeCurrent = current ?: emptyList()
+			val newEntry = DnsHostname(hostname, label)
+
+			val existingIndex = safeCurrent.indexOfFirst { it.hostname == hostname }
+			val next = if (existingIndex != -1) {
+				safeCurrent.mapIndexed { index, dnsHostname ->
+					if (index == existingIndex) newEntry else dnsHostname
+				}
+			} else {
+				safeCurrent + newEntry
+			}
+
 			saveHostnamesAsync(next)
 			next
 		}
@@ -186,9 +236,9 @@ object DnsSettingsRepository {
 
 	fun removeHostname(hostname: String) {
 		_dnsHostnames.update { current ->
-			val safeCurrent = current ?: emptySet()
-			if (hostname !in safeCurrent || safeCurrent.size <= 1) return@update safeCurrent
-			val next = safeCurrent - hostname
+			val safeCurrent = current ?: emptyList()
+			if (safeCurrent.none { it.hostname == hostname } || safeCurrent.size <= 1) return@update safeCurrent
+			val next = safeCurrent.filter { it.hostname != hostname }
 
 			// Check if the removed hostname was being used for VPN override
 			if (_vpnDnsHostname.value == hostname) {
@@ -205,11 +255,12 @@ object DnsSettingsRepository {
 		}
 	}
 
-	fun updateHostname(oldHostname: String, newHostname: String) {
+	fun updateHostname(oldHostname: String, newHostname: String, newLabel: String? = null) {
 		_dnsHostnames.update { current ->
-			val safeCurrent = current ?: emptySet()
-			if (oldHostname !in safeCurrent) return@update safeCurrent
-			val next = safeCurrent - oldHostname + newHostname
+			val safeCurrent = current ?: emptyList()
+			val next = safeCurrent.map {
+				if (it.hostname == oldHostname) DnsHostname(newHostname, newLabel) else it
+			}
 
 			if (_vpnDnsHostname.value == oldHostname) {
 				updateVpnDnsHostname(newHostname)
@@ -218,6 +269,11 @@ object DnsSettingsRepository {
 			saveHostnamesAsync(next)
 			next
 		}
+	}
+
+	fun updateHostnamesOrder(newList: List<DnsHostname>) {
+		_dnsHostnames.value = newList
+		saveHostnamesAsync(newList)
 	}
 
 	fun updateVpnOverrideEnabled(enabled: Boolean) {
@@ -231,10 +287,12 @@ object DnsSettingsRepository {
 		sharedPreferences.edit { putString(Constants.PREF_VPN_DNS_HOSTNAME, encrypted) }
 	}
 
-	private fun saveHostnamesAsync(list: Set<String>) {
+	private fun saveHostnamesAsync(list: List<DnsHostname>) {
 		scope.launch {
-			val encryptedSet = list.map { EncryptionManager.encrypt(it) }.toSet()
-			sharedPreferences.edit { putStringSet(Constants.PREF_DNS_HOSTNAMES, encryptedSet) }
+			val jsonArray = JSONArray()
+			list.forEach { jsonArray.put(it.toSerializedString()) }
+			val encrypted = EncryptionManager.encrypt(jsonArray.toString())
+			sharedPreferences.edit { putString(Constants.PREF_DNS_HOSTNAMES, encrypted) }
 		}
 	}
 }

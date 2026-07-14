@@ -20,7 +20,7 @@
 	<string name="ok">OK</string>
 	<string name="cancel">Cancel</string>
 	<string name="on_label">On</string>
-	<string name="status_active_reachable">Active &amp; Reachable</string>
+	<string name="status_active_reachable">Active &amp; Reachable</string>
 	<string name="off_label">Off</string>
 	<string name="main_permission_title">System Settings Permission Required</string>
 	<string name="main_permission_message">The app needs a special permission to change Private DNS settings.</string>
@@ -30,6 +30,7 @@
 	<string name="add_hostname">Add Hostname</string>
 	<string name="edit_hostname">Edit Hostname</string>
 	<string name="dns_hostname_hint">DNS Hostname (e.g. dns.nextdns.io)</string>
+	<string name="dns_label_hint">Label (optional)</string>
 	<string name="delete_hostname_confirm">Remove this hostname?</string>
 	<string name="warning_unreachable_dns">DNS server unreachable on port 853 (DoT). Android may still successfully connect via other methods.</string>
 	<string name="status_testing_dns">Testing connection…</string>
@@ -91,4 +92,9 @@
 	<string name="github">GitHub (source code)</string>
 	<string name="support">Get Support</string>
 	<string name="app_version_format">App version: %s</string>
+	<string name="usb_debugging">USB Debugging</string>
+	<string name="show_usb_debugging_tile">Show USB Debugging tile</string>
+	<string name="show_usb_debugging_tile_summary">Show an extra Quick Settings tile to toggle USB Debugging. Long-press to open developer options.</string>
+	<string name="usb_debugging_tile_steps">Tap %1$d more times to enable a USB debugging tile.</string>
+	<string name="usb_debugging_tile_enabled">USB debugging Quick Settings tile now available!</string>
 </resources>

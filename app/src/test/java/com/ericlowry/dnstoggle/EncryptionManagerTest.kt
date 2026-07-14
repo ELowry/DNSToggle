@@ -1,5 +1,6 @@
 package com.ericlowry.dnstoggle
 
+import com.ericlowry.dnstoggle.util.EncryptionManager
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test

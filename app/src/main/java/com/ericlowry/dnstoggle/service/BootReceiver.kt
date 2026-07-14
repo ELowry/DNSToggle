@@ -1,8 +1,9 @@
-package com.ericlowry.dnstoggle
+package com.ericlowry.dnstoggle.service
 
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import com.ericlowry.dnstoggle.DnsToggleApplication
 
 class BootReceiver : BroadcastReceiver() {
 

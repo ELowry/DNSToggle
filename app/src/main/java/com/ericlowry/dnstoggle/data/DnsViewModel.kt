@@ -1,4 +1,4 @@
-package com.ericlowry.dnstoggle
+package com.ericlowry.dnstoggle.data
 
 import android.app.Application
 import android.content.ComponentName
@@ -13,6 +13,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import com.ericlowry.dnstoggle.DnsToggleApplication
+import com.ericlowry.dnstoggle.service.DnsToggleService
+import com.ericlowry.dnstoggle.service.TileServiceCompat
+import com.ericlowry.dnstoggle.util.NetworkUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -46,8 +50,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	private val _ssidBlacklist = MutableLiveData<Set<String>>()
 	val ssidBlacklist: LiveData<Set<String>> = _ssidBlacklist
 
-	private val _dnsHostnames = MutableLiveData<Set<String>>()
-	val dnsHostnames: LiveData<Set<String>> = _dnsHostnames
+	private val _dnsHostnames = MutableLiveData<List<DnsHostname>>()
+	val dnsHostnames: LiveData<List<DnsHostname>> = _dnsHostnames
 
 	private val _autoBlacklistEnabled = MutableLiveData<Boolean>()
 	val autoBlacklistEnabled: LiveData<Boolean> = _autoBlacklistEnabled
@@ -116,7 +120,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 			DnsSettingsRepository.dnsHostnames.collect { list ->
 				list?.let { hostnames ->
 					_dnsHostnames.postValue(hostnames)
-					hostnames.forEach { hostname ->
+					hostnames.forEach { dnsEntry ->
+						val hostname = dnsEntry.hostname
 						val currentMap = _dnsReachability.value ?: emptyMap()
 						if (!currentMap.containsKey(hostname) && NetworkUtils.isValidDnsHostname(
 								hostname
@@ -241,8 +246,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		DnsSettingsRepository.updateSsidInBlacklist(oldSsid, newSsid)
 	}
 
-	fun addHostname(hostname: String) {
-		DnsSettingsRepository.addHostname(hostname)
+	fun addHostname(hostname: String, label: String? = null) {
+		DnsSettingsRepository.addHostname(hostname, label)
 		if (NetworkUtils.isValidDnsHostname(hostname)) {
 			testReachability(hostname)
 		}
@@ -257,8 +262,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		_dnsReachability.postValue(currentMap)
 	}
 
-	fun updateHostname(oldHostname: String, newHostname: String) {
-		DnsSettingsRepository.updateHostname(oldHostname, newHostname)
+	fun updateHostname(oldHostname: String, newHostname: String, newLabel: String? = null) {
+		DnsSettingsRepository.updateHostname(oldHostname, newHostname, newLabel)
 		reachabilityJobs[oldHostname]?.cancel()
 		reachabilityJobs.remove(oldHostname)
 		val currentMap = _dnsReachability.value?.toMutableMap() ?: mutableMapOf()
@@ -359,6 +364,10 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
 	fun setVpnDnsHostname(hostname: String) {
 		DnsSettingsRepository.updateVpnDnsHostname(hostname)
+	}
+
+	fun updateHostnameOrder(newList: List<DnsHostname>) {
+		DnsSettingsRepository.updateHostnamesOrder(newList)
 	}
 
 	fun dismissVpnHostnameWarning() {

@@ -32,7 +32,7 @@
 		android:theme="@style/Theme.DNSToggle">
 
 		<activity
-			android:name=".MainActivity"
+			android:name=".ui.MainActivity"
 			android:exported="true"
 			android:launchMode="singleTask"
 			android:theme="@style/Theme.DNSToggle">
@@ -42,7 +42,7 @@
 		</activity>
 
 		<activity
-			android:name=".DnsSelectionActivity"
+			android:name=".ui.DnsSelectionActivity"
 			android:excludeFromRecents="true"
 			android:exported="true"
 			android:taskAffinity=""
@@ -50,7 +50,17 @@
 			<intent-filter>
 				<action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
 			</intent-filter>
+			<meta-data
+				android:name="android.service.quicksettings.tile_service"
+				android:value="com.ericlowry.dnstoggle.service.DnsToggleService" />
 		</activity>
+
+		<activity
+			android:name=".ui.DeveloperOptionsActivity"
+			android:excludeFromRecents="true"
+			android:exported="false"
+			android:taskAffinity=""
+			android:theme="@android:style/Theme.NoDisplay" />
 
 		<activity-alias
 			android:name=".LauncherActivity"
@@ -58,7 +68,7 @@
 			android:exported="true"
 			android:icon="@mipmap/ic_launcher"
 			android:label="@string/app_name"
-			android:targetActivity=".MainActivity">
+			android:targetActivity=".ui.MainActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
@@ -66,7 +76,7 @@
 		</activity-alias>
 
 		<service
-			android:name=".DnsToggleService"
+			android:name=".service.DnsToggleService"
 			android:exported="true"
 			android:icon="@drawable/ic_qs_dns"
 			android:label="@string/app_name"
@@ -74,10 +84,39 @@
 			<intent-filter>
 				<action android:name="android.service.quicksettings.action.QS_TILE" />
 			</intent-filter>
+
+			<meta-data
+				android:name="android.service.quicksettings.TILE_CATEGORY"
+				android:value="android.service.quicksettings.CATEGORY_CONNECTIVITY" />
+			<meta-data
+				android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+				android:value="true" />
+			<meta-data
+				android:name="android.service.quicksettings.ACTIVE_TILE"
+				android:value="true" />
 		</service>
 
 		<service
-			android:name=".WifiMonitoringService"
+			android:name=".service.UsbDebuggingTileService"
+			android:enabled="false"
+			android:exported="true"
+			android:icon="@drawable/ic_cable"
+			android:label="@string/usb_debugging"
+			android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+			<intent-filter>
+				<action android:name="android.service.quicksettings.action.QS_TILE" />
+			</intent-filter>
+
+			<meta-data
+				android:name="android.service.quicksettings.TOGGLEABLE_TILE"
+				android:value="true" />
+			<meta-data
+				android:name="android.service.quicksettings.ACTIVE_TILE"
+				android:value="true" />
+		</service>
+
+		<service
+			android:name=".service.WifiMonitoringService"
 			android:exported="false"
 			android:foregroundServiceType="specialUse">
 			<property
@@ -86,7 +125,7 @@
 		</service>
 
 		<receiver
-			android:name=".BootReceiver"
+			android:name=".service.BootReceiver"
 			android:exported="false">
 			<intent-filter>
 				<action android:name="android.intent.action.BOOT_COMPLETED" />

@@ -1,4 +1,4 @@
-package com.ericlowry.dnstoggle
+package com.ericlowry.dnstoggle.util
 
 import android.Manifest
 import android.content.Context
@@ -7,6 +7,8 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.ericlowry.dnstoggle.R
+import com.ericlowry.dnstoggle.data.Constants
 
 object NotificationUtils {
 

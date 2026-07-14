@@ -1,7 +1,6 @@
-package com.ericlowry.dnstoggle
+package com.ericlowry.dnstoggle.service
 
 import android.Manifest
-import android.app.PendingIntent
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -11,7 +10,13 @@ import android.provider.Settings.Global
 import android.service.quicksettings.Tile
 import android.service.quicksettings.TileService
 import android.widget.Toast
-
+import com.ericlowry.dnstoggle.DnsToggleApplication
+import com.ericlowry.dnstoggle.R
+import com.ericlowry.dnstoggle.data.Constants
+import com.ericlowry.dnstoggle.data.DnsManager
+import com.ericlowry.dnstoggle.data.DnsSettingsRepository
+import com.ericlowry.dnstoggle.ui.MainActivity
+import com.ericlowry.dnstoggle.util.RootUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -125,7 +130,12 @@ class DnsToggleService : TileService() {
 					val specifier =
 						Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
 							?: getString(R.string.on_label)
-					"$prefix$specifier"
+
+					val displayName = DnsSettingsRepository.dnsHostnames.value
+						?.find { it.hostname == specifier }
+						?.getDisplayName() ?: specifier
+
+					"$prefix$displayName"
 				} else {
 					"${prefix}${getString(R.string.off_label)}"
 				}
@@ -143,7 +153,6 @@ class DnsToggleService : TileService() {
 		}
 	}
 
-	@Suppress("DEPRECATION")
 	private fun launchMainActivity(
 		showPermissionDialog: Boolean = false,
 		focusDnsInput: Boolean = false
@@ -154,17 +163,7 @@ class DnsToggleService : TileService() {
 			if (focusDnsInput) putExtra(MainActivity.EXTRA_FOCUS_DNS_INPUT, true)
 		}
 
-		val pendingIntent = PendingIntent.getActivity(
-			this, 0, intent,
-			PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
-		)
-
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-			startActivityAndCollapse(pendingIntent)
-		} else {
-			@Suppress("StartActivityAndCollapseDeprecated", "DEPRECATION")
-			startActivityAndCollapse(intent)
-		}
+		TileServiceCompat.startActivityAndCollapse(this, intent)
 	}
 
 	private fun showPermissionRequiredDialog() {

@@ -1,6 +1,7 @@
 package com.ericlowry.dnstoggle
 
 import androidx.test.core.app.ApplicationProvider
+import com.ericlowry.dnstoggle.data.DnsSettingsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -31,7 +32,7 @@ class DnsSettingsRepositoryTest {
 
 		val hostnames = DnsSettingsRepository.dnsHostnames.value
 		assertTrue(hostnames != null)
-		assertEquals(1, hostnames?.count { it == hostname })
+		assertEquals(1, hostnames?.count { it.hostname == hostname })
 	}
 
 	@Test
@@ -55,6 +56,6 @@ class DnsSettingsRepositoryTest {
 		DnsSettingsRepository.removeHostname(hostname)
 
 		val hostnames = DnsSettingsRepository.dnsHostnames.value
-		assertTrue(hostnames?.contains(hostname) == true)
+		assertTrue(hostnames?.any { it.hostname == hostname } == true)
 	}
 }

@@ -1,4 +1,4 @@
-package com.ericlowry.dnstoggle
+package com.ericlowry.dnstoggle.data
 
 object Constants {
 	// Settings.Global keys
@@ -20,6 +20,7 @@ object Constants {
 	const val PREF_DNS_HOSTNAMES = "dns_hostnames"
 	const val PREF_SHOW_TOAST = "show_toast_notification"
 	const val PREF_LAST_USED_HOSTNAME = "last_used_hostname"
+	const val PREF_USB_DEBUGGING_TILE_UNLOCKED = "usb_debugging_tile_unlocked"
 
 	// VPN Override Keys
 	const val PREF_VPN_OVERRIDE_ENABLED = "vpn_override_enabled"

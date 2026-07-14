@@ -1,9 +1,17 @@
-package com.ericlowry.dnstoggle
+package com.ericlowry.dnstoggle.data
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.widget.Toast
 import androidx.core.content.edit
+import com.ericlowry.dnstoggle.DnsToggleApplication
+import com.ericlowry.dnstoggle.R
+import com.ericlowry.dnstoggle.util.EncryptionManager
+import com.ericlowry.dnstoggle.util.NetworkUtils
+import com.ericlowry.dnstoggle.util.NotificationUtils
 
 object DnsManager {
 	private const val TAG = "DnsManager"
@@ -132,26 +140,29 @@ object DnsManager {
 					true
 				) && !handledByAuto
 			) {
-				android.os.Handler(android.os.Looper.getMainLooper()).post {
+				Handler(Looper.getMainLooper()).post {
 					if (enabled) {
 						if (previousMode != Constants.DNS_MODE_HOSTNAME) {
-							android.widget.Toast.makeText(
+							Toast.makeText(
 								context,
 								"${context.getString(R.string.private_dns)}: ${context.getString(R.string.on_label)}",
-								android.widget.Toast.LENGTH_SHORT
+								Toast.LENGTH_SHORT
 							).show()
 						} else if (previousHostname != effectiveHostname) {
-							android.widget.Toast.makeText(
+							val displayName = DnsSettingsRepository.dnsHostnames.value
+								?.find { it.hostname == effectiveHostname }
+								?.getDisplayName() ?: effectiveHostname
+							Toast.makeText(
 								context,
-								context.getString(R.string.toast_dns_changed, effectiveHostname),
-								android.widget.Toast.LENGTH_SHORT
+								context.getString(R.string.toast_dns_changed, displayName),
+								Toast.LENGTH_SHORT
 							).show()
 						}
 					} else if (previousMode == Constants.DNS_MODE_HOSTNAME) {
-						android.widget.Toast.makeText(
+						Toast.makeText(
 							context,
 							"${context.getString(R.string.private_dns)}: ${context.getString(R.string.off_label)}",
-							android.widget.Toast.LENGTH_SHORT
+							Toast.LENGTH_SHORT
 						).show()
 					}
 				}

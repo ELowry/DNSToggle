@@ -1,17 +1,29 @@
-package com.ericlowry.dnstoggle
+package com.ericlowry.dnstoggle.ui
 
+import android.content.ComponentName
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.HapticFeedbackConstants
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
+import android.view.animation.AccelerateInterpolator
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import com.ericlowry.dnstoggle.DnsToggleApplication
+import com.ericlowry.dnstoggle.R
+import com.ericlowry.dnstoggle.data.Constants
+import com.ericlowry.dnstoggle.data.DnsHostname
+import com.ericlowry.dnstoggle.data.DnsManager
+import com.ericlowry.dnstoggle.data.DnsSettingsRepository
+import com.ericlowry.dnstoggle.service.UsbDebuggingTileService
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.listitem.ListItemCardView
 import com.google.android.material.listitem.ListItemLayout
@@ -24,8 +36,20 @@ class DnsSelectionActivity : AppCompatActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
+		val component = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+			intent.getParcelableExtra(Intent.EXTRA_COMPONENT_NAME, ComponentName::class.java)
+		} else {
+			@Suppress("DEPRECATION") intent.getParcelableExtra(Intent.EXTRA_COMPONENT_NAME)
+		}
+
+		if (component?.className == UsbDebuggingTileService::class.java.name) {
+			startActivity(Intent(this, DeveloperOptionsActivity::class.java))
+			finish()
+			return
+		}
+
 		lifecycleScope.launch {
-			val hostnames = DnsSettingsRepository.dnsHostnames.first { it != null } ?: emptySet()
+			val hostnames = DnsSettingsRepository.dnsHostnames.first { it != null } ?: emptyList()
 			if (hostnames.size <= 1) {
 				startActivity(Intent(this@DnsSelectionActivity, MainActivity::class.java).apply {
 					flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -38,7 +62,7 @@ class DnsSelectionActivity : AppCompatActivity() {
 		}
 	}
 
-	private fun setupPopup(hostnames: Set<String>) {
+	private fun setupPopup(hostnames: List<DnsHostname>) {
 		val dialogView = LayoutInflater.from(this)
 			.inflate(R.layout.dialog_dns_selection, findViewById(android.R.id.content), false)
 		setContentView(dialogView)
@@ -63,7 +87,7 @@ class DnsSelectionActivity : AppCompatActivity() {
 			Settings.Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
 
 		fun selectOption(selectedIndex: Int, onSelected: () -> Unit) {
-			listContainer.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+			listContainer.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
 
 			updateSelectionVisuals(listContainer, selectedIndex)
 
@@ -76,14 +100,16 @@ class DnsSelectionActivity : AppCompatActivity() {
 		val totalItems = hostnames.size + 1
 		var currentPosition = 0
 
-		hostnames.sortedWith(String.CASE_INSENSITIVE_ORDER).forEach { hostname ->
+		hostnames.forEach { dnsEntry ->
+			val hostname = dnsEntry.hostname
 			val isActive =
 				(hostname == currentSpecifier && currentMode == Constants.DNS_MODE_HOSTNAME)
 			val index = currentPosition
 
 			val itemView = createListItem(
 				parent = listContainer,
-				text = hostname,
+				text = dnsEntry.getDisplayName(),
+				secondaryText = dnsEntry.label?.let { hostname },
 				isActive = isActive,
 				position = currentPosition,
 				totalItems = totalItems
@@ -102,6 +128,7 @@ class DnsSelectionActivity : AppCompatActivity() {
 		val autoItemView = createListItem(
 			parent = listContainer,
 			text = getString(R.string.automatic_off),
+			secondaryText = null,
 			isActive = isAutomaticActive,
 			position = currentPosition,
 			totalItems = totalItems
@@ -133,6 +160,7 @@ class DnsSelectionActivity : AppCompatActivity() {
 	private fun createListItem(
 		parent: ViewGroup,
 		text: String,
+		secondaryText: String?,
 		isActive: Boolean,
 		position: Int,
 		totalItems: Int,
@@ -142,9 +170,16 @@ class DnsSelectionActivity : AppCompatActivity() {
 		val listItemLayout = itemView as ListItemLayout
 		val cardView = itemView.findViewById<ListItemCardView>(R.id.listItemCard)
 		val textView = itemView.findViewById<TextView>(R.id.tvHostname)
+		val secondaryTextView = itemView.findViewById<TextView>(R.id.tvSecondaryHostname)
 		val radioButton = itemView.findViewById<MaterialRadioButton>(R.id.radioDns)
 
 		textView.text = text
+		if (secondaryText != null) {
+			secondaryTextView.text = secondaryText
+			secondaryTextView.visibility = View.VISIBLE
+		} else {
+			secondaryTextView.visibility = View.GONE
+		}
 		cardView.isChecked = isActive
 		radioButton.isChecked = isActive
 
@@ -159,7 +194,7 @@ class DnsSelectionActivity : AppCompatActivity() {
 	override fun finish() {
 		if (isFinishingAnimated) {
 			super.finish()
-			if (android.os.Build.VERSION.SDK_INT >= 34) {
+			if (Build.VERSION.SDK_INT >= 34) {
 				overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, 0, 0)
 			} else {
 				@Suppress("DEPRECATION")
@@ -181,15 +216,15 @@ class DnsSelectionActivity : AppCompatActivity() {
 
 		// Disable touches while closing
 		window.setFlags(
-			android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-			android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+			WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+			WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
 		)
 
 		popupView.animate()
 			.translationY(-(popupView.height.toFloat() + popupView.y)) // Ensure it clears the top of the screen
 			.alpha(0f)
 			.setDuration(250)
-			.setInterpolator(android.view.animation.AccelerateInterpolator())
+			.setInterpolator(AccelerateInterpolator())
 			.withEndAction {
 				finish()
 			}

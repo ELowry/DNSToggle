@@ -20,7 +20,7 @@
 	<string name="show_toast_notif">Afficher les notifications toast</string>
 	<string name="show_toast_notif_summary">Afficher une notification toast lors des changements de mode de DNS privé.</string>
 	<string name="on_label">Activé</string>
-	<string name="status_active_reachable">Actif &amp; Joignable</string>
+	<string name="status_active_reachable">Actif et joignable</string>
 	<string name="off_label">Désactivé</string>
 	<string name="main_permission_title">Autorisation système requise</string>
 	<string name="main_permission_message">L\'application requiert une autorisation spéciale pour modifier les paramètres DNS privés.</string>
@@ -30,6 +30,7 @@
 	<string name="add_hostname">Ajouter une addresse DNS</string>
 	<string name="edit_hostname">Modifier l\'addresse</string>
 	<string name="dns_hostname_hint">Addresse DNS (ex: dns.nextdns.io)</string>
+	<string name="dns_label_hint">Surnom (optionnel)</string>
 	<string name="delete_hostname_confirm">Supprimer cette addresse?</string>
 	<string name="warning_unreachable_dns">Serveur DNS injoignable sur le port 853 (DoT). Android peut possiblement s\'y connecter par d\'autres méthodes.</string>
 	<string name="status_testing_dns">Test de connexion…</string>
@@ -91,4 +92,9 @@
 	<string name="github">GitHub (code source)</string>
 	<string name="support">Obtenir de l\'aide</string>
 	<string name="app_version_format">Version de l\'application: %s</string>
+	<string name="usb_debugging">Débogage USB</string>
+	<string name="show_usb_debugging_tile">Afficher la tuile de débogage USB</string>
+	<string name="show_usb_debugging_tile_summary">Afficher une tuile supplémentaire pour activer/désactiver le débogage USB. Un appui long ouvre les options développeur.</string>
+	<string name="usb_debugging_tile_steps">Cliquez encore %1$d fois pour activer de la tuile de débogage USB.</string>
+	<string name="usb_debugging_tile_enabled">Tuile de débogage USB disponible dans les paramètres rapides!</string>
 </resources>
