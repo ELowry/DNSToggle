@@ -1,4 +1,4 @@
-- Nouvelle option pour donner des surnoms aux adresse DNS.
+- Nouvelle option pour donner des surnoms aux adresses DNS.
 - Les adresses DNS sont désormais manuellement réorganisables.
 - Ajout d'une tuile de débogage USB cachée.
 - Optimisations diverses.

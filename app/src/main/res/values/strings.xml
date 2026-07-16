@@ -1,58 +1,63 @@
 <resources>
+	<!-- App Info -->
 	<string name="app_name">DNS Toggle</string>
-	<string name="private_dns">Private DNS</string>
-	<string name="custom_dns_provider">Custom DNS Provider(s)</string>
-	<string name="rename_app">Rename App</string>
-	<string name="rename_app_message">Choose a name that makes sense to you. This will be shown on the app icon and the Quick Settings tile.</string>
+	<string name="app_version_format">App version: %s</string>
+	<string name="github">GitHub (source code)</string>
+	<string name="support">Get Support</string>
+
+	<!-- Global -->
+	<string name="ok">OK</string>
+	<string name="cancel">Cancel</string>
+	<string name="settings">Settings</string>
+	<string name="on_label">On</string>
+	<string name="off_label">Off</string>
+	<string name="automatic_off">Automatic (off)</string>
+	<string name="info_content_description">More information</string>
+
+	<!-- Permissions & ADB Setup -->
 	<string name="permission_required">Permission Required</string>
 	<string name="permission_message">To use this toggle, you must grant settings permissions through root or run this ADB command on your computer with USB debugging enabled:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
+	<string name="adb_command_label">ADB Command</string>
 	<string name="copy_command">Copy Command</string>
 	<string name="command_copied">Command copied to clipboard</string>
-	<string name="adb_command_label">ADB Command</string>
 	<string name="retry_root">Retry Root</string>
 	<string name="root_grant_failed">Root grant failed or denied</string>
 	<string name="permission_granted">Permission granted</string>
-	<string name="hide_launcher_icon">Hide app icon</string>
-	<string name="hide_launcher_icon_summary">When enabled, the app will be hidden from your app drawer. You can still access settings by long-pressing the Quick Settings tile. Note: on some launchers this option may not fully hide the icon.</string>
-	<string name="options_title">Options</string>
-	<string name="show_toast_notif">Show toast notifications</string>
-	<string name="show_toast_notif_summary">Show a status notification when Private DNS is toggled via the Quick Settings tile.</string>
-	<string name="ok">OK</string>
-	<string name="cancel">Cancel</string>
-	<string name="on_label">On</string>
-	<string name="status_active_reachable">Active &amp; Reachable</string>
-	<string name="off_label">Off</string>
 	<string name="main_permission_title">System Settings Permission Required</string>
 	<string name="main_permission_message">The app needs a special permission to change Private DNS settings.</string>
 	<string name="btn_fix_permission">Fix</string>
-	<string name="error_empty_dns_host">Private DNS cannot be enabled while host address is empty</string>
-	<string name="error_invalid_dns_host">Invalid DNS host address format</string>
+	<string name="open_settings">Open Settings</string>
+
+	<!-- Main UI - DNS Management -->
+	<string name="private_dns">Private DNS</string>
+	<string name="disable_dns_test">Skip connection test</string>
+	<string name="disable_dns_test_summary">Enable this only if your DNS works but the app shows it as unreachable.</string>
+	<string name="custom_dns_provider">Custom DNS Provider(s)</string>
 	<string name="add_hostname">Add Hostname</string>
 	<string name="edit_hostname">Edit Hostname</string>
 	<string name="dns_hostname_hint">DNS Hostname (e.g. dns.nextdns.io)</string>
 	<string name="dns_label_hint">Label (optional)</string>
 	<string name="delete_hostname_confirm">Remove this hostname?</string>
-	<string name="warning_unreachable_dns">DNS server unreachable on port 853 (DoT). Android may still successfully connect via other methods.</string>
+	<string name="error_empty_dns_host">Private DNS cannot be enabled while host address is empty</string>
+	<string name="error_invalid_dns_host">Invalid DNS host address format</string>
+
+	<!-- Main UI - Status -->
 	<string name="status_testing_dns">Testing connection…</string>
+	<string name="status_active_reachable">Active &amp; Reachable</string>
+	<string name="warning_unreachable_dns">DNS server unreachable on port 853 (DoT). Android may still successfully connect via other methods.</string>
 	<string name="status_override_vpn">VPN Override Active</string>
 	<string name="status_override_ssid">SSID Blacklist Active (%s)</string>
-	<string name="disable_dns_test">Skip connection test</string>
-	<string name="disable_dns_test_summary">Enable this only if your DNS works but the app shows it as unreachable.</string>
 
-	<!-- VPN Settings -->
-	<string name="vpn_override_title">VPN Override</string>
-	<string name="vpn_override_summary">Automatically change Private DNS when a VPN is connected.</string>
-	<string name="vpn_dns_label">DNS on VPN</string>
-	<string name="vpn_permission_notice">Notification permission is required for background automation.</string>
-	<string name="vpn_hostname_removed_warning">The DNS hostname previously used for VPN was removed. VPN Override has been disabled.</string>
-
-	<!-- SSID Blacklist -->
+	<!-- Main UI - SSID Blacklist & Monitoring -->
 	<string name="ssid_blacklist_title">SSID Blacklist</string>
+	<string name="wifi_monitoring_info_title">Wi-Fi Monitoring Info</string>
+	<string name="wifi_monitoring_info_text">To support automatic toggling, the app monitors network changes. The impact on battery consumption should be minimal, but the system may still report background activity.</string>
+	<string name="battery_optimization_explanation">Some devices kill background monitoring to save battery. If automation stops working, disable restrictions for this app.</string>
+	<string name="ignore_battery_optimizations">Disable battery restrictions</string>
 	<string name="auto_blacklist_on_disable">Auto-blacklist when disabling</string>
 	<string name="auto_whitelist_on_enable">Auto-whitelist when enabling</string>
 	<string name="grant_permission_notice">Location/Nearby permission (including background) required to verify the Wi-Fi SSID.</string>
 	<string name="grant_permission_button">Grant Permissions</string>
-	<string name="open_settings">Open Settings</string>
 	<string name="permissions_permanently_denied">Location and Nearby devices permissions have been permanently denied. Please enable them in App Settings to use this feature.</string>
 	<string name="notification_permission_explanation">To notify you when Private DNS is automatically toggled in the background, and ensure monitoring remains active, please allow notifications.</string>
 	<string name="background_location_explanation">To monitor Wi-Fi while the app is closed, Android requires \"Allow all the time\" location access. DNS Toggle only uses this to see the Wi-Fi name, and never tracks your physical location or uses GPS.</string>
@@ -62,39 +67,59 @@
 	<string name="ssid_hint">SSID (Wi-Fi Name)</string>
 	<string name="delete_ssid_confirm">Remove this SSID from blacklist?</string>
 
-	<!-- Keystore Errors -->
+	<!-- Main UI - VPN Override -->
+	<string name="vpn_override_title">VPN Override</string>
+	<string name="vpn_override_summary">Automatically change Private DNS when a VPN is connected.</string>
+	<string name="vpn_dns_label">DNS on VPN</string>
+	<string name="vpn_permission_notice">Notification permission is required for background automation.</string>
+	<string name="vpn_hostname_removed_warning">The DNS hostname previously used for VPN was removed. VPN Override has been disabled.</string>
+
+	<!-- Main UI - General Options -->
+	<string name="options_title">Options</string>
+	<string name="show_toast_notif">Show toast notifications</string>
+	<string name="show_toast_notif_summary">Show a status notification when Private DNS is toggled via the Quick Settings tile.</string>
+	<string name="hide_launcher_icon">Hide app icon</string>
+	<string name="hide_launcher_icon_summary">When enabled, the app will be hidden from your app drawer. You can still access settings by long-pressing the Quick Settings tile. Note: on some launchers this option may not fully hide the icon.</string>
+
+	<!-- Main UI - USB Debugging Tile -->
+	<string name="usb_debugging">USB Debugging</string>
+	<string name="show_usb_debugging_tile">Show USB Debugging tile</string>
+	<string name="show_usb_debugging_tile_summary">Show an extra Quick Settings tile to toggle USB Debugging. Long-press to open developer options.</string>
+	<string name="usb_debugging_tile_steps">Tap %1$d more times to enable a USB debugging tile.</string>
+	<string name="usb_debugging_tile_enabled">USB debugging Quick Settings tile now available!</string>
+	<string name="enabling">Enabling…</string>
+	<string name="disabling">Disabling…</string>
+
+	<!-- Menu Actions -->
+	<string name="rename_app">Rename App</string>
+	<string name="rename_app_message">Choose a name that makes sense to you. This will be shown on the app icon and the Quick Settings tile.</string>
+	<string name="export_config">Export Configuration</string>
+	<string name="import_config">Import Configuration</string>
+
+	<!-- Security -->
 	<string name="keystore_error_title">Security Reset</string>
 	<string name="keystore_error_message">Due to a change in your device\'s security settings (like changing your screen lock), your Wi-Fi blacklist was reset to protect your data. You will need to re-add your blacklisted networks.</string>
 
-	<!-- Notifications -->
+	<!-- Backup/Restore -->
+	<string name="export">Export</string>
+	<string name="export_password_description">Enter a password to encrypt your backup file. You will need this same password to restore this configuration later.</string>
+	<string name="password">Password</string>
+	<string name="import_action">Import</string>
+	<string name="import_confirmation_message">Importing this configuration will overwrite your current settings, hostnames, and Wi-Fi blacklist. Do you want to proceed?</string>
+	<string name="export_success">Configuration exported successfully</string>
+	<string name="export_failed">Failed to export configuration</string>
+	<string name="import_success">Configuration imported successfully</string>
+	<string name="import_failed">Failed to read file</string>
+	<string name="import_failed_password">Decryption failed. Incorrect password or corrupted file.</string>
+
+	<!-- Feedback & Notifications -->
 	<string name="notif_channel_name">Network Status</string>
+	<string name="service_notif_title">Monitoring Network Status</string>
+	<string name="service_notif_text">DNS Toggle is active to automate Private DNS mode.</string>
 	<string name="notif_dns_disabled_auto">Private DNS disabled automatically for %s</string>
 	<string name="notif_vpn_dns_applied">Private DNS adjusted for VPN</string>
 	<string name="notif_vpn_dns_restored">Private DNS restored after VPN</string>
 	<string name="notif_ssid_added">Added %s to blacklist</string>
 	<string name="notif_ssid_removed">Removed %s from blacklist</string>
 	<string name="toast_dns_changed">Private DNS changed to %s</string>
-
-	<!-- Foreground Service -->
-	<string name="service_notif_title">Monitoring Network Status</string>
-	<string name="service_notif_text">DNS Toggle is active to automate Private DNS mode.</string>
-	<string name="automatic_off">Automatic (off)</string>
-	<string name="settings">Settings</string>
-
-	<!-- Wi-Fi Monitoring Info -->
-	<string name="wifi_monitoring_info_title">Wi-Fi Monitoring Info</string>
-	<string name="wifi_monitoring_info_text">To support automatic toggling, the app monitors network changes. The impact on battery consumption should be minimal, but the system may still report background activity.</string>
-	<string name="battery_optimization_explanation">Some devices kill background monitoring to save battery. If automation stops working, disable restrictions for this app.</string>
-	<string name="ignore_battery_optimizations">Disable battery restrictions</string>
-	<string name="info_content_description">More information</string>
-
-	<!-- App Information -->
-	<string name="github">GitHub (source code)</string>
-	<string name="support">Get Support</string>
-	<string name="app_version_format">App version: %s</string>
-	<string name="usb_debugging">USB Debugging</string>
-	<string name="show_usb_debugging_tile">Show USB Debugging tile</string>
-	<string name="show_usb_debugging_tile_summary">Show an extra Quick Settings tile to toggle USB Debugging. Long-press to open developer options.</string>
-	<string name="usb_debugging_tile_steps">Tap %1$d more times to enable a USB debugging tile.</string>
-	<string name="usb_debugging_tile_enabled">USB debugging Quick Settings tile now available!</string>
 </resources>

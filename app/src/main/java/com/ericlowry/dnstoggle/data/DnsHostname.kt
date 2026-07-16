@@ -4,8 +4,12 @@ import org.json.JSONObject
 
 data class DnsHostname(
 	val hostname: String,
-	val label: String? = null
+	val label: String? = null,
 ) {
+	init {
+		require(hostname.isNotBlank()) { "Hostname cannot be blank" }
+	}
+
 	fun toSerializedString(): String {
 		return if (label == null) {
 			hostname
@@ -28,7 +32,7 @@ data class DnsHostname(
 					val json = JSONObject(serialized.substring(2))
 					DnsHostname(
 						hostname = json.getString("h"),
-						label = json.optString("l").takeIf { it.isNotEmpty() }
+						label = json.optString("l").takeIf { it.isNotEmpty() },
 					)
 				} catch (_: Exception) {
 					DnsHostname(hostname = serialized)

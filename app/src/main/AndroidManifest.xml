@@ -39,6 +39,18 @@
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 			</intent-filter>
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+
+				<data android:scheme="content" />
+				<data android:scheme="file" />
+				<data android:mimeType="*/*" />
+				<data android:pathPattern=".*\\.dnstoggle" />
+				<data android:host="*" />
+			</intent-filter>
 		</activity>
 
 		<activity
@@ -100,7 +112,7 @@
 			android:name=".service.UsbDebuggingTileService"
 			android:enabled="false"
 			android:exported="true"
-			android:icon="@drawable/ic_cable"
+			android:icon="@drawable/ic_tool"
 			android:label="@string/usb_debugging"
 			android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
 			<intent-filter>

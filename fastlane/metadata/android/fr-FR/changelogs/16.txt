@@ -1,0 +1,2 @@
+- Ajout d'options d'import/export des paramètres de l'application via un fichier sécurisé par mot de passe.
+- Enregistrement de l'application pour l'ouverture des fichiers .dnstoggle.
