@@ -13,18 +13,19 @@ import com.ericlowry.dnstoggle.data.Constants
 object NotificationUtils {
 
 	fun showStatusNotification(context: Context, message: String) {
-		val notificationBuilder = NotificationCompat.Builder(context, Constants.CHANNEL_ID_ALERT)
+		val appContext = context.applicationContext
+		val notificationBuilder = NotificationCompat.Builder(appContext, Constants.CHANNEL_ID_ALERT)
 			.setSmallIcon(R.drawable.ic_qs_dns)
-			.setContentTitle(context.getString(R.string.app_name))
+			.setContentTitle(appContext.getString(R.string.app_name))
 			.setContentText(message)
 			.setPriority(NotificationCompat.PRIORITY_DEFAULT)
 			.setAutoCancel(true)
 
-		val manager = NotificationManagerCompat.from(context)
+		val manager = NotificationManagerCompat.from(appContext)
 		val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 			ContextCompat.checkSelfPermission(
-				context,
-				Manifest.permission.POST_NOTIFICATIONS
+				appContext,
+				Manifest.permission.POST_NOTIFICATIONS,
 			) == PackageManager.PERMISSION_GRANTED
 		} else {
 			true

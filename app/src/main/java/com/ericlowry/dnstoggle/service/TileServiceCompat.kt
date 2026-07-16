@@ -20,7 +20,7 @@ object TileServiceCompat {
 	fun startActivityAndCollapse(tileService: TileService, intent: Intent) {
 		val pendingIntent = PendingIntent.getActivity(
 			tileService, 0, intent,
-			PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+			PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
 		)
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
@@ -28,7 +28,7 @@ object TileServiceCompat {
 		} else {
 			@Suppress(
 				"StartActivityAndCollapseDeprecated",
-				"DEPRECATION"
+				"DEPRECATION",
 			) tileService.startActivityAndCollapse(intent)
 		}
 	}

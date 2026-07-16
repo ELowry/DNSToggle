@@ -1,0 +1,2 @@
+- Added configuration backup/import settings with password-encrypted storage.
+- Registered app support for .dnstoggle backup files.

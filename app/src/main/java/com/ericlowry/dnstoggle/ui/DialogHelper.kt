@@ -2,6 +2,9 @@ package com.ericlowry.dnstoggle.ui
 
 import android.app.Activity
 import android.content.Context
+import android.text.Editable
+import android.text.InputType
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.WindowCompat
@@ -17,7 +20,7 @@ object DialogHelper {
 		activity: Activity,
 		existingHostname: String?,
 		existingLabel: String?,
-		onSave: (hostname: String, label: String?) -> Unit
+		onSave: (hostname: String, label: String?) -> Unit,
 	) {
 		val dialogView =
 			LayoutInflater.from(activity).inflate(R.layout.dialog_add_hostname, null, false)
@@ -34,15 +37,13 @@ object DialogHelper {
 		if (existingHostname != null) {
 			etHostname.setText(existingHostname)
 			etHostname.setSelection(existingHostname.length)
-			if (existingLabel != null) {
-				etLabel.setText(existingLabel)
-			}
+			existingLabel?.let { etLabel.setText(it) }
 		}
 
 		val dialog = MaterialAlertDialogBuilder(activity)
 			.setTitle(
 				if (existingHostname == null) activity.getString(R.string.add_hostname) else activity.getString(
-					R.string.edit_hostname
+					R.string.edit_hostname,
 				)
 			)
 			.setView(dialogView)
@@ -76,7 +77,7 @@ object DialogHelper {
 		activity: Activity,
 		existingSsid: String?,
 		suggestedSsid: String?,
-		onSave: (String) -> Unit
+		onSave: (String) -> Unit,
 	) {
 		val dialogView =
 			LayoutInflater.from(activity).inflate(R.layout.dialog_text_input, null, false)
@@ -94,7 +95,7 @@ object DialogHelper {
 		val dialog = MaterialAlertDialogBuilder(activity)
 			.setTitle(
 				if (existingSsid == null) activity.getString(R.string.add_ssid) else activity.getString(
-					R.string.edit_ssid
+					R.string.edit_ssid,
 				)
 			)
 			.setView(dialogView)
@@ -238,5 +239,70 @@ object DialogHelper {
 			.setNeutralButton(R.string.retry_root) { _, _ -> onRetryRoot() }
 			.setNegativeButton(context.getString(R.string.ok), null)
 			.show()
+	}
+
+	fun showPasswordDialog(
+		activity: Activity,
+		titleResId: Int,
+		actionResId: Int,
+		messageResId: Int? = null,
+		onPasswordEntered: (CharArray) -> Unit,
+	) {
+		val dialogView =
+			LayoutInflater.from(activity).inflate(R.layout.dialog_text_input, null, false)
+		val textInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayout)
+		val inputTextField = dialogView.findViewById<TextInputEditText>(R.id.etInput)
+
+		textInputLayout.hint = activity.getString(R.string.password)
+		inputTextField.inputType =
+			InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+		val builder = MaterialAlertDialogBuilder(activity)
+			.setTitle(titleResId)
+			.setView(dialogView)
+			.setPositiveButton(actionResId) { _, _ ->
+				val password = inputTextField.text?.toString()?.toCharArray() ?: CharArray(0)
+				onPasswordEntered(password)
+			}
+			.setNegativeButton(R.string.cancel, null)
+
+		messageResId?.let { builder.setMessage(it) }
+
+		val dialog = builder.create()
+
+		dialog.setOnShowListener {
+			val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+			positiveButton.isEnabled = !inputTextField.text.isNullOrEmpty()
+
+			inputTextField.addTextChangedListener(
+				object : TextWatcher {
+					override fun beforeTextChanged(
+						s: CharSequence?,
+						start: Int,
+						count: Int,
+						after: Int,
+					) {
+					}
+
+					override fun onTextChanged(
+						s: CharSequence?,
+						start: Int,
+						before: Int,
+						count: Int
+					) {
+						positiveButton.isEnabled = !s.isNullOrEmpty()
+					}
+
+					override fun afterTextChanged(s: Editable?) {}
+				},
+			)
+
+			inputTextField.requestFocus()
+			dialog.window?.let { window ->
+				WindowCompat.getInsetsController(window, inputTextField)
+					.show(WindowInsetsCompat.Type.ime())
+			}
+		}
+		dialog.show()
 	}
 }

@@ -14,8 +14,6 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -39,22 +37,29 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ericlowry.dnstoggle.DnsToggleApplication
 import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.Constants
+import com.ericlowry.dnstoggle.data.DnsSettingsRepository
 import com.ericlowry.dnstoggle.data.DnsViewModel
 import com.ericlowry.dnstoggle.service.DnsToggleService
 import com.ericlowry.dnstoggle.service.TileServiceCompat
+import com.ericlowry.dnstoggle.util.BackupManager
 import com.ericlowry.dnstoggle.util.NetworkUtils
 import com.ericlowry.dnstoggle.util.PermissionHelper
 import com.ericlowry.dnstoggle.util.RootUtils
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
+import com.google.android.material.color.MaterialColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.listitem.ListItemCardView
 import com.google.android.material.listitem.ListItemLayout
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.radiobutton.MaterialRadioButton
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.milliseconds
 
 class MainActivity : AppCompatActivity() {
@@ -72,6 +77,7 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var progressRootAction: CircularProgressIndicator
 	private lateinit var dnsHostnameListContainer: RecyclerView
 	private lateinit var addHostnameButton: ImageButton
+	private lateinit var btnMenu: ImageButton
 
 	private lateinit var switchAutoBlacklist: MaterialSwitch
 	private lateinit var switchAutoWhitelist: MaterialSwitch
@@ -96,6 +102,7 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var cardMainPermission: MaterialCardView
 	private lateinit var btnFixMainPermission: Button
 
+	private lateinit var rowUsbDebuggingTile: View
 	private lateinit var switchUsbDebuggingTile: MaterialSwitch
 	private lateinit var tvUsbDebuggingTileSummary: TextView
 	private var devHitCount = 0
@@ -105,11 +112,53 @@ class MainActivity : AppCompatActivity() {
 	private var permissionDialog: AlertDialog? = null
 	private var isRedirectedFromTile = false
 
+	private val exportLauncher =
+		registerForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
+			uri?.let { targetUri ->
+				DialogHelper.showPasswordDialog(
+					this,
+					R.string.export_config,
+					R.string.export,
+					R.string.export_password_description,
+				) { password ->
+					lifecycleScope.launch(Dispatchers.IO) {
+						try {
+							val rawJson = DnsSettingsRepository.exportConfigToJson()
+							val encrypted = BackupManager.encryptBackup(rawJson, password)
+							contentResolver.openOutputStream(targetUri)?.use { out ->
+								out.write(encrypted.toByteArray())
+							}
+							withContext(Dispatchers.Main) {
+								Toast.makeText(
+									this@MainActivity,
+									R.string.export_success,
+									Toast.LENGTH_SHORT,
+								).show()
+							}
+						} catch (_: Exception) {
+							withContext(Dispatchers.Main) {
+								Toast.makeText(
+									this@MainActivity,
+									R.string.export_failed,
+									Toast.LENGTH_SHORT,
+								).show()
+							}
+						}
+					}
+				}
+			}
+		}
+
+	private val importLauncher =
+		registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+			uri?.let { processImportUri(it) }
+		}
+
 	private val foregroundPermissionLauncher = registerForActivityResult(
 		ActivityResultContracts.RequestMultiplePermissions(),
 	) { results ->
 		val allGranted = results.entries.all { it.value }
-		if (allGranted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+		if (allGranted && (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q)) {
 			showBackgroundLocationRationale()
 		} else {
 			updateSsidUiState(allGranted)
@@ -181,6 +230,10 @@ class MainActivity : AppCompatActivity() {
 			isRedirectedFromTile = true
 			showAddHostnameDialog()
 		}
+
+		if (intent?.action == Intent.ACTION_VIEW) {
+			intent.data?.let { processImportUri(it) }
+		}
 	}
 
 	private fun setupWindowInsets() {
@@ -196,6 +249,9 @@ class MainActivity : AppCompatActivity() {
 		val toolbar =
 			findViewById<MaterialToolbar>(R.id.topAppBar)
 		setSupportActionBar(toolbar)
+
+		val accentColor = MaterialColors.getColor(toolbar, android.R.attr.colorPrimary)
+		toolbar.logo?.setTint(accentColor)
 	}
 
 	private fun initializeViews() {
@@ -204,6 +260,7 @@ class MainActivity : AppCompatActivity() {
 		progressRootAction = findViewById(R.id.progressRootAction)
 		dnsHostnameListContainer = findViewById(R.id.dnsHostnameListContainer)
 		addHostnameButton = findViewById(R.id.btnAddHostname)
+		btnMenu = findViewById(R.id.btnMenu)
 
 		switchAutoBlacklist = findViewById(R.id.switchAutoBlacklist)
 		switchAutoWhitelist = findViewById(R.id.switchAutoWhitelist)
@@ -228,6 +285,7 @@ class MainActivity : AppCompatActivity() {
 		cardMainPermission = findViewById(R.id.cardMainPermission)
 		btnFixMainPermission = findViewById(R.id.btnFixMainPermission)
 
+		rowUsbDebuggingTile = findViewById(R.id.rowUsbDebuggingTile)
 		switchUsbDebuggingTile = findViewById(R.id.switchUsbDebuggingTile)
 		tvUsbDebuggingTileSummary = findViewById(R.id.tvUsbDebuggingTileSummary)
 
@@ -382,6 +440,10 @@ class MainActivity : AppCompatActivity() {
 			showAddHostnameDialog()
 		}
 
+		btnMenu.setOnClickListener {
+			showMenuBottomSheet()
+		}
+
 		switchAutoBlacklist.setOnCheckedChangeListener { _, isChecked ->
 			dnsViewModel.setAutoBlacklist(isChecked)
 			if (isChecked) {
@@ -470,8 +532,7 @@ class MainActivity : AppCompatActivity() {
 		val isDevUnlocked = prefs.getBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, false)
 
 		if (isDevUnlocked) {
-			switchUsbDebuggingTile.visibility = View.VISIBLE
-			tvUsbDebuggingTileSummary.visibility = View.VISIBLE
+			rowUsbDebuggingTile.visibility = View.VISIBLE
 			switchUsbDebuggingTile.isChecked = true
 		}
 
@@ -520,8 +581,7 @@ class MainActivity : AppCompatActivity() {
 				devToast?.show()
 				prefs.edit { putBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, true) }
 
-				switchUsbDebuggingTile.visibility = View.VISIBLE
-				tvUsbDebuggingTileSummary.visibility = View.VISIBLE
+				rowUsbDebuggingTile.visibility = View.VISIBLE
 				switchUsbDebuggingTile.isChecked = true
 
 				(application as DnsToggleApplication).updateUsbDebuggingTileAvailability()
@@ -532,8 +592,7 @@ class MainActivity : AppCompatActivity() {
 			prefs.edit { putBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, isChecked) }
 
 			if (!isChecked) {
-				switchUsbDebuggingTile.visibility = View.GONE
-				tvUsbDebuggingTileSummary.visibility = View.GONE
+				rowUsbDebuggingTile.visibility = View.GONE
 				devHitCount = 0
 			}
 
@@ -897,6 +956,15 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
+	private fun showImportConfirmationDialog(onConfirm: () -> Unit) {
+		MaterialAlertDialogBuilder(this)
+			.setTitle(R.string.import_config)
+			.setMessage(R.string.import_confirmation_message)
+			.setPositiveButton(R.string.import_action) { _, _ -> onConfirm() }
+			.setNegativeButton(R.string.cancel, null)
+			.show()
+	}
+
 	private fun showInitialPermissionDialog() {
 		if (permissionDialog?.isShowing == true) return
 
@@ -934,19 +1002,87 @@ class MainActivity : AppCompatActivity() {
 		)
 	}
 
-	override fun onCreateOptionsMenu(menu: Menu): Boolean {
-		menuInflater.inflate(R.menu.main_menu, menu)
-		return true
+	private fun showMenuBottomSheet() {
+		val bottomSheet = BottomSheetDialog(this)
+		val view = layoutInflater.inflate(
+			R.layout.dialog_menu_bottom_sheet,
+			findViewById(android.R.id.content),
+			false
+		)
+		bottomSheet.setContentView(view)
+
+		view.findViewById<MaterialButton>(R.id.btnMenuRename).setOnClickListener {
+			bottomSheet.dismiss()
+			showRenameAppDialog()
+		}
+
+		view.findViewById<MaterialButton>(R.id.btnMenuExport).setOnClickListener {
+			bottomSheet.dismiss()
+			exportLauncher.launch("DNSToggle_Backup.dnstoggle")
+		}
+
+		view.findViewById<MaterialButton>(R.id.btnMenuImport).setOnClickListener {
+			bottomSheet.dismiss()
+			importLauncher.launch(arrayOf("*/*"))
+		}
+
+		bottomSheet.show()
 	}
 
-	override fun onOptionsItemSelected(item: MenuItem): Boolean {
-		return when (item.itemId) {
-			R.id.action_rename_app -> {
-				showRenameAppDialog()
-				true
-			}
+	private fun processImportUri(uri: Uri) {
+		DialogHelper.showPasswordDialog(
+			this,
+			R.string.import_config,
+			R.string.import_action
+		) { password ->
+			lifecycleScope.launch(Dispatchers.IO) {
+				try {
+					val encryptedData =
+						contentResolver.openInputStream(uri)?.bufferedReader()
+							.use { reader ->
+								reader?.readText()
+							} ?: return@launch
 
-			else -> super.onOptionsItemSelected(item)
+					val decryptedJson = BackupManager.decryptBackup(encryptedData, password)
+
+					withContext(Dispatchers.Main) {
+						if (decryptedJson != null) {
+							showImportConfirmationDialog {
+								val isValidJson =
+									DnsSettingsRepository.importConfigFromJson(decryptedJson)
+								if (isValidJson) {
+									dnsViewModel.loadSettings()
+									Toast.makeText(
+										this@MainActivity,
+										R.string.import_success,
+										Toast.LENGTH_SHORT,
+									).show()
+								} else {
+									Toast.makeText(
+										this@MainActivity,
+										R.string.import_failed,
+										Toast.LENGTH_SHORT,
+									).show()
+								}
+							}
+						} else {
+							Toast.makeText(
+								this@MainActivity,
+								R.string.import_failed_password,
+								Toast.LENGTH_SHORT,
+							).show()
+						}
+					}
+				} catch (_: Exception) {
+					withContext(Dispatchers.Main) {
+						Toast.makeText(
+							this@MainActivity,
+							R.string.import_failed,
+							Toast.LENGTH_SHORT,
+						).show()
+					}
+				}
+			}
 		}
 	}
 

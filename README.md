@@ -36,6 +36,7 @@ By long-pressing the Quick Settings tile, you can access the configuration menu 
 - **Wi-Fi Blocklist**: Automatically disable Private DNS when connected to specific Wi-Fi networks.
   - Optional automated addition/removal of the current Wi-Fi SSID from the blocklist when manually toggling the Quick Settings tile.
 - **VPN toggling**: Automatically set a DNS hostname or toggle Private DNS when a VPN is in use on the device.
+- **Backup & Restore**: Export and import your configuration via password-encrypted `.dnstoggle` files.
 - **Dynamic Tile Labeling**: Rename the Quick Settings tile.
 - **Hide App Icon**: Optionally hide the app from your launcher drawer to keep your home screen clean.
 - **USB Debugging Tile**: (_Required Developer Mode_) Tap the app version number at the bottom of the settings menu 5 times in quick succession to add a USB Debugging Quick Settings tile.

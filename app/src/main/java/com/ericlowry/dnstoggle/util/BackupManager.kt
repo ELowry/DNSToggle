@@ -1,0 +1,79 @@
+package com.ericlowry.dnstoggle.util
+
+import android.util.Base64
+import java.security.SecureRandom
+import javax.crypto.Cipher
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.GCMParameterSpec
+import javax.crypto.spec.PBEKeySpec
+import javax.crypto.spec.SecretKeySpec
+
+object BackupManager {
+	private const val ITERATION_COUNT = 65536
+	private const val KEY_LENGTH = 256
+	private const val SALT_LENGTH = 16
+
+	fun encryptBackup(jsonData: String, password: CharArray): String {
+		val salt = ByteArray(SALT_LENGTH)
+		SecureRandom().nextBytes(salt)
+
+		val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+		val spec = PBEKeySpec(password, salt, ITERATION_COUNT, KEY_LENGTH)
+		val secretKey = SecretKeySpec(factory.generateSecret(spec).encoded, "AES")
+
+		val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+		cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+		val iv = cipher.iv
+		val ciphertext = cipher.doFinal(jsonData.toByteArray(Charsets.UTF_8))
+
+		val combined = ByteArray(1 + salt.size + 1 + iv.size + ciphertext.size)
+		var offset = 0
+
+		combined[offset++] = salt.size.toByte()
+		System.arraycopy(salt, 0, combined, offset, salt.size)
+		offset += salt.size
+
+		combined[offset++] = iv.size.toByte()
+		System.arraycopy(iv, 0, combined, offset, iv.size)
+		offset += iv.size
+
+		System.arraycopy(ciphertext, 0, combined, offset, ciphertext.size)
+		password.fill('\u0000')
+
+		return Base64.encodeToString(combined, Base64.NO_WRAP)
+	}
+
+	fun decryptBackup(encryptedBase64: String, password: CharArray): String? {
+		return try {
+			val combined = Base64.decode(encryptedBase64, Base64.NO_WRAP)
+			var offset = 0
+
+			val saltSize = combined[offset++].toInt() and 0xFF
+			val salt = ByteArray(saltSize)
+			System.arraycopy(combined, offset, salt, 0, saltSize)
+			offset += saltSize
+
+			val ivSize = combined[offset++].toInt() and 0xFF
+			val iv = ByteArray(ivSize)
+			System.arraycopy(combined, offset, iv, 0, ivSize)
+			offset += ivSize
+
+			val ciphertext = ByteArray(combined.size - offset)
+			System.arraycopy(combined, offset, ciphertext, 0, ciphertext.size)
+
+			val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
+			val spec = PBEKeySpec(password, salt, ITERATION_COUNT, KEY_LENGTH)
+			val secretKey = SecretKeySpec(factory.generateSecret(spec).encoded, "AES")
+
+			val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+			cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(128, iv))
+			val plaintext = cipher.doFinal(ciphertext)
+
+			password.fill('\u0000')
+			String(plaintext, Charsets.UTF_8)
+		} catch (_: Exception) {
+			password.fill('\u0000')
+			null
+		}
+	}
+}

@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.json.JSONArray
+import org.json.JSONObject
 
 object DnsSettingsRepository {
 	private lateinit var app: DnsToggleApplication
@@ -293,6 +294,108 @@ object DnsSettingsRepository {
 			list.forEach { jsonArray.put(it.toSerializedString()) }
 			val encrypted = EncryptionManager.encrypt(jsonArray.toString())
 			sharedPreferences.edit { putString(Constants.PREF_DNS_HOSTNAMES, encrypted) }
+		}
+	}
+
+	fun exportConfigToJson(): String {
+		val json = JSONObject()
+		val hostnamesArray = JSONArray()
+		_dnsHostnames.value?.forEach { hostnamesArray.put(it.toSerializedString()) }
+		json.put("hostnames", hostnamesArray)
+
+		val blacklistArray = JSONArray()
+		_blacklist.value?.forEach { blacklistArray.put(it) }
+		json.put("blacklist", blacklistArray)
+
+		json.put(
+			"auto_blacklist",
+			sharedPreferences.getBoolean(Constants.PREF_AUTO_BLACKLIST, false)
+		)
+		json.put(
+			"auto_whitelist",
+			sharedPreferences.getBoolean(Constants.PREF_AUTO_WHITELIST, false)
+		)
+		json.put(
+			"vpn_override",
+			sharedPreferences.getBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, false)
+		)
+		json.put("vpn_dns", _vpnDnsHostname.value ?: "off")
+		json.put(
+			"hide_launcher_icon",
+			sharedPreferences.getBoolean(Constants.PREF_HIDE_LAUNCHER_ICON, false)
+		)
+		json.put(
+			"disable_dns_test",
+			sharedPreferences.getBoolean(Constants.PREF_DISABLE_DNS_TEST, false)
+		)
+		json.put("show_toast", sharedPreferences.getBoolean(Constants.PREF_SHOW_TOAST, false))
+
+		return json.toString()
+	}
+
+	fun importConfigFromJson(jsonString: String): Boolean {
+		return try {
+			val json = JSONObject(jsonString)
+
+			if (json.has("hostnames")) {
+				val hostnamesArray = json.getJSONArray("hostnames")
+				val importedHostnames = mutableListOf<DnsHostname>()
+				for (i in 0 until hostnamesArray.length()) {
+					val parsedEntry = DnsHostname.fromSerializedString(hostnamesArray.getString(i))
+					if (NetworkUtils.isValidDnsHostname(parsedEntry.hostname)) {
+						importedHostnames.add(parsedEntry)
+					}
+				}
+				updateHostnamesOrder(importedHostnames)
+			}
+
+			if (json.has("blacklist")) {
+				val blacklistArray = json.getJSONArray("blacklist")
+				val importedBlacklist = mutableSetOf<String>()
+				for (i in 0 until blacklistArray.length()) {
+					importedBlacklist.add(blacklistArray.getString(i))
+				}
+				scope.launch {
+					val encryptedSet =
+						importedBlacklist.map { EncryptionManager.encrypt(it) }.toSet()
+					sharedPreferences.edit {
+						putStringSet(
+							Constants.PREF_SSID_BLACKLIST,
+							encryptedSet,
+						)
+					}
+					_blacklist.value = importedBlacklist
+				}
+			}
+
+			sharedPreferences.edit {
+				putBoolean(Constants.PREF_AUTO_BLACKLIST, json.optBoolean("auto_blacklist", false))
+				putBoolean(Constants.PREF_AUTO_WHITELIST, json.optBoolean("auto_whitelist", false))
+				putBoolean(
+					Constants.PREF_VPN_OVERRIDE_ENABLED,
+					json.optBoolean("vpn_override", false),
+				)
+				putBoolean(
+					Constants.PREF_HIDE_LAUNCHER_ICON,
+					json.optBoolean("hide_launcher_icon", false),
+				)
+				putBoolean(
+					Constants.PREF_DISABLE_DNS_TEST,
+					json.optBoolean("disable_dns_test", false),
+				)
+				putBoolean(Constants.PREF_SHOW_TOAST, json.optBoolean("show_toast", false))
+			}
+			_vpnOverrideEnabled.value = json.optBoolean("vpn_override", false)
+
+			if (json.has("vpn_dns")) {
+				val parsedVpnDns = json.getString("vpn_dns")
+				if (parsedVpnDns == "off" || NetworkUtils.isValidDnsHostname(parsedVpnDns)) {
+					updateVpnDnsHostname(parsedVpnDns)
+				}
+			}
+			true
+		} catch (_: Exception) {
+			false
 		}
 	}
 }

@@ -9,9 +9,9 @@ android {
 	defaultConfig {
 		applicationId = "com.ericlowry.dnstoggle"
 		minSdk = 28
-		targetSdk = 36
-		versionCode = 15
-		versionName = "1.5.1"
+		targetSdk = 37
+		versionCode = 16
+		versionName = "1.5.2"
 	}
 
 	buildTypes {

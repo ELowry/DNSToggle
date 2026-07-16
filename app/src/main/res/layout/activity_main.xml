@@ -12,13 +12,28 @@
 		android:id="@+id/appBarLayout"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:fitsSystemWindows="true">
+		android:fitsSystemWindows="true"
+		app:liftOnScroll="true">
 
 		<com.google.android.material.appbar.MaterialToolbar
 			android:id="@+id/topAppBar"
 			android:layout_width="match_parent"
 			android:layout_height="?attr/actionBarSize"
-			app:title="@string/app_name" />
+			app:logo="@drawable/ic_qs_dns"
+			app:logoDescription="@null"
+			app:title="@string/app_name">
+
+			<ImageButton
+				android:id="@+id/btnMenu"
+				android:layout_width="48dp"
+				android:layout_height="48dp"
+				android:layout_gravity="end"
+				android:background="?attr/selectableItemBackgroundBorderless"
+				android:contentDescription="@string/info_content_description"
+				android:src="@drawable/ic_overflow"
+				app:tint="?attr/colorOnSurface" />
+
+		</com.google.android.material.appbar.MaterialToolbar>
 
 	</com.google.android.material.appbar.AppBarLayout>
 
@@ -184,7 +199,7 @@
 							android:layout_height="wrap_content"
 							android:layout_weight="1"
 							android:text="@string/custom_dns_provider"
-							android:textAppearance="?attr/textAppearanceBodyMedium"
+							android:textAppearance="?attr/textAppearanceBodyLarge"
 							android:textStyle="bold" />
 
 						<ImageButton
@@ -236,14 +251,14 @@
 								android:layout_width="wrap_content"
 								android:layout_height="wrap_content"
 								android:text="@string/disable_dns_test"
-								android:textAppearance="?attr/textAppearanceBodyMedium" />
+								android:textAppearance="?attr/textAppearanceBodyLarge" />
 
 							<TextView
 								android:id="@+id/tvDisableDnsTestSummary"
 								android:layout_width="wrap_content"
 								android:layout_height="wrap_content"
 								android:text="@string/disable_dns_test_summary"
-								android:textAppearance="?attr/textAppearanceBodySmall"
+								android:textAppearance="?attr/textAppearanceBodyMedium"
 								android:textColor="?attr/colorOnSurfaceVariant" />
 						</LinearLayout>
 
@@ -435,7 +450,7 @@
 							android:layout_height="wrap_content"
 							android:layout_weight="1"
 							android:text="@string/vpn_dns_label"
-							android:textAppearance="?attr/textAppearanceBodyMedium" />
+							android:textAppearance="?attr/textAppearanceBodyLarge" />
 
 						<TextView
 							android:id="@+id/tvVpnDnsValue"
@@ -481,88 +496,141 @@
 				android:id="@+id/tvOptionsTitle"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:layout_marginTop="24dp"
+				android:layout_marginTop="36dp"
 				android:text="@string/options_title"
-				android:textAppearance="?attr/textAppearanceTitleMedium"
+				android:textAppearance="?attr/textAppearanceTitleLarge"
 				android:textStyle="bold"
 				app:layout_constraintEnd_toEndOf="parent"
 				app:layout_constraintStart_toStartOf="parent"
 				app:layout_constraintTop_toBottomOf="@id/cardVpnSettings" />
 
-			<com.google.android.material.materialswitch.MaterialSwitch
-				android:id="@+id/switchShowToast"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="12dp"
-				android:text="@string/show_toast_notif"
-				app:layout_constraintEnd_toEndOf="parent"
-				app:layout_constraintStart_toStartOf="parent"
-				app:layout_constraintTop_toBottomOf="@id/tvOptionsTitle" />
-
-			<TextView
-				android:id="@+id/tvShowToastSummary"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="2dp"
-				android:text="@string/show_toast_notif_summary"
-				android:textAppearance="?attr/textAppearanceBodySmall"
-				android:textColor="?attr/colorOnSurfaceVariant"
-				app:layout_constraintEnd_toEndOf="parent"
-				app:layout_constraintStart_toStartOf="parent"
-				app:layout_constraintTop_toBottomOf="@id/switchShowToast" />
-
-			<com.google.android.material.materialswitch.MaterialSwitch
-				android:id="@+id/switchHideLauncher"
+			<LinearLayout
+				android:id="@+id/rowShowToast"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:layout_marginTop="16dp"
-				android:text="@string/hide_launcher_icon"
+				android:gravity="center_vertical"
+				android:orientation="horizontal"
 				app:layout_constraintEnd_toEndOf="parent"
 				app:layout_constraintStart_toStartOf="parent"
-				app:layout_constraintTop_toBottomOf="@id/tvShowToastSummary" />
+				app:layout_constraintTop_toBottomOf="@id/tvOptionsTitle">
 
-			<TextView
-				android:id="@+id/tvHideLauncherSummary"
+				<LinearLayout
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:orientation="vertical">
+
+					<TextView
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/show_toast_notif"
+						android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+					<TextView
+						android:id="@+id/tvShowToastSummary"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_marginTop="6dp"
+						android:text="@string/show_toast_notif_summary"
+						android:textAppearance="?attr/textAppearanceBodySmall"
+						android:textColor="?attr/colorOnSurfaceVariant" />
+				</LinearLayout>
+
+				<com.google.android.material.materialswitch.MaterialSwitch
+					android:id="@+id/switchShowToast"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_marginStart="16dp" />
+			</LinearLayout>
+
+			<LinearLayout
+				android:id="@+id/rowHideLauncher"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:layout_marginTop="2dp"
-				android:text="@string/hide_launcher_icon_summary"
-				android:textAppearance="?attr/textAppearanceBodySmall"
-				android:textColor="?attr/colorOnSurfaceVariant"
+				android:layout_marginTop="18dp"
+				android:gravity="center_vertical"
+				android:orientation="horizontal"
 				app:layout_constraintEnd_toEndOf="parent"
 				app:layout_constraintStart_toStartOf="parent"
-				app:layout_constraintTop_toBottomOf="@id/switchHideLauncher" />
+				app:layout_constraintTop_toBottomOf="@id/rowShowToast">
 
-			<com.google.android.material.materialswitch.MaterialSwitch
-				android:id="@+id/switchUsbDebuggingTile"
+				<LinearLayout
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:orientation="vertical">
+
+					<TextView
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/hide_launcher_icon"
+						android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+					<TextView
+						android:id="@+id/tvHideLauncherSummary"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_marginTop="6dp"
+						android:text="@string/hide_launcher_icon_summary"
+						android:textAppearance="?attr/textAppearanceBodySmall"
+						android:textColor="?attr/colorOnSurfaceVariant" />
+				</LinearLayout>
+
+				<com.google.android.material.materialswitch.MaterialSwitch
+					android:id="@+id/switchHideLauncher"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_marginStart="16dp" />
+			</LinearLayout>
+
+			<LinearLayout
+				android:id="@+id/rowUsbDebuggingTile"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:layout_marginTop="16dp"
-				android:text="@string/show_usb_debugging_tile"
+				android:layout_marginTop="18dp"
+				android:gravity="center_vertical"
+				android:orientation="horizontal"
 				android:visibility="gone"
 				app:layout_constraintEnd_toEndOf="parent"
 				app:layout_constraintStart_toStartOf="parent"
-				app:layout_constraintTop_toBottomOf="@id/tvHideLauncherSummary" />
+				app:layout_constraintTop_toBottomOf="@id/rowHideLauncher">
 
-			<TextView
-				android:id="@+id/tvUsbDebuggingTileSummary"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="2dp"
-				android:text="@string/show_usb_debugging_tile_summary"
-				android:textAppearance="?attr/textAppearanceBodySmall"
-				android:textColor="?attr/colorOnSurfaceVariant"
-				android:visibility="gone"
-				app:layout_constraintEnd_toEndOf="parent"
-				app:layout_constraintStart_toStartOf="parent"
-				app:layout_constraintTop_toBottomOf="@id/switchUsbDebuggingTile" />
+				<LinearLayout
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:orientation="vertical">
+
+					<TextView
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:text="@string/show_usb_debugging_tile"
+						android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+					<TextView
+						android:id="@+id/tvUsbDebuggingTileSummary"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_marginTop="6dp"
+						android:text="@string/show_usb_debugging_tile_summary"
+						android:textAppearance="?attr/textAppearanceBodySmall"
+						android:textColor="?attr/colorOnSurfaceVariant" />
+				</LinearLayout>
+
+				<com.google.android.material.materialswitch.MaterialSwitch
+					android:id="@+id/switchUsbDebuggingTile"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_marginStart="16dp" />
+			</LinearLayout>
 
 			<com.google.android.material.divider.MaterialDivider
 				android:id="@+id/dividerFooter"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:layout_marginTop="48dp"
-				app:layout_constraintTop_toBottomOf="@id/tvUsbDebuggingTileSummary" />
+				app:layout_constraintTop_toBottomOf="@id/rowUsbDebuggingTile" />
 
 			<LinearLayout
 				android:id="@+id/footerContainer"

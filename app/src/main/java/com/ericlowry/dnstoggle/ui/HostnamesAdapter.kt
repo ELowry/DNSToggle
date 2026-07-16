@@ -17,7 +17,7 @@ import java.util.Collections
 class HostnamesAdapter(
 	private val onEditClick: (String) -> Unit,
 	private val onDeleteClick: (String) -> Unit,
-	private val onItemClick: (String) -> Unit
+	private val onItemClick: (String) -> Unit,
 ) : ListAdapter<DnsHostname, HostnamesAdapter.ViewHolder>(DnsHostnameDiffCallback()) {
 
 	private var reachabilityMap: Map<String, DnsViewModel.ReachabilityState> = emptyMap()
@@ -27,7 +27,7 @@ class HostnamesAdapter(
 	fun updateMetadata(
 		reachability: Map<String, DnsViewModel.ReachabilityState>?,
 		specifier: String?,
-		isToggled: Boolean
+		isToggled: Boolean,
 	) {
 		this.reachabilityMap = reachability ?: emptyMap()
 		this.activeSpecifier = specifier
@@ -42,8 +42,7 @@ class HostnamesAdapter(
 	}
 
 	class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-		val card: MaterialCardView =
-			view as MaterialCardView
+		val card: MaterialCardView = view as MaterialCardView
 		val tvHostname: TextView = view.findViewById(R.id.tvHostname)
 		val tvSecondaryHostname: TextView = view.findViewById(R.id.tvSecondaryHostname)
 		val tvStatus: TextView = view.findViewById(R.id.tvStatus)
@@ -68,6 +67,10 @@ class HostnamesAdapter(
 		val context = holder.itemView.context
 
 		if (payloads.isEmpty() || payloads.contains("metadata")) {
+			val editCallback = onEditClick
+			val deleteCallback = onDeleteClick
+			val clickCallback = onItemClick
+
 			if (label != null) {
 				holder.tvHostname.text = label
 				holder.tvSecondaryHostname.text = hostname
@@ -78,7 +81,7 @@ class HostnamesAdapter(
 			}
 
 			val reachability = reachabilityMap[hostname] ?: DnsViewModel.ReachabilityState.IDLE
-			val isActive = (hostname == activeSpecifier && isToggleChecked)
+			val isActive = (hostname == activeSpecifier) && isToggleChecked
 
 			if (isActive) {
 				holder.card.strokeColor =
@@ -92,8 +95,8 @@ class HostnamesAdapter(
 						holder.tvStatus.setTextColor(
 							MaterialColors.getColor(
 								holder.itemView,
-								android.R.attr.textColorSecondary
-							)
+								android.R.attr.textColorSecondary,
+							),
 						)
 					}
 
@@ -102,8 +105,8 @@ class HostnamesAdapter(
 						holder.tvStatus.setTextColor(
 							MaterialColors.getColor(
 								holder.itemView,
-								android.R.attr.colorPrimary
-							)
+								android.R.attr.colorPrimary,
+							),
 						)
 					}
 
@@ -112,8 +115,8 @@ class HostnamesAdapter(
 						holder.tvStatus.setTextColor(
 							MaterialColors.getColor(
 								holder.itemView,
-								R.attr.warning_color
-							)
+								R.attr.warning_color,
+							),
 						)
 					}
 
@@ -128,8 +131,8 @@ class HostnamesAdapter(
 						holder.tvStatus.setTextColor(
 							MaterialColors.getColor(
 								holder.itemView,
-								android.R.attr.textColorSecondary
-							)
+								android.R.attr.textColorSecondary,
+							),
 						)
 					}
 
@@ -139,8 +142,8 @@ class HostnamesAdapter(
 						holder.tvStatus.setTextColor(
 							MaterialColors.getColor(
 								holder.itemView,
-								R.attr.warning_color
-							)
+								R.attr.warning_color,
+							),
 						)
 					}
 
@@ -148,12 +151,12 @@ class HostnamesAdapter(
 				}
 			}
 
-			holder.btnEdit.setOnClickListener { onEditClick(hostname) }
+			holder.btnEdit.setOnClickListener { editCallback(hostname) }
 			holder.btnDelete.isEnabled = currentList.size > 1
 			holder.btnDelete.alpha = if (currentList.size > 1) 1.0f else 0.5f
-			holder.btnDelete.setOnClickListener { onDeleteClick(hostname) }
+			holder.btnDelete.setOnClickListener { deleteCallback(hostname) }
 			holder.itemView.setOnClickListener {
-				if (!isActive) onItemClick(hostname)
+				if (!isActive) clickCallback(hostname)
 			}
 		}
 	}

@@ -46,7 +46,7 @@ object EncryptionManager {
 		return try {
 			val existingKey = keyStore.getEntry(KEY_ALIAS, null) as? KeyStore.SecretKeyEntry
 			existingKey?.secretKey ?: createKey()
-		} catch (e: Exception) {
+		} catch (_: Exception) {
 			createKey()
 		}
 	}
@@ -57,13 +57,13 @@ object EncryptionManager {
 				init(
 					KeyGenParameterSpec.Builder(
 						KEY_ALIAS,
-						KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+						KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
 					)
 						.setBlockModes(BLOCK_MODE)
 						.setEncryptionPaddings(PADDING)
 						.setUserAuthenticationRequired(false)
 						.setRandomizedEncryptionRequired(true)
-						.build()
+						.build(),
 				)
 			}.generateKey()
 		} catch (e: Exception) {
@@ -100,7 +100,7 @@ object EncryptionManager {
 			if (combined.isEmpty()) return DecryptResult.Failed
 
 			val ivSize = combined[0].toInt()
-			if (ivSize <= 0 || ivSize > combined.size - 1) return DecryptResult.Failed
+			if (ivSize <= 0 || (ivSize > (combined.size - 1))) return DecryptResult.Failed
 
 			val iv = ByteArray(ivSize)
 			System.arraycopy(combined, 1, iv, 0, ivSize)
@@ -116,22 +116,21 @@ object EncryptionManager {
 			cipher.init(Cipher.DECRYPT_MODE, getKey(), spec)
 
 			DecryptResult.Success(String(cipher.doFinal(encryptedData), Charsets.UTF_8))
-		} catch (e: KeyPermanentlyInvalidatedException) {
-			Log.e(TAG, "Key was permanently invalidated. Recreating...", e)
+		} catch (_: KeyPermanentlyInvalidatedException) {
+			Log.e(TAG, "Key was permanently invalidated. Recreating...")
 			deleteKey()
 			DecryptResult.KeyInvalidated
-		} catch (e: AEADBadTagException) {
+		} catch (_: AEADBadTagException) {
 			Log.e(
 				TAG,
 				"Decryption failed: AEAD tag mismatch. The data might be corrupted or the key is wrong.",
-				e
 			)
 			DecryptResult.Failed
-		} catch (e: GeneralSecurityException) {
-			Log.e(TAG, "Cryptographic error during decryption", e)
+		} catch (_: GeneralSecurityException) {
+			Log.e(TAG, "Cryptographic error during decryption")
 			DecryptResult.Failed
-		} catch (e: Exception) {
-			Log.e(TAG, "Unexpected error during decryption", e)
+		} catch (_: Exception) {
+			Log.e(TAG, "Unexpected error during decryption")
 			DecryptResult.Failed
 		}
 	}

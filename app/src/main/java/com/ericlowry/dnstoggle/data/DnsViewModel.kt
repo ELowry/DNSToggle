@@ -105,7 +105,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 				Constants.PREF_DISABLE_DNS_TEST,
 				Constants.PREF_SHOW_TOAST,
 				Constants.PREF_IS_IN_VPN_OVERRIDE,
-				Constants.PREF_ACTIVE_SSID_OVERRIDE -> loadSettings()
+				Constants.PREF_ACTIVE_SSID_OVERRIDE,
+					-> loadSettings()
 			}
 		}
 
@@ -124,7 +125,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 						val hostname = dnsEntry.hostname
 						val currentMap = _dnsReachability.value ?: emptyMap()
 						if (!currentMap.containsKey(hostname) && NetworkUtils.isValidDnsHostname(
-								hostname
+								hostname,
 							)
 						) {
 							testReachability(hostname)
@@ -151,7 +152,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 			registerContentObserver(
 				Settings.Global.getUriFor(Constants.SETTINGS_PRIVATE_DNS_SPECIFIER),
 				false,
-				dnsSettingsObserver
+				dnsSettingsObserver,
 			)
 		}
 	}
@@ -286,7 +287,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 			_hasPermissionError.postValue(result is DnsManager.ToggleResult.PermissionRequired)
 			if (result is DnsManager.ToggleResult.Success) {
 				_privateDnsMode.postValue(if (enabled) Constants.DNS_MODE_HOSTNAME else Constants.DNS_MODE_OPPORTUNISTIC)
-				if (enabled && targetHostname != null) {
+				if (enabled && (targetHostname != null)) {
 					_privateDnsSpecifier.postValue(targetHostname)
 					if (NetworkUtils.isValidDnsHostname(targetHostname)) {
 						testReachability(targetHostname)
