@@ -1,0 +1,40 @@
+#!/bin/bash
+
+FAILED=0
+
+check_length() {
+    local file="$1"
+    local max_len="$2"
+
+    local char_count=$(wc -m < "$file")
+
+    if [ "$char_count" -gt "$max_len" ]; then
+        echo "❌ Error: File '$file' is $char_count characters long (Max: $max_len)."
+        FAILED=1
+    fi
+}
+
+STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep "^fastlane/metadata/android/.*\.txt$")
+
+if [ -z "$STAGED_FILES" ]; then
+    exit 0
+fi
+
+for FILE in $STAGED_FILES; do
+    if [[ "$FILE" =~ fastlane/metadata/android/[a-zA-Z-]+/changelogs/.*\.txt$ ]]; then
+        check_length "$FILE" 500
+    elif [[ "$FILE" =~ fastlane/metadata/android/[a-zA-Z-]+/title\.txt$ ]]; then
+        check_length "$FILE" 50
+    elif [[ "$FILE" =~ fastlane/metadata/android/[a-zA-Z-]+/full_description\.txt$ ]]; then
+        check_length "$FILE" 3700
+    elif [[ "$FILE" =~ fastlane/metadata/android/[a-zA-Z-]+/short_description\.txt$ ]]; then
+        check_length "$FILE" 80
+    fi
+done
+
+if [ "$FAILED" -eq 1 ]; then
+    echo "Commit aborted. Fastlane files exceed maximum allowed lengths."
+    exit 1
+fi
+
+exit 0

@@ -36,7 +36,7 @@ jobs:
             if [ -d "$locale_dir" ]; then
               locale_name=$(basename "$locale_dir")
               echo "Verifying locale: $locale_name"
-              
+          
               # Check for mandatory files
               for file_name in "title.txt" "short_description.txt" "full_description.txt"; do
                 if [ ! -f "$locale_dir$file_name" ]; then
@@ -44,9 +44,17 @@ jobs:
                   FAILED=1
                 fi
               done
-              
-              # Check character limits
-              # summary (short_description.txt) must be <= 80 characters
+              # Check Title character limit (50)
+              if [ -f "$locale_dir/title.txt" ]; then
+                CHAR_COUNT=$(wc -m < "$locale_dir/title.txt")
+                echo "  Title: $CHAR_COUNT / 50"
+                if [ $CHAR_COUNT -gt 50 ]; then
+                  echo "  Error: Character limit exceeded (50)"
+                  FAILED=1
+                fi
+              fi
+
+              # Check Short description character limit (80)
               if [ -f "$locale_dir/short_description.txt" ]; then
                 CHAR_COUNT=$(wc -m < "$locale_dir/short_description.txt")
                 echo "  Short description: $CHAR_COUNT / 80"
@@ -55,15 +63,29 @@ jobs:
                   FAILED=1
                 fi
               fi
-              
-              # description (full_description.txt) must be <= 4000 characters
+          
+              # Check Full description character limit (3700)
               if [ -f "$locale_dir/full_description.txt" ]; then
                 CHAR_COUNT=$(wc -m < "$locale_dir/full_description.txt")
-                echo "  Full description: $CHAR_COUNT / 4000"
-                if [ $CHAR_COUNT -gt 4000 ]; then
-                  echo "  Error: Character limit exceeded (4000)"
+                echo "  Full description: $CHAR_COUNT / 3700"
+                if [ $CHAR_COUNT -gt 3700 ]; then
+                  echo "  Error: Character limit exceeded (3700)"
                   FAILED=1
                 fi
+              fi
+
+              # Check Changelog character limits (500)
+              if [ -d "$locale_dir/changelogs" ]; then
+                for changelog in "$locale_dir/changelogs"/*.txt; do
+                  # Check if there are actually txt files (prevents literal '*.txt' evaluation if empty)
+                  if [ -f "$changelog" ]; then
+                    CHAR_COUNT=$(wc -m < "$changelog")
+                    if [ $CHAR_COUNT -gt 500 ]; then
+                      echo "  Error: Changelog $(basename "$changelog") character limit exceeded ($CHAR_COUNT / 500)"
+                      FAILED=1
+                    fi
+                  fi
+                done
               fi
             fi
           done
