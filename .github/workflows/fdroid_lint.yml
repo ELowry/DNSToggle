@@ -14,86 +14,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.x'
-
-      - name: Verify Fastlane Structure and Content
+      - name: F-Droid Specific Metadata Checks
         run: |
           METADATA_DIR="fastlane/metadata/android"
-          FAILED=0
           
-          # Check for en-US at minimum
+          # F-Droid strongly prefers en-US as the default fallback
           if [ ! -d "$METADATA_DIR/en-US" ]; then
             echo "Error: Mandatory en-US metadata directory is missing."
-            FAILED=1
-          fi
-
-          # Iterate through all locale directories
-          for locale_dir in "$METADATA_DIR"/*/; do
-            if [ -d "$locale_dir" ]; then
-              locale_name=$(basename "$locale_dir")
-              echo "Verifying locale: $locale_name"
-          
-              # Check for mandatory files
-              for file_name in "title.txt" "short_description.txt" "full_description.txt"; do
-                if [ ! -f "$locale_dir$file_name" ]; then
-                  echo "  Error: Missing mandatory file: $file_name"
-                  FAILED=1
-                fi
-              done
-              # Check Title character limit (50)
-              if [ -f "$locale_dir/title.txt" ]; then
-                CHAR_COUNT=$(wc -m < "$locale_dir/title.txt")
-                echo "  Title: $CHAR_COUNT / 50"
-                if [ $CHAR_COUNT -gt 50 ]; then
-                  echo "  Error: Character limit exceeded (50)"
-                  FAILED=1
-                fi
-              fi
-
-              # Check Short description character limit (80)
-              if [ -f "$locale_dir/short_description.txt" ]; then
-                CHAR_COUNT=$(wc -m < "$locale_dir/short_description.txt")
-                echo "  Short description: $CHAR_COUNT / 80"
-                if [ $CHAR_COUNT -gt 80 ]; then
-                  echo "  Error: Character limit exceeded (80)"
-                  FAILED=1
-                fi
-              fi
-          
-              # Check Full description character limit (3700)
-              if [ -f "$locale_dir/full_description.txt" ]; then
-                CHAR_COUNT=$(wc -m < "$locale_dir/full_description.txt")
-                echo "  Full description: $CHAR_COUNT / 3700"
-                if [ $CHAR_COUNT -gt 3700 ]; then
-                  echo "  Error: Character limit exceeded (3700)"
-                  FAILED=1
-                fi
-              fi
-
-              # Check Changelog character limits (500)
-              if [ -d "$locale_dir/changelogs" ]; then
-                for changelog in "$locale_dir/changelogs"/*.txt; do
-                  # Check if there are actually txt files (prevents literal '*.txt' evaluation if empty)
-                  if [ -f "$changelog" ]; then
-                    CHAR_COUNT=$(wc -m < "$changelog")
-                    if [ $CHAR_COUNT -gt 500 ]; then
-                      echo "  Error: Changelog $(basename "$changelog") character limit exceeded ($CHAR_COUNT / 500)"
-                      FAILED=1
-                    fi
-                  fi
-                done
-              fi
-            fi
-          done
-          
-          if [ $FAILED -eq 1 ]; then
             exit 1
           fi
-          echo "Fastlane metadata verified successfully."
+          echo "F-Droid prerequisite checks passed."
+
+      - name: Validate Fastlane Supply Metadata
+        uses: ashutoshgngwr/validate-fastlane-supply-metadata@v2
 
       - name: Scan for proprietary dependencies (F-Droid compliance)
         run: |
