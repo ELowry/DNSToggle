@@ -44,7 +44,7 @@ import com.ericlowry.dnstoggle.service.TileServiceCompat
 import com.ericlowry.dnstoggle.util.BackupManager
 import com.ericlowry.dnstoggle.util.NetworkUtils
 import com.ericlowry.dnstoggle.util.PermissionHelper
-import com.ericlowry.dnstoggle.util.RootUtils
+import com.ericlowry.dnstoggle.util.attemptSecureSettingsGrant
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -218,7 +218,7 @@ class MainActivity : AppCompatActivity() {
 			) == true && !PermissionHelper.hasSecureSettingsPermission(this)
 		) {
 			lifecycleScope.launch {
-				RootUtils.grantSecureSettingsPermission(packageName)
+				attemptSecureSettingsGrant(this@MainActivity, packageName)
 				updateMainPermissionUiState()
 				if (!PermissionHelper.hasSecureSettingsPermission(this@MainActivity)) {
 					showInitialPermissionDialog()
@@ -420,7 +420,7 @@ class MainActivity : AppCompatActivity() {
 				// Attempt root grant again
 				setLoadingState(true)
 				lifecycleScope.launch {
-					RootUtils.grantSecureSettingsPermission(packageName)
+					attemptSecureSettingsGrant(this@MainActivity, packageName)
 					setLoadingState(false)
 					updateMainPermissionUiState()
 
@@ -511,7 +511,7 @@ class MainActivity : AppCompatActivity() {
 			} else {
 				setLoadingState(true)
 				lifecycleScope.launch {
-					val success = RootUtils.grantSecureSettingsPermission(packageName)
+					val success = attemptSecureSettingsGrant(this@MainActivity, packageName)
 					setLoadingState(false)
 					updateMainPermissionUiState()
 
@@ -981,7 +981,7 @@ class MainActivity : AppCompatActivity() {
 				setLoadingState(true)
 				lifecycleScope.launch {
 					val startTime = System.currentTimeMillis()
-					RootUtils.grantSecureSettingsPermission(packageName)
+					attemptSecureSettingsGrant(this@MainActivity, packageName)
 
 					val elapsedTime = System.currentTimeMillis() - startTime
 					if (elapsedTime < 1000) delay(1000.milliseconds - elapsedTime.milliseconds)

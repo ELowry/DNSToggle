@@ -13,7 +13,7 @@ A tiny Android app that allows you to easily toggle your phone's Private DNS thr
 
 > [!WARNING]
 >
-> To modify the Private DNS system settings, this app requires the `WRITE_SECURE_SETTINGS` permission. Since this is a protected system permission, you must either have a rooted device or manually grant the permission using [ADB](https://developer.android.com/tools/adb).
+> To modify the Private DNS system settings, this app requires the `WRITE_SECURE_SETTINGS` permission. Since this is a protected system permission, you must either have a rooted device, use [Shizuku](https://shizuku.rikka.app/) (no PC or root required after a one-time setup), or manually grant the permission using [ADB](https://developer.android.com/tools/adb).
 >
 > If your device is not rooted, you can grant the required permission by connecting your phone to a computer with USB debugging enabled and running the following ADB command:
 >
@@ -66,7 +66,7 @@ If you encounter issues not covered here, please [open a support ticket](https:/
 
 ## Permissions
 
-- **WRITE_SECURE_SETTINGS**: Required to modify system Private DNS settings. Must be granted via root or using ADB.
+- **WRITE_SECURE_SETTINGS**: Required to modify system Private DNS settings. Must be granted via root, Shizuku, or using ADB.
 - **INTERNET** _(optional)_: Used to verify that your Custom DNS Provider is online and reachable before applying it.
 - **Location & Nearby Devices** _(optional)_: Required only for **Wi-Fi Blocklist** automation. Used to identify the Wi-Fi network name (SSID) locally.
 - **Notifications** _(optional)_: Used for status alerts when Private DNS is automatically adjusted.
