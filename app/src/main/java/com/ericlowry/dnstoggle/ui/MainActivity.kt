@@ -81,6 +81,9 @@ class MainActivity : AppCompatActivity() {
 
 	private lateinit var switchAutoBlacklist: MaterialSwitch
 	private lateinit var switchAutoWhitelist: MaterialSwitch
+	private lateinit var switchConnectivityWatchdog: MaterialSwitch
+	private lateinit var rowConnectivityWatchdogDebounce: View
+	private lateinit var tvConnectivityWatchdogDebounceValue: TextView
 	private lateinit var switchDisableDnsTest: MaterialSwitch
 	private lateinit var switchShowToast: MaterialSwitch
 	private lateinit var switchHideLauncher: MaterialSwitch
@@ -264,6 +267,9 @@ class MainActivity : AppCompatActivity() {
 
 		switchAutoBlacklist = findViewById(R.id.switchAutoBlacklist)
 		switchAutoWhitelist = findViewById(R.id.switchAutoWhitelist)
+		switchConnectivityWatchdog = findViewById(R.id.switchConnectivityWatchdog)
+		rowConnectivityWatchdogDebounce = findViewById(R.id.rowConnectivityWatchdogDebounce)
+		tvConnectivityWatchdogDebounceValue = findViewById(R.id.tvConnectivityWatchdogDebounceValue)
 		switchDisableDnsTest = findViewById(R.id.switchDisableDnsTest)
 		switchShowToast = findViewById(R.id.switchShowToast)
 		switchHideLauncher = findViewById(R.id.switchHideLauncher)
@@ -341,6 +347,17 @@ class MainActivity : AppCompatActivity() {
 
 		dnsViewModel.autoWhitelistEnabled.observe(this) { enabled ->
 			switchAutoWhitelist.isChecked = enabled
+		}
+
+		dnsViewModel.connectivityWatchdogEnabled.observe(this) { enabled ->
+			switchConnectivityWatchdog.isChecked = enabled
+			rowConnectivityWatchdogDebounce.isEnabled = enabled
+			rowConnectivityWatchdogDebounce.alpha = if (enabled) 1.0f else 0.5f
+		}
+
+		dnsViewModel.connectivityWatchdogDebounceSeconds.observe(this) { seconds ->
+			tvConnectivityWatchdogDebounceValue.text =
+				getString(R.string.connectivity_watchdog_debounce_seconds_format, seconds)
 		}
 
 		dnsViewModel.disableDnsTest.observe(this) { disabled ->
@@ -456,6 +473,14 @@ class MainActivity : AppCompatActivity() {
 			if (isChecked) {
 				checkSsidPermissions(requestIfNotGranted = true)
 			}
+		}
+
+		switchConnectivityWatchdog.setOnCheckedChangeListener { _, isChecked ->
+			dnsViewModel.setConnectivityWatchdogEnabled(isChecked)
+		}
+
+		rowConnectivityWatchdogDebounce.setOnClickListener {
+			showConnectivityWatchdogDebounceDialog()
 		}
 
 		switchDisableDnsTest.setOnCheckedChangeListener { _, isChecked ->
@@ -1165,6 +1190,69 @@ class MainActivity : AppCompatActivity() {
 			dialog.dismiss()
 		}
 		listContainer.addView(autoItemView)
+
+		dialog.show()
+	}
+
+	private fun showConnectivityWatchdogDebounceDialog() {
+		val presets = listOf(10, 15, 30, 60)
+		val currentValue = dnsViewModel.connectivityWatchdogDebounceSeconds.value
+			?: Constants.CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS
+
+		val dialogView = LayoutInflater.from(this)
+			.inflate(R.layout.dialog_dns_selection, findViewById(android.R.id.content), false)
+
+		val dialog = Dialog(this)
+		dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+		dialog.setContentView(dialogView)
+
+		val tvPopupTitle = dialogView.findViewById<TextView>(R.id.tvPopupTitle)
+		tvPopupTitle.text = getString(R.string.connectivity_watchdog_debounce_label)
+
+		val listContainer = dialogView.findViewById<LinearLayout>(R.id.dnsListContainer)
+		val btnCancel = dialogView.findViewById<MaterialButton>(R.id.btnSettings)
+		btnCancel.text = getString(R.string.cancel)
+		btnCancel.setOnClickListener { dialog.dismiss() }
+
+		val totalItems = presets.size + 1
+
+		presets.forEachIndexed { index, seconds ->
+			val itemView = createDnsListItem(
+				listContainer,
+				getString(R.string.connectivity_watchdog_debounce_seconds_format, seconds),
+				null,
+				seconds == currentValue,
+				index,
+				totalItems
+			) {
+				dnsViewModel.setConnectivityWatchdogDebounceSeconds(seconds)
+				dialog.dismiss()
+			}
+			listContainer.addView(itemView)
+		}
+
+		val customItemView = createDnsListItem(
+			listContainer,
+			getString(R.string.connectivity_watchdog_debounce_custom),
+			null,
+			currentValue !in presets,
+			totalItems - 1,
+			totalItems
+		) {
+			dialog.dismiss()
+			DialogHelper.showNumberInputDialog(
+				this,
+				R.string.connectivity_watchdog_debounce_label,
+				R.string.connectivity_watchdog_debounce_label,
+				currentValue,
+				5,
+				300,
+				R.string.connectivity_watchdog_debounce_invalid,
+			) { seconds ->
+				dnsViewModel.setConnectivityWatchdogDebounceSeconds(seconds)
+			}
+		}
+		listContainer.addView(customItemView)
 
 		dialog.show()
 	}

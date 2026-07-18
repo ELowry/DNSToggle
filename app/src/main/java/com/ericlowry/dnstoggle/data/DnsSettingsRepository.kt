@@ -27,6 +27,9 @@ object DnsSettingsRepository {
 	private val _blacklist = MutableStateFlow<Set<String>?>(null)
 	val blacklist: StateFlow<Set<String>?> = _blacklist.asStateFlow()
 
+	private val _autoDetectedBlacklist = MutableStateFlow<Set<String>?>(null)
+	val autoDetectedBlacklist: StateFlow<Set<String>?> = _autoDetectedBlacklist.asStateFlow()
+
 	private val _dnsHostnames = MutableStateFlow<List<DnsHostname>?>(null)
 	val dnsHostnames: StateFlow<List<DnsHostname>?> = _dnsHostnames.asStateFlow()
 
@@ -44,6 +47,7 @@ object DnsSettingsRepository {
 		app = context.applicationContext as DnsToggleApplication
 		sharedPreferences = app.getPrefs()
 		loadBlacklist()
+		loadAutoDetectedBlacklist()
 		loadHostnames()
 		_vpnOverrideEnabled.value =
 			sharedPreferences.getBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, false)
@@ -89,6 +93,33 @@ object DnsSettingsRepository {
 				sharedPreferences.edit { remove(Constants.PREF_SSID_BLACKLIST) }
 			}
 			_blacklist.value = decryptedSet
+		}
+	}
+
+	private fun loadAutoDetectedBlacklist() {
+		scope.launch {
+			val encryptedSet =
+				sharedPreferences.getStringSet(Constants.PREF_SSID_AUTO_DETECTED_BLACKLIST, emptySet())
+					?: emptySet()
+
+			var keyInvalidated = false
+			val decryptedSet = encryptedSet.mapNotNull {
+				when (val result = EncryptionManager.decrypt(it)) {
+					is EncryptionManager.DecryptResult.Success -> result.data
+					is EncryptionManager.DecryptResult.KeyInvalidated -> {
+						keyInvalidated = true
+						null
+					}
+
+					else -> null
+				}
+			}.toSet()
+
+			if (keyInvalidated) {
+				_isKeyInvalidated.value = true
+				sharedPreferences.edit { remove(Constants.PREF_SSID_AUTO_DETECTED_BLACKLIST) }
+			}
+			_autoDetectedBlacklist.value = decryptedSet
 		}
 	}
 
@@ -179,7 +210,16 @@ object DnsSettingsRepository {
 		_isKeyInvalidated.value = false
 	}
 
-	fun addToBlacklist(ssid: String) {
+	fun addToBlacklist(ssid: String, autoDetected: Boolean = false) {
+		if (autoDetected) {
+			_autoDetectedBlacklist.update { current ->
+				val safeCurrent = current ?: emptySet()
+				if (ssid in safeCurrent) return@update safeCurrent
+				val next = safeCurrent + ssid
+				saveAutoDetectedBlacklistAsync(next)
+				next
+			}
+		}
 		_blacklist.update { current ->
 			val safeCurrent = current ?: emptySet()
 			if (ssid in safeCurrent) return@update safeCurrent
@@ -197,6 +237,13 @@ object DnsSettingsRepository {
 			saveBlacklistAsync(next)
 			next
 		}
+		_autoDetectedBlacklist.update { current ->
+			val safeCurrent = current ?: emptySet()
+			if (ssid !in safeCurrent) return@update safeCurrent
+			val next = safeCurrent - ssid
+			saveAutoDetectedBlacklistAsync(next)
+			next
+		}
 	}
 
 	fun updateSsidInBlacklist(oldSsid: String, newSsid: String) {
@@ -207,12 +254,28 @@ object DnsSettingsRepository {
 			saveBlacklistAsync(next)
 			next
 		}
+		_autoDetectedBlacklist.update { current ->
+			val safeCurrent = current ?: emptySet()
+			if (oldSsid !in safeCurrent) return@update safeCurrent
+			val next = safeCurrent - oldSsid
+			saveAutoDetectedBlacklistAsync(next)
+			next
+		}
 	}
 
 	private fun saveBlacklistAsync(list: Set<String>) {
 		scope.launch {
 			val encryptedSet = list.map { EncryptionManager.encrypt(it) }.toSet()
 			sharedPreferences.edit { putStringSet(Constants.PREF_SSID_BLACKLIST, encryptedSet) }
+		}
+	}
+
+	private fun saveAutoDetectedBlacklistAsync(list: Set<String>) {
+		scope.launch {
+			val encryptedSet = list.map { EncryptionManager.encrypt(it) }.toSet()
+			sharedPreferences.edit {
+				putStringSet(Constants.PREF_SSID_AUTO_DETECTED_BLACKLIST, encryptedSet)
+			}
 		}
 	}
 

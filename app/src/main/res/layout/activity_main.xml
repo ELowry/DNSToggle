@@ -338,6 +338,49 @@
 						android:layout_marginTop="4dp"
 						android:text="@string/auto_whitelist_on_enable" />
 
+					<com.google.android.material.materialswitch.MaterialSwitch
+						android:id="@+id/switchConnectivityWatchdog"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_marginTop="4dp"
+						android:text="@string/connectivity_watchdog_toggle" />
+
+					<LinearLayout
+						android:id="@+id/rowConnectivityWatchdogDebounce"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_marginTop="8dp"
+						android:background="?attr/selectableItemBackground"
+						android:clickable="true"
+						android:focusable="true"
+						android:gravity="center_vertical"
+						android:orientation="horizontal"
+						android:paddingVertical="8dp">
+
+						<TextView
+							android:layout_width="0dp"
+							android:layout_height="wrap_content"
+							android:layout_weight="1"
+							android:text="@string/connectivity_watchdog_debounce_label"
+							android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+						<TextView
+							android:id="@+id/tvConnectivityWatchdogDebounceValue"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:textAppearance="?attr/textAppearanceBodyMedium"
+							android:textColor="?attr/colorPrimary"
+							tools:text="15s" />
+
+						<ImageView
+							android:layout_width="20dp"
+							android:layout_height="20dp"
+							android:layout_marginStart="4dp"
+							android:contentDescription="@null"
+							android:src="@drawable/ic_chevron_right"
+							app:tint="?attr/colorOnSurfaceVariant" />
+					</LinearLayout>
+
 					<TextView
 						android:id="@+id/tvPermissionNotice"
 						android:layout_width="match_parent"
