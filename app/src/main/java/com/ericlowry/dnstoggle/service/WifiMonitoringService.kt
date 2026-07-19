@@ -388,6 +388,7 @@ class WifiMonitoringService : Service() {
 						else -> null
 					}
 				}
+
 				if (hostname != null) {
 					try {
 						Global.putString(
@@ -395,13 +396,22 @@ class WifiMonitoringService : Service() {
 							Constants.SETTINGS_PRIVATE_DNS_SPECIFIER,
 							hostname
 						)
+						updateDnsSetting(preferredMode, null)
 					} catch (e: SecurityException) {
 						Log.e(TAG, "Failed to restore preferred DNS specifier", e)
 					}
+				} else {
+					// Safety fallback to avoid breaking network with a null hostname
+					updateDnsSetting(Constants.DNS_MODE_OPPORTUNISTIC, null)
+					dispatchStatusNotification(
+						getString(R.string.keystore_error_title) + ": " + getString(
+							R.string.automatic_off
+						)
+					)
 				}
+			} else {
+				updateDnsSetting(preferredMode, null)
 			}
-
-			updateDnsSetting(preferredMode, null)
 		}
 	}
 
