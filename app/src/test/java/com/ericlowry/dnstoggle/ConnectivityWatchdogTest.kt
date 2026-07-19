@@ -15,6 +15,7 @@ class ConnectivityWatchdogTest {
 		assertFalse(
 			ConnectivityWatchdog.isDnsSpecificFailure(
 				"dns.example.com",
+				probeTargetsStr = "1.1.1.1,8.8.8.8",
 				isNetworkReachable = { false },
 				isDnsHostReachable = { false }
 			)
@@ -22,6 +23,7 @@ class ConnectivityWatchdogTest {
 		assertFalse(
 			ConnectivityWatchdog.isDnsSpecificFailure(
 				"dns.example.com",
+				probeTargetsStr = "1.1.1.1,8.8.8.8",
 				isNetworkReachable = { false },
 				isDnsHostReachable = { true }
 			)
@@ -33,6 +35,7 @@ class ConnectivityWatchdogTest {
 		assertFalse(
 			ConnectivityWatchdog.isDnsSpecificFailure(
 				"dns.example.com",
+				probeTargetsStr = "1.1.1.1,8.8.8.8",
 				isNetworkReachable = { true },
 				isDnsHostReachable = { true }
 			)
@@ -44,6 +47,7 @@ class ConnectivityWatchdogTest {
 		assertTrue(
 			ConnectivityWatchdog.isDnsSpecificFailure(
 				"dns.example.com",
+				probeTargetsStr = "1.1.1.1,8.8.8.8",
 				isNetworkReachable = { true },
 				isDnsHostReachable = { false }
 			)
@@ -55,6 +59,7 @@ class ConnectivityWatchdogTest {
 		assertTrue(
 			ConnectivityWatchdog.isRecovered(
 				"dns.example.com",
+				probeTargetsStr = "1.1.1.1,8.8.8.8",
 				isNetworkReachable = { true },
 				isDnsHostReachable = { true }
 			)
@@ -62,6 +67,7 @@ class ConnectivityWatchdogTest {
 		assertFalse(
 			ConnectivityWatchdog.isRecovered(
 				"dns.example.com",
+				probeTargetsStr = "1.1.1.1,8.8.8.8",
 				isNetworkReachable = { false },
 				isDnsHostReachable = { true }
 			)
@@ -69,6 +75,7 @@ class ConnectivityWatchdogTest {
 		assertFalse(
 			ConnectivityWatchdog.isRecovered(
 				"dns.example.com",
+				probeTargetsStr = "1.1.1.1,8.8.8.8",
 				isNetworkReachable = { true },
 				isDnsHostReachable = { false }
 			)
