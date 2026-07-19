@@ -18,8 +18,8 @@
 	<string name="permission_required">Permission Required</string>
 	<string name="permission_message">To use this toggle, you must grant settings permissions through root, Shizuku, or run this ADB command on your computer with USB debugging enabled:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
 	<string name="adb_command_label">ADB Command</string>
-	<string name="copy_command">Copy Command</string>
-	<string name="copy_adb_command_desc">Copy ADB Command</string>
+	<string name="adb_command_content_description">ADB command: %s</string>
+	<string name="copy_adb_command">Copy ADB Command</string>
 	<string name="command_copied">Command copied to clipboard</string>
 	<string name="grant_via_shizuku">Grant via Shizuku</string>
 	<string name="grant_via_root">Grant via Root</string>
@@ -40,6 +40,7 @@
 	<string name="disable_dns_test_summary">Enable this only if your DNS works but the app shows it as unreachable.</string>
 	<string name="custom_dns_provider">Custom DNS Provider(s)</string>
 	<string name="add_hostname">Add Hostname</string>
+	<string name="add_hostname_desc">Save this active hostname</string>
 	<string name="edit_hostname">Edit Hostname</string>
 	<string name="dns_hostname_hint">DNS Hostname (e.g. dns.nextdns.io)</string>
 	<string name="dns_label_hint">Label (optional)</string>
@@ -49,6 +50,7 @@
 
 	<!-- Main UI - Status -->
 	<string name="status_testing_dns">Testing connection…</string>
+	<string name="unsaved_active_label">Current (unsaved)</string>
 	<string name="status_active_reachable">Active &amp; Reachable</string>
 	<string name="warning_unreachable_dns">DNS server unreachable on port 853 (DoT). Android may still successfully connect via other methods.</string>
 	<string name="status_override_vpn">VPN Override Active</string>
@@ -128,4 +130,5 @@
 	<string name="notif_ssid_added">Added %s to blacklist</string>
 	<string name="notif_ssid_removed">Removed %s from blacklist</string>
 	<string name="toast_dns_changed">Private DNS changed to %s</string>
+	<string name="hostname_saved">Hostname saved</string>
 </resources>

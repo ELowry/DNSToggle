@@ -203,6 +203,7 @@ class MainActivity : AppCompatActivity() {
 
 	override fun onResume() {
 		super.onResume()
+		dnsViewModel.loadSettings()
 		updateMainPermissionUiState()
 		updateSsidUiState(PermissionHelper.hasSsidPermissions(this))
 		updateVpnUiState(PermissionHelper.hasNotificationPermission(this))
@@ -304,23 +305,19 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun observeViewModel() {
-		dnsViewModel.privateDnsMode.observe(this) { mode ->
-			val isEnabled = (mode == "hostname")
+		fun updateHostnamesMetadata() {
+			val mode = dnsViewModel.privateDnsMode.value
+			val specifier = dnsViewModel.privateDnsSpecifier.value
+			val reachability = dnsViewModel.dnsReachability.value
+			val isEnabled = (mode == Constants.DNS_MODE_HOSTNAME)
+
 			dnsToggleSwitch.isChecked = isEnabled
-			hostnamesAdapter.updateMetadata(
-				dnsViewModel.dnsReachability.value,
-				dnsViewModel.privateDnsSpecifier.value,
-				isEnabled
-			)
+			hostnamesAdapter.updateMetadata(reachability, specifier, isEnabled)
 		}
 
-		dnsViewModel.privateDnsSpecifier.observe(this) { specifier ->
-			hostnamesAdapter.updateMetadata(
-				dnsViewModel.dnsReachability.value,
-				specifier,
-				dnsToggleSwitch.isChecked
-			)
-		}
+		dnsViewModel.privateDnsMode.observe(this) { updateHostnamesMetadata() }
+		dnsViewModel.privateDnsSpecifier.observe(this) { updateHostnamesMetadata() }
+		dnsViewModel.dnsReachability.observe(this) { updateHostnamesMetadata() }
 
 		dnsViewModel.dnsHostnames.observe(this) { hostnames ->
 			(dnsHostnameListContainer.adapter as? HostnamesAdapter)?.submitList(hostnames)
@@ -386,14 +383,6 @@ class MainActivity : AppCompatActivity() {
 		dnsViewModel.hideLauncherIcon.observe(this) { isHidden ->
 			switchHideLauncher.isChecked = isHidden
 			updateLauncherComponentState(isHidden)
-		}
-
-		dnsViewModel.dnsReachability.observe(this) { reachability ->
-			hostnamesAdapter.updateMetadata(
-				reachability,
-				dnsViewModel.privateDnsSpecifier.value,
-				dnsToggleSwitch.isChecked
-			)
 		}
 
 		dnsViewModel.hasPermissionError.observe(this) { hasError ->
@@ -756,7 +745,11 @@ class MainActivity : AppCompatActivity() {
 		hostnamesAdapter = HostnamesAdapter(
 			onEditClick = { hostname -> showAddHostnameDialog(hostname) },
 			onDeleteClick = { hostname -> showDeleteHostnameConfirmDialog(hostname) },
-			onItemClick = { hostname -> dnsViewModel.togglePrivateDns(true, hostname) }
+			onItemClick = { hostname -> dnsViewModel.togglePrivateDns(true, hostname) },
+			onAddInPlaceClick = { hostname ->
+				dnsViewModel.addHostname(hostname)
+				Toast.makeText(this, R.string.hostname_saved, Toast.LENGTH_SHORT).show()
+			}
 		)
 		dnsHostnameListContainer.adapter = hostnamesAdapter
 
@@ -767,6 +760,31 @@ class MainActivity : AppCompatActivity() {
 				return (dnsHostnameListContainer.adapter?.itemCount ?: 0) > 1
 			}
 
+			override fun getDragDirs(
+				recyclerView: RecyclerView,
+				viewHolder: RecyclerView.ViewHolder
+			): Int {
+				val position = viewHolder.bindingAdapterPosition
+				val item = hostnamesAdapter.currentList.getOrNull(position)
+				if (item?.isUnsaved == true) {
+					return 0 // Disable grabbing the placeholder
+				}
+				return super.getDragDirs(recyclerView, viewHolder)
+			}
+
+			override fun canDropOver(
+				recyclerView: RecyclerView,
+				current: RecyclerView.ViewHolder,
+				target: RecyclerView.ViewHolder
+			): Boolean {
+				val targetItem =
+					hostnamesAdapter.currentList.getOrNull(target.bindingAdapterPosition)
+				if (targetItem?.isUnsaved == true) {
+					return false // Prevent other items from displacing the placeholder
+				}
+				return super.canDropOver(recyclerView, current, target)
+			}
+
 			override fun onMove(
 				recyclerView: RecyclerView,
 				viewHolder: RecyclerView.ViewHolder,
@@ -774,6 +792,11 @@ class MainActivity : AppCompatActivity() {
 			): Boolean {
 				val fromPos = viewHolder.bindingAdapterPosition
 				val toPos = target.bindingAdapterPosition
+
+				// Block reordering into position 0 if that item is unsaved
+				val targetItem = hostnamesAdapter.currentList.getOrNull(toPos)
+				if (targetItem?.isUnsaved == true) return false
+
 				hostnamesAdapter.moveItem(fromPos, toPos)
 				return true
 			}
@@ -1033,6 +1056,12 @@ class MainActivity : AppCompatActivity() {
 			false
 		)
 		bottomSheet.setContentView(view)
+
+		ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
+			val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+			v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, systemBars.bottom)
+			insets
+		}
 
 		view.findViewById<MaterialButton>(R.id.btnMenuRename).setOnClickListener {
 			bottomSheet.dismiss()

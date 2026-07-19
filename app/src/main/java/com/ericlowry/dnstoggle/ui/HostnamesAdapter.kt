@@ -1,8 +1,10 @@
 package com.ericlowry.dnstoggle.ui
 
+import android.animation.ValueAnimator
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -18,6 +20,7 @@ class HostnamesAdapter(
 	private val onEditClick: (String) -> Unit,
 	private val onDeleteClick: (String) -> Unit,
 	private val onItemClick: (String) -> Unit,
+	private val onAddInPlaceClick: (String) -> Unit,
 ) : ListAdapter<DnsHostname, HostnamesAdapter.ViewHolder>(DnsHostnameDiffCallback()) {
 
 	private var reachabilityMap: Map<String, DnsViewModel.ReachabilityState> = emptyMap()
@@ -48,6 +51,31 @@ class HostnamesAdapter(
 		val tvStatus: TextView = view.findViewById(R.id.tvStatus)
 		val btnEdit: View = view.findViewById(R.id.btnEditHostname)
 		val btnDelete: View = view.findViewById(R.id.btnDeleteHostname)
+		val btnAdd: View = view.findViewById(R.id.btnAddHostnameInPlace)
+		val unsavedBorder: View = view.findViewById(R.id.unsavedBorder)
+	}
+
+	private fun triggerSaveAnimation(holder: ViewHolder) {
+		val card = holder.card
+
+		// Background color pulse
+		val pulseColor = MaterialColors.getColor(
+			card,
+			com.google.android.material.R.attr.colorSecondaryContainer
+		)
+		val surfaceColor = MaterialColors.getColor(
+			card,
+			com.google.android.material.R.attr.colorSurfaceContainer
+		)
+
+		val colorAnim = ValueAnimator.ofArgb(surfaceColor, pulseColor, surfaceColor)
+		colorAnim.addUpdateListener { animator ->
+			card.setCardBackgroundColor(animator.animatedValue as Int)
+		}
+		colorAnim.duration = 600
+		colorAnim.interpolator = AccelerateDecelerateInterpolator()
+
+		colorAnim.start()
 	}
 
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -66,10 +94,15 @@ class HostnamesAdapter(
 		val label = dnsEntry.label
 		val context = holder.itemView.context
 
-		if (payloads.isEmpty() || payloads.contains("metadata")) {
+		if (payloads.contains("saved")) {
+			triggerSaveAnimation(holder)
+		}
+
+		if (payloads.isEmpty() || payloads.contains("metadata") || payloads.contains("saved")) {
 			val editCallback = onEditClick
 			val deleteCallback = onDeleteClick
 			val clickCallback = onItemClick
+			val addInPlaceCallback = onAddInPlaceClick
 
 			if (label != null) {
 				holder.tvHostname.text = label
@@ -83,10 +116,57 @@ class HostnamesAdapter(
 			val reachability = reachabilityMap[hostname] ?: DnsViewModel.ReachabilityState.IDLE
 			val isActive = (hostname == activeSpecifier) && isToggleChecked
 
+			if (dnsEntry.isUnsaved) {
+				holder.btnEdit.visibility = View.GONE
+				holder.btnDelete.visibility = View.GONE
+				holder.btnAdd.visibility = View.VISIBLE
+
+				holder.tvHostname.alpha = 1.0f
+				holder.tvSecondaryHostname.alpha = 1.0f
+
+				holder.tvHostname.setTypeface(null, android.graphics.Typeface.ITALIC)
+
+				holder.card.setCardBackgroundColor(
+					MaterialColors.getColor(
+						holder.itemView,
+						com.google.android.material.R.attr.colorSurface
+					)
+				)
+				holder.unsavedBorder.visibility = View.VISIBLE
+				holder.card.strokeWidth = 0
+			} else {
+				holder.btnEdit.visibility = View.VISIBLE
+				holder.btnDelete.visibility = View.VISIBLE
+				holder.btnAdd.visibility = View.GONE
+				holder.unsavedBorder.visibility = View.GONE
+
+				holder.tvHostname.alpha = 1.0f
+				holder.tvSecondaryHostname.alpha = 1.0f
+				holder.tvHostname.setTypeface(null, android.graphics.Typeface.NORMAL)
+
+				holder.card.setCardBackgroundColor(
+					MaterialColors.getColor(
+						holder.itemView,
+						com.google.android.material.R.attr.colorSurfaceContainer
+					)
+				)
+
+				if (isActive) {
+					holder.card.strokeColor = MaterialColors.getColor(
+						holder.itemView,
+						android.R.attr.colorPrimary
+					)
+					holder.card.strokeWidth = (2 * context.resources.displayMetrics.density).toInt()
+				} else {
+					holder.card.strokeColor = MaterialColors.getColor(
+						holder.itemView,
+						com.google.android.material.R.attr.colorOutlineVariant
+					)
+					holder.card.strokeWidth = (1 * context.resources.displayMetrics.density).toInt()
+				}
+			}
+
 			if (isActive) {
-				holder.card.strokeColor =
-					MaterialColors.getColor(holder.itemView, android.R.attr.colorPrimary)
-				holder.card.strokeWidth = (2 * context.resources.displayMetrics.density).toInt()
 				holder.tvStatus.visibility = View.VISIBLE
 
 				when (reachability) {
@@ -123,7 +203,6 @@ class HostnamesAdapter(
 					else -> holder.tvStatus.visibility = View.GONE
 				}
 			} else {
-				holder.card.strokeWidth = 0
 				when (reachability) {
 					DnsViewModel.ReachabilityState.TESTING -> {
 						holder.tvStatus.visibility = View.VISIBLE
@@ -155,6 +234,7 @@ class HostnamesAdapter(
 			holder.btnDelete.isEnabled = currentList.size > 1
 			holder.btnDelete.alpha = if (currentList.size > 1) 1.0f else 0.5f
 			holder.btnDelete.setOnClickListener { deleteCallback(hostname) }
+			holder.btnAdd.setOnClickListener { addInPlaceCallback(hostname) }
 			holder.itemView.setOnClickListener {
 				if (!isActive) clickCallback(hostname)
 			}
@@ -169,5 +249,13 @@ class DnsHostnameDiffCallback : DiffUtil.ItemCallback<DnsHostname>() {
 
 	override fun areContentsTheSame(oldItem: DnsHostname, newItem: DnsHostname): Boolean {
 		return oldItem == newItem
+	}
+
+	override fun getChangePayload(oldItem: DnsHostname, newItem: DnsHostname): Any? {
+		return if (oldItem.isUnsaved && !newItem.isUnsaved) {
+			"saved"
+		} else {
+			super.getChangePayload(oldItem, newItem)
+		}
 	}
 }

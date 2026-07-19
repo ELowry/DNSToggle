@@ -66,6 +66,7 @@ object DialogHelper {
 					.show(WindowInsetsCompat.Type.ime())
 			}
 		}
+
 		dialog.show()
 	}
 
@@ -118,6 +119,7 @@ object DialogHelper {
 					.show(WindowInsetsCompat.Type.ime())
 			}
 		}
+
 		dialog.show()
 	}
 
@@ -157,6 +159,7 @@ object DialogHelper {
 					.show(WindowInsetsCompat.Type.ime())
 			}
 		}
+
 		dialog.show()
 	}
 
@@ -241,6 +244,8 @@ object DialogHelper {
 		val btnCopy = dialogView.findViewById<ImageButton>(R.id.btnCopyAdbCommand)
 
 		tvAdbCommand.text = adbCommand
+		tvAdbCommand.contentDescription =
+			context.getString(R.string.adb_command_content_description, adbCommand)
 		btnCopy.setOnClickListener { onCopyCommand(adbCommand) }
 
 		val builder = MaterialAlertDialogBuilder(context)
@@ -323,6 +328,7 @@ object DialogHelper {
 					.show(WindowInsetsCompat.Type.ime())
 			}
 		}
+
 		dialog.show()
 	}
 }

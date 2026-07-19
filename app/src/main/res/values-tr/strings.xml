@@ -12,7 +12,7 @@
 	<!-- Permissions & ADB Setup -->
 	<string name="permission_required">İzin Gerekli</string>
 	<string name="permission_message">Bu anahtarı kullanmak için, root üzerinden ayarlar izni vermelisin veya USB hata ayıklama etkinken bilgisayarında şu ADB komutunu çalıştırmalısın:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
-	<string name="copy_command">Komutu Kopyala</string>
+	<string name="copy_adb_command">Komutu Kopyala</string>
 	<string name="command_copied">Komut panoya kopyalandı</string>
 	<string name="main_permission_title">Sistem Ayarları İzni Gerekli</string>
 	<string name="main_permission_message">Uygulamanın Özel DNS ayarlarını değiştirmek için özel bir izne ihtiyacı var.</string>
