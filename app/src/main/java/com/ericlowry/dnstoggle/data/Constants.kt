@@ -22,6 +22,14 @@ object Constants {
 	const val PREF_LAST_USED_HOSTNAME = "last_used_hostname"
 	const val PREF_USB_DEBUGGING_TILE_UNLOCKED = "usb_debugging_tile_unlocked"
 
+	// Connectivity Watchdog Keys
+	const val PREF_CONNECTIVITY_WATCHDOG_ENABLED = "connectivity_watchdog_enabled"
+	const val PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS = "connectivity_watchdog_debounce_seconds"
+	const val PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS = "connectivity_watchdog_probe_targets"
+	const val PREF_SSID_AUTO_DETECTED_BLACKLIST = "ssid_auto_detected_blacklist"
+	const val CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS = 15
+	const val CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS = "9.9.9.9, 149.112.112.112"
+
 	// VPN Override Keys
 	const val PREF_VPN_OVERRIDE_ENABLED = "vpn_override_enabled"
 	const val PREF_VPN_DNS_HOSTNAME = "vpn_dns_hostname"

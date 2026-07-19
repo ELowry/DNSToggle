@@ -36,7 +36,8 @@ class DnsToggleApplication : Application() {
 		SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
 			if (key == Constants.PREF_AUTO_BLACKLIST ||
 				key == Constants.PREF_AUTO_WHITELIST ||
-				key == Constants.PREF_VPN_OVERRIDE_ENABLED
+				key == Constants.PREF_VPN_OVERRIDE_ENABLED ||
+				key == Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED
 			) {
 				updateWifiMonitoringRegistration()
 			}
@@ -147,15 +148,18 @@ class DnsToggleApplication : Application() {
 
 		val statusChannel = NotificationChannel(
 			Constants.CHANNEL_ID_ALERT,
-			getString(R.string.notif_channel_name),
+			getString(R.string.notif_channel_alerts_name),
 			NotificationManager.IMPORTANCE_DEFAULT,
-		)
+		).apply {
+			description = getString(R.string.notif_channel_alerts_desc)
+		}
 
 		val serviceChannel = NotificationChannel(
 			Constants.CHANNEL_ID_SERVICE,
-			getString(R.string.service_notif_title),
+			getString(R.string.notif_channel_service_name),
 			NotificationManager.IMPORTANCE_MIN,
 		).apply {
+			description = getString(R.string.notif_channel_service_desc)
 			setShowBadge(false)
 			enableLights(false)
 			enableVibration(false)
@@ -202,7 +206,8 @@ class DnsToggleApplication : Application() {
 		val sharedPreferences = getPrefs()
 		val vpnEnabled = sharedPreferences.getBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, false)
 		val autoEnabled = sharedPreferences.getBoolean(Constants.PREF_AUTO_BLACKLIST, false) ||
-				sharedPreferences.getBoolean(Constants.PREF_AUTO_WHITELIST, false)
+				sharedPreferences.getBoolean(Constants.PREF_AUTO_WHITELIST, false) ||
+				sharedPreferences.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false)
 
 		val blacklist = DnsSettingsRepository.blacklist.value
 		val hasActiveBlacklist = !blacklist.isNullOrEmpty()

@@ -35,6 +35,7 @@ By long-pressing the Quick Settings tile, you can access the configuration menu 
   - Optional automatic DNS hostname reachability check.
 - **Wi-Fi Blocklist**: Automatically disable Private DNS when connected to specific Wi-Fi networks.
   - Optional automated addition/removal of the current Wi-Fi SSID from the blocklist when manually toggling the Quick Settings tile.
+  - Optional connectivity watchdog that auto-disables Private DNS when a network's DNS provider is unreachable, then re-enables it once the network recovers.
 - **VPN toggling**: Automatically set a DNS hostname or toggle Private DNS when a VPN is in use on the device.
 - **Backup & Restore**: Export and import your configuration via password-encrypted `.dnstoggle` files.
 - **Dynamic Tile Labeling**: Rename the Quick Settings tile.

@@ -52,9 +52,6 @@ class DnsManagerTest {
 
 	@Test
 	fun autoBlacklistDrivenToggleOff_doesNotOverwritePreferredDnsMode() {
-		// Regression test: turning DNS off because the current SSID is auto-blacklisted must
-		// not clobber the user's global preference, or leaving that SSID later would restore
-		// the wrong mode (the bug this test guards against).
 		val prefs = app.getPrefs()
 		prefs.edit {
 			putBoolean(Constants.PREF_AUTO_BLACKLIST, true)

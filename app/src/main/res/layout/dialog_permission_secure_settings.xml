@@ -45,6 +45,7 @@
 				android:layout_width="0dp"
 				android:layout_height="wrap_content"
 				android:layout_weight="1"
+				android:contentDescription="@string/adb_command_label"
 				android:fontFamily="monospace"
 				android:textAppearance="?attr/textAppearanceBodySmall"
 				android:textIsSelectable="true" />
@@ -54,7 +55,7 @@
 				android:layout_width="48dp"
 				android:layout_height="48dp"
 				android:background="?attr/selectableItemBackgroundBorderless"
-				android:contentDescription="@string/copy_adb_command_desc"
+				android:contentDescription="@string/copy_adb_command"
 				android:src="@drawable/ic_copy"
 				app:tint="?attr/colorPrimary" />
 		</LinearLayout>

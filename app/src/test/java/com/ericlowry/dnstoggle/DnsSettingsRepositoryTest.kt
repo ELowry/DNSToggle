@@ -48,6 +48,37 @@ class DnsSettingsRepositoryTest {
 	}
 
 	@Test
+	fun addToBlacklist_autoDetected_appearsInBothSets() = runTest {
+		val ssid = "AutoDetectedWiFi"
+
+		DnsSettingsRepository.addToBlacklist(ssid, autoDetected = true)
+
+		assertTrue(DnsSettingsRepository.blacklist.value?.contains(ssid) == true)
+		assertTrue(DnsSettingsRepository.autoDetectedBlacklist.value?.contains(ssid) == true)
+	}
+
+	@Test
+	fun addToBlacklist_manual_notInAutoDetectedSet() = runTest {
+		val ssid = "ManualWiFi"
+
+		DnsSettingsRepository.addToBlacklist(ssid)
+
+		assertTrue(DnsSettingsRepository.blacklist.value?.contains(ssid) == true)
+		assertTrue(DnsSettingsRepository.autoDetectedBlacklist.value?.contains(ssid) != true)
+	}
+
+	@Test
+	fun removeFromBlacklist_autoDetected_removedFromBothSets() = runTest {
+		val ssid = "AutoDetectedRemovable"
+
+		DnsSettingsRepository.addToBlacklist(ssid, autoDetected = true)
+		DnsSettingsRepository.removeFromBlacklist(ssid)
+
+		assertTrue(DnsSettingsRepository.blacklist.value?.contains(ssid) != true)
+		assertTrue(DnsSettingsRepository.autoDetectedBlacklist.value?.contains(ssid) != true)
+	}
+
+	@Test
 	fun removeHostname_keepsAtLeastOne() = runTest {
 		val hostname = "dns.google"
 		DnsSettingsRepository.addHostname(hostname)
