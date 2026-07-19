@@ -75,14 +75,14 @@ If you encounter issues not covered here, please [open a support ticket](https:/
 
 This app is a shortcut for existing system settings. It does not store, collect, or share any personal data. All permission-related activities (such as reading the Wi-Fi SSID) occur strictly on-device for automation purposes.
 
-## Building from Source
+## Contributing & Translations
 
-You can build the app yourself by opening this project in Android Studio or by running `./gradlew assembleDebug` using your prefered command line tool.
+Contributions are always welcome! Whether you want to add a new feature, fix a bug, or help translate the app into your native language, please check out our [Contributing Guidelines](CONTRIBUTING.md) to get started.
 
-## Help Translate DNS Toggle
+### Translation Status
 
 [![Translation status](https://hosted.weblate.org/widget/dns-toggle/multi-red.svg)](https://hosted.weblate.org/engage/dns-toggle/)
 
-Want to see DNS Toggle in your native language? Contributions are always welcome!
+## License
 
-You don't need any coding experience to help out, just click the chart above to start translating right from your browser using [Weblate](https://weblate.org/).
+This project is licensed under the [MIT License](LICENSE).

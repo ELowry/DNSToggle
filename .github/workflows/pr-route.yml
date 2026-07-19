@@ -1,0 +1,44 @@
+name: Route PRs to Integration Branch
+
+on:
+    pull_request_target:
+        types: [opened]
+
+jobs:
+    redirect-pr:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            pull-requests: write
+        steps:
+            - name: Checkout dev branch
+              uses: actions/checkout@v7
+              with:
+                  ref: dev
+
+            - name: Create and push integration branch
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+              run: |
+                  BRANCH_NAME="integration/pr-$PR_NUMBER"
+
+                  git checkout -b $BRANCH_NAME
+                  git push origin $BRANCH_NAME
+
+                  echo "NEW_BRANCH=$BRANCH_NAME" >> $GITHUB_ENV
+
+            - name: Change PR base and leave comment
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  MESSAGE: |
+                      ## Automated Message
+
+                      @${{ github.event.pull_request.user.login }}, thank you for submitting this Pull Request!
+
+                      To ensure a safe environment for testing community contributions, this PR has been automatically rerouted to the dedicated integration branch (`${{ env.NEW_BRANCH }}`) derived from `dev`.
+
+                      You don't need to do anything; someone should come along and review your pull request shortly.
+              run: |
+                  gh pr edit $PR_NUMBER --base ${{ env.NEW_BRANCH }}
+                  gh pr comment $PR_NUMBER --body "$MESSAGE"
