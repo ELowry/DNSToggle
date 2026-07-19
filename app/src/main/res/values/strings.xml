@@ -16,11 +16,11 @@
 
 	<!-- Permissions & ADB Setup -->
 	<string name="permission_required">Permission Required</string>
-	<string name="permission_message">To use this toggle, you must grant settings permissions through root or run this ADB command on your computer with USB debugging enabled:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
+	<string name="permission_message">To use this toggle, you must grant settings permissions through root, Shizuku, or run this ADB command on your computer with USB debugging enabled:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
 	<string name="adb_command_label">ADB Command</string>
 	<string name="copy_command">Copy Command</string>
 	<string name="command_copied">Command copied to clipboard</string>
-	<string name="retry_root">Retry Root</string>
+	<string name="retry_root">Retry</string>
 	<string name="root_grant_failed">Root grant failed or denied</string>
 	<string name="permission_granted">Permission granted</string>
 	<string name="main_permission_title">System Settings Permission Required</string>

@@ -33,6 +33,10 @@ android {
 		sourceCompatibility = JavaVersion.VERSION_11
 		targetCompatibility = JavaVersion.VERSION_11
 	}
+	buildFeatures {
+		aidl = true
+		buildConfig = true
+	}
 	dependenciesInfo {
 		includeInApk = false
 		includeInBundle = false
@@ -52,6 +56,8 @@ dependencies {
 	implementation(libs.androidx.activity)
 	implementation(libs.androidx.constraintlayout)
 	implementation(libs.androidx.lifecycle.viewmodel.ktx)
+	implementation(libs.shizuku.api)
+	implementation(libs.shizuku.provider)
 	testImplementation(libs.junit)
 	testImplementation(libs.robolectric)
 	testImplementation(libs.kotlinx.coroutines.test)
