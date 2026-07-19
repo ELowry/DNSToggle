@@ -290,7 +290,7 @@ object DnsSettingsRepository {
 					if (index == existingIndex) newEntry else dnsHostname
 				}
 			} else {
-				safeCurrent + newEntry
+				listOf(newEntry) + safeCurrent
 			}
 
 			saveHostnamesAsync(next)

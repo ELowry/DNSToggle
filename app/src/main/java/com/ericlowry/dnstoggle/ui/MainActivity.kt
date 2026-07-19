@@ -45,6 +45,8 @@ import com.ericlowry.dnstoggle.util.BackupManager
 import com.ericlowry.dnstoggle.util.NetworkUtils
 import com.ericlowry.dnstoggle.util.PermissionHelper
 import com.ericlowry.dnstoggle.util.RootUtils
+import com.ericlowry.dnstoggle.util.ShizukuUtils
+import com.ericlowry.dnstoggle.util.attemptSecureSettingsGrant
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -204,6 +206,7 @@ class MainActivity : AppCompatActivity() {
 
 	override fun onResume() {
 		super.onResume()
+		dnsViewModel.loadSettings()
 		updateMainPermissionUiState()
 		updateSsidUiState(PermissionHelper.hasSsidPermissions(this))
 		updateVpnUiState(PermissionHelper.hasNotificationPermission(this))
@@ -221,7 +224,7 @@ class MainActivity : AppCompatActivity() {
 			) == true && !PermissionHelper.hasSecureSettingsPermission(this)
 		) {
 			lifecycleScope.launch {
-				RootUtils.grantSecureSettingsPermission(packageName)
+				attemptSecureSettingsGrant(this@MainActivity, packageName)
 				updateMainPermissionUiState()
 				if (!PermissionHelper.hasSecureSettingsPermission(this@MainActivity)) {
 					showInitialPermissionDialog()
@@ -308,23 +311,19 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun observeViewModel() {
-		dnsViewModel.privateDnsMode.observe(this) { mode ->
-			val isEnabled = (mode == "hostname")
+		fun updateHostnamesMetadata() {
+			val mode = dnsViewModel.privateDnsMode.value
+			val specifier = dnsViewModel.privateDnsSpecifier.value
+			val reachability = dnsViewModel.dnsReachability.value
+			val isEnabled = (mode == Constants.DNS_MODE_HOSTNAME)
+
 			dnsToggleSwitch.isChecked = isEnabled
-			hostnamesAdapter.updateMetadata(
-				dnsViewModel.dnsReachability.value,
-				dnsViewModel.privateDnsSpecifier.value,
-				isEnabled
-			)
+			hostnamesAdapter.updateMetadata(reachability, specifier, isEnabled)
 		}
 
-		dnsViewModel.privateDnsSpecifier.observe(this) { specifier ->
-			hostnamesAdapter.updateMetadata(
-				dnsViewModel.dnsReachability.value,
-				specifier,
-				dnsToggleSwitch.isChecked
-			)
-		}
+		dnsViewModel.privateDnsMode.observe(this) { updateHostnamesMetadata() }
+		dnsViewModel.privateDnsSpecifier.observe(this) { updateHostnamesMetadata() }
+		dnsViewModel.dnsReachability.observe(this) { updateHostnamesMetadata() }
 
 		dnsViewModel.dnsHostnames.observe(this) { hostnames ->
 			(dnsHostnameListContainer.adapter as? HostnamesAdapter)?.submitList(hostnames)
@@ -403,14 +402,6 @@ class MainActivity : AppCompatActivity() {
 			updateLauncherComponentState(isHidden)
 		}
 
-		dnsViewModel.dnsReachability.observe(this) { reachability ->
-			hostnamesAdapter.updateMetadata(
-				reachability,
-				dnsViewModel.privateDnsSpecifier.value,
-				dnsToggleSwitch.isChecked
-			)
-		}
-
 		dnsViewModel.hasPermissionError.observe(this) { hasError ->
 			if (hasError) {
 				showInitialPermissionDialog()
@@ -434,10 +425,17 @@ class MainActivity : AppCompatActivity() {
 				dnsViewModel.togglePrivateDns(isChecked)
 				requestTileUpdate()
 			} else {
-				// Attempt root grant again
+				val toastMsgRes = when {
+					ShizukuUtils.isAvailable() -> R.string.toast_attempting_shizuku
+					RootUtils.isAvailable() -> R.string.toast_attempting_root
+					else -> R.string.toast_attempting_fallback
+				}
+				Toast.makeText(this@MainActivity, toastMsgRes, Toast.LENGTH_SHORT).show()
+
+				// Attempt grant again
 				setLoadingState(true)
 				lifecycleScope.launch {
-					RootUtils.grantSecureSettingsPermission(packageName)
+					attemptSecureSettingsGrant(this@MainActivity, packageName)
 					setLoadingState(false)
 					updateMainPermissionUiState()
 
@@ -534,9 +532,16 @@ class MainActivity : AppCompatActivity() {
 			if (PermissionHelper.hasSecureSettingsPermission(this)) {
 				updateMainPermissionUiState()
 			} else {
+				val toastMsgRes = when {
+					ShizukuUtils.isAvailable() -> R.string.toast_attempting_shizuku
+					RootUtils.isAvailable() -> R.string.toast_attempting_root
+					else -> R.string.toast_attempting_fallback
+				}
+				Toast.makeText(this@MainActivity, toastMsgRes, Toast.LENGTH_SHORT).show()
+
 				setLoadingState(true)
 				lifecycleScope.launch {
-					val success = RootUtils.grantSecureSettingsPermission(packageName)
+					val success = attemptSecureSettingsGrant(this@MainActivity, packageName)
 					setLoadingState(false)
 					updateMainPermissionUiState()
 
@@ -765,7 +770,11 @@ class MainActivity : AppCompatActivity() {
 		hostnamesAdapter = HostnamesAdapter(
 			onEditClick = { hostname -> showAddHostnameDialog(hostname) },
 			onDeleteClick = { hostname -> showDeleteHostnameConfirmDialog(hostname) },
-			onItemClick = { hostname -> dnsViewModel.togglePrivateDns(true, hostname) }
+			onItemClick = { hostname -> dnsViewModel.togglePrivateDns(true, hostname) },
+			onAddInPlaceClick = { hostname ->
+				dnsViewModel.addHostname(hostname)
+				Toast.makeText(this, R.string.hostname_saved, Toast.LENGTH_SHORT).show()
+			}
 		)
 		dnsHostnameListContainer.adapter = hostnamesAdapter
 
@@ -776,6 +785,31 @@ class MainActivity : AppCompatActivity() {
 				return (dnsHostnameListContainer.adapter?.itemCount ?: 0) > 1
 			}
 
+			override fun getDragDirs(
+				recyclerView: RecyclerView,
+				viewHolder: RecyclerView.ViewHolder
+			): Int {
+				val position = viewHolder.bindingAdapterPosition
+				val item = hostnamesAdapter.currentList.getOrNull(position)
+				if (item?.isUnsaved == true) {
+					return 0 // Disable grabbing the placeholder
+				}
+				return super.getDragDirs(recyclerView, viewHolder)
+			}
+
+			override fun canDropOver(
+				recyclerView: RecyclerView,
+				current: RecyclerView.ViewHolder,
+				target: RecyclerView.ViewHolder
+			): Boolean {
+				val targetItem =
+					hostnamesAdapter.currentList.getOrNull(target.bindingAdapterPosition)
+				if (targetItem?.isUnsaved == true) {
+					return false // Prevent other items from displacing the placeholder
+				}
+				return super.canDropOver(recyclerView, current, target)
+			}
+
 			override fun onMove(
 				recyclerView: RecyclerView,
 				viewHolder: RecyclerView.ViewHolder,
@@ -783,6 +817,11 @@ class MainActivity : AppCompatActivity() {
 			): Boolean {
 				val fromPos = viewHolder.bindingAdapterPosition
 				val toPos = target.bindingAdapterPosition
+
+				// Block reordering into position 0 if that item is unsaved
+				val targetItem = hostnamesAdapter.currentList.getOrNull(toPos)
+				if (targetItem?.isUnsaved == true) return false
+
 				hostnamesAdapter.moveItem(fromPos, toPos)
 				return true
 			}
@@ -1002,11 +1041,18 @@ class MainActivity : AppCompatActivity() {
 				clipboard.setPrimaryClip(clip)
 				Toast.makeText(this, getString(R.string.command_copied), Toast.LENGTH_SHORT).show()
 			},
-			onRetryRoot = {
+			onAttemptElevatedGrant = {
+				val toastMsgRes = when {
+					ShizukuUtils.isAvailable() -> R.string.toast_attempting_shizuku
+					RootUtils.isAvailable() -> R.string.toast_attempting_root
+					else -> R.string.toast_attempting_fallback
+				}
+				Toast.makeText(this@MainActivity, toastMsgRes, Toast.LENGTH_SHORT).show()
+
 				setLoadingState(true)
 				lifecycleScope.launch {
 					val startTime = System.currentTimeMillis()
-					RootUtils.grantSecureSettingsPermission(packageName)
+					attemptSecureSettingsGrant(this@MainActivity, packageName)
 
 					val elapsedTime = System.currentTimeMillis() - startTime
 					if (elapsedTime < 1000) delay(1000.milliseconds - elapsedTime.milliseconds)
@@ -1017,7 +1063,7 @@ class MainActivity : AppCompatActivity() {
 					if (!PermissionHelper.hasSecureSettingsPermission(this@MainActivity)) {
 						Toast.makeText(
 							this@MainActivity,
-							R.string.root_grant_failed,
+							R.string.grant_failed,
 							Toast.LENGTH_SHORT
 						).show()
 						showInitialPermissionDialog()
@@ -1035,6 +1081,12 @@ class MainActivity : AppCompatActivity() {
 			false
 		)
 		bottomSheet.setContentView(view)
+
+		ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
+			val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+			v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, systemBars.bottom)
+			insets
+		}
 
 		view.findViewById<MaterialButton>(R.id.btnMenuRename).setOnClickListener {
 			bottomSheet.dismiss()

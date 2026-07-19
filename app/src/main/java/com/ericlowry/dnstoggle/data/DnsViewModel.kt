@@ -14,12 +14,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.ericlowry.dnstoggle.DnsToggleApplication
+import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.service.DnsToggleService
 import com.ericlowry.dnstoggle.service.TileServiceCompat
 import com.ericlowry.dnstoggle.util.NetworkUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.InetSocketAddress
 import java.net.Socket
 
@@ -126,20 +128,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 			}
 		}
 		viewModelScope.launch {
-			DnsSettingsRepository.dnsHostnames.collect { list ->
-				list?.let { hostnames ->
-					_dnsHostnames.postValue(hostnames)
-					hostnames.forEach { dnsEntry ->
-						val hostname = dnsEntry.hostname
-						val currentMap = _dnsReachability.value ?: emptyMap()
-						if (!currentMap.containsKey(hostname) && NetworkUtils.isValidDnsHostname(
-								hostname,
-							)
-						) {
-							testReachability(hostname)
-						}
-					}
-				}
+			DnsSettingsRepository.dnsHostnames.collect {
+				refreshDisplayList()
 			}
 		}
 		viewModelScope.launch {
@@ -155,7 +145,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 			registerContentObserver(
 				Settings.Global.getUriFor(Constants.SETTINGS_PRIVATE_DNS_MODE),
 				false,
-				dnsSettingsObserver
+				dnsSettingsObserver,
 			)
 			registerContentObserver(
 				Settings.Global.getUriFor(Constants.SETTINGS_PRIVATE_DNS_SPECIFIER),
@@ -168,78 +158,47 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	fun loadSettings() {
 		viewModelScope.launch(Dispatchers.IO) {
 			val resolver = getApplication<Application>().contentResolver
+			val mode = Settings.Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
 			val specifier =
 				Settings.Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
-			_privateDnsMode.postValue(
-				Settings.Global.getString(
-					resolver,
-					Constants.SETTINGS_PRIVATE_DNS_MODE
-				)
-			)
-			_privateDnsSpecifier.postValue(specifier)
 
-			_autoBlacklistEnabled.postValue(
-				sharedPreferences.getBoolean(
-					Constants.PREF_AUTO_BLACKLIST,
-					false
-				)
+			val autoBlacklist = sharedPreferences.getBoolean(Constants.PREF_AUTO_BLACKLIST, false)
+			val autoWhitelist = sharedPreferences.getBoolean(Constants.PREF_AUTO_WHITELIST, false)
+			val connectivityWatchdog = sharedPreferences.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false)
+			val watchdogDebounce = sharedPreferences.getInt(
+				Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
+				Constants.CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS
 			)
-			_autoWhitelistEnabled.postValue(
-				sharedPreferences.getBoolean(
-					Constants.PREF_AUTO_WHITELIST,
-					false
-				)
-			)
-			_connectivityWatchdogEnabled.postValue(
-				sharedPreferences.getBoolean(
-					Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED,
-					false
-				)
-			)
-			_connectivityWatchdogDebounceSeconds.postValue(
-				sharedPreferences.getInt(
-					Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
-					Constants.CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS
-				)
-			)
-			_hideLauncherIcon.postValue(
-				sharedPreferences.getBoolean(
-					Constants.PREF_HIDE_LAUNCHER_ICON,
-					false
-				)
-			)
-			_disableDnsTest.postValue(
-				sharedPreferences.getBoolean(
-					Constants.PREF_DISABLE_DNS_TEST,
-					false
-				)
-			)
-			_showToastEnabled.postValue(
-				sharedPreferences.getBoolean(
-					Constants.PREF_SHOW_TOAST,
-					true
-				)
-			)
-			_vpnOverrideEnabled.postValue(DnsSettingsRepository.vpnOverrideEnabled.value)
-			_vpnDnsHostname.postValue(DnsSettingsRepository.vpnDnsHostname.value)
-			_vpnHostnameRemovedWarning.postValue(
-				sharedPreferences.getBoolean(
-					Constants.PREF_VPN_HOSTNAME_REMOVED_WARNING,
-					false
-				)
-			)
-			_isInVpnOverride.postValue(
-				sharedPreferences.getBoolean(
-					Constants.PREF_IS_IN_VPN_OVERRIDE,
-					false
-				)
-			)
-			_activeSsidOverride.postValue(
-				sharedPreferences.getString(
-					Constants.PREF_ACTIVE_SSID_OVERRIDE,
-					null
-				)
-			)
+			val hideLauncher =
+				sharedPreferences.getBoolean(Constants.PREF_HIDE_LAUNCHER_ICON, false)
+			val disableDnsTest =
+				sharedPreferences.getBoolean(Constants.PREF_DISABLE_DNS_TEST, false)
+			val showToast = sharedPreferences.getBoolean(Constants.PREF_SHOW_TOAST, true)
+			val vpnOverride = DnsSettingsRepository.vpnOverrideEnabled.value
+			val vpnDns = DnsSettingsRepository.vpnDnsHostname.value
+			val vpnRemovedWarning =
+				sharedPreferences.getBoolean(Constants.PREF_VPN_HOSTNAME_REMOVED_WARNING, false)
+			val isInVpn = sharedPreferences.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)
+			val ssidOverride =
+				sharedPreferences.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null)
+
+			withContext(Dispatchers.Main) {
+				_privateDnsMode.value = mode
+				_privateDnsSpecifier.value = specifier
+				_autoBlacklistEnabled.value = autoBlacklist
+				_autoWhitelistEnabled.value = autoWhitelist
+				_connectivityWatchdogEnabled.value = connectivityWatchdog
+				_connectivityWatchdogDebounceSeconds.value = watchdogDebounce
+				_hideLauncherIcon.value = hideLauncher
+				_disableDnsTest.value = disableDnsTest
+				_showToastEnabled.value = showToast
+				_vpnOverrideEnabled.value = vpnOverride
+				_vpnDnsHostname.value = vpnDns
+				_vpnHostnameRemovedWarning.value = vpnRemovedWarning
+				_isInVpnOverride.value = isInVpn
+				_activeSsidOverride.value = ssidOverride
+				refreshDisplayList()
+			}
 		}
 
 		viewModelScope.launch {
@@ -257,6 +216,37 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
 	fun addToBlacklist(ssid: String) {
 		DnsSettingsRepository.addToBlacklist(ssid)
+	}
+
+	private fun refreshDisplayList() {
+		val savedHostnames = DnsSettingsRepository.dnsHostnames.value ?: emptyList()
+		val currentSpecifier = _privateDnsSpecifier.value
+		val currentMode = _privateDnsMode.value
+
+		val displayList = savedHostnames.toMutableList()
+
+		if ((currentMode == Constants.DNS_MODE_HOSTNAME) && !currentSpecifier.isNullOrEmpty()) {
+			if (savedHostnames.none { it.hostname == currentSpecifier }) {
+				displayList.add(
+					0,
+					DnsHostname(
+						hostname = currentSpecifier,
+						label = getApplication<Application>().getString(R.string.unsaved_active_label),
+						isUnsaved = true
+					)
+				)
+			}
+		}
+
+		_dnsHostnames.postValue(displayList)
+
+		displayList.forEach { dnsEntry ->
+			val hostname = dnsEntry.hostname
+			val currentMap = _dnsReachability.value ?: emptyMap()
+			if (!currentMap.containsKey(hostname) && NetworkUtils.isValidDnsHostname(hostname)) {
+				testReachability(hostname)
+			}
+		}
 	}
 
 	fun removeFromBlacklist(ssid: String) {
@@ -398,7 +388,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	}
 
 	fun updateHostnameOrder(newList: List<DnsHostname>) {
-		DnsSettingsRepository.updateHostnamesOrder(newList)
+		DnsSettingsRepository.updateHostnamesOrder(newList.filter { !it.isUnsaved })
 	}
 
 	fun dismissVpnHostnameWarning() {

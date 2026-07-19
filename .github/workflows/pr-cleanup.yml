@@ -1,0 +1,35 @@
+name: Cleanup Integration Branches
+
+on:
+    pull_request:
+        types: [closed]
+
+jobs:
+    cleanup:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v7
+
+            - name: Safely delete integration branches
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  BASE_BRANCH: ${{ github.base_ref }}
+                  HEAD_BRANCH: ${{ github.head_ref }}
+                  IS_MERGED: ${{ github.event.pull_request.merged }}
+              run: |
+                  if [[ "$BASE_BRANCH" == integration/pr-* ]]; then
+                    if [[ "$IS_MERGED" == "true" ]]; then
+                      echo "PR was merged into $BASE_BRANCH. Keeping branch for maintainer review."
+                    else
+                      echo "PR was closed without merging. Deleting abandoned $BASE_BRANCH."
+                      git push origin --delete "$BASE_BRANCH" || echo "Base branch already deleted"
+                    fi
+                  fi
+
+                  if [[ "$HEAD_BRANCH" == integration/pr-* ]]; then
+                    echo "Integration PR closed/merged into repo. Cleaning up $HEAD_BRANCH."
+                    git push origin --delete "$HEAD_BRANCH" || echo "Head branch already deleted"
+                  fi

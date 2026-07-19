@@ -13,7 +13,7 @@ A tiny Android app that allows you to easily toggle your phone's Private DNS thr
 
 > [!WARNING]
 >
-> To modify the Private DNS system settings, this app requires the `WRITE_SECURE_SETTINGS` permission. Since this is a protected system permission, you must either have a rooted device or manually grant the permission using [ADB](https://developer.android.com/tools/adb).
+> To modify the Private DNS system settings, this app requires the `WRITE_SECURE_SETTINGS` permission. Since this is a protected system permission, you must either have a rooted device, use [Shizuku](https://shizuku.rikka.app/) (no PC or root required after a one-time setup), or manually grant the permission using [ADB](https://developer.android.com/tools/adb).
 >
 > If your device is not rooted, you can grant the required permission by connecting your phone to a computer with USB debugging enabled and running the following ADB command:
 >
@@ -67,7 +67,7 @@ If you encounter issues not covered here, please [open a support ticket](https:/
 
 ## Permissions
 
-- **WRITE_SECURE_SETTINGS**: Required to modify system Private DNS settings. Must be granted via root or using ADB.
+- **WRITE_SECURE_SETTINGS**: Required to modify system Private DNS settings. Must be granted via root, Shizuku, or using ADB.
 - **INTERNET** _(optional)_: Used to verify that your Custom DNS Provider is online and reachable before applying it.
 - **Location & Nearby Devices** _(optional)_: Required only for **Wi-Fi Blocklist** automation. Used to identify the Wi-Fi network name (SSID) locally.
 - **Notifications** _(optional)_: Used for status alerts when Private DNS is automatically adjusted.
@@ -76,14 +76,14 @@ If you encounter issues not covered here, please [open a support ticket](https:/
 
 This app is a shortcut for existing system settings. It does not store, collect, or share any personal data. All permission-related activities (such as reading the Wi-Fi SSID) occur strictly on-device for automation purposes.
 
-## Building from Source
+## Contributing & Translations
 
-You can build the app yourself by opening this project in Android Studio or by running `./gradlew assembleDebug` using your prefered command line tool.
+Contributions are always welcome! Whether you want to add a new feature, fix a bug, or help translate the app into your native language, please check out our [Contributing Guidelines](CONTRIBUTING.md) to get started.
 
-## Help Translate DNS Toggle
+### Translation Status
 
 [![Translation status](https://hosted.weblate.org/widget/dns-toggle/multi-red.svg)](https://hosted.weblate.org/engage/dns-toggle/)
 
-Want to see DNS Toggle in your native language? Contributions are always welcome!
+## License
 
-You don't need any coding experience to help out, just click the chart above to start translating right from your browser using [Weblate](https://weblate.org/).
+This project is licensed under the [MIT License](LICENSE).

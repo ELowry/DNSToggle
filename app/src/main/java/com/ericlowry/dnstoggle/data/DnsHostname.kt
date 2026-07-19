@@ -5,6 +5,7 @@ import org.json.JSONObject
 data class DnsHostname(
 	val hostname: String,
 	val label: String? = null,
+	@Transient val isUnsaved: Boolean = false
 ) {
 	init {
 		require(hostname.isNotBlank()) { "Hostname cannot be blank" }

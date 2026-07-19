@@ -16,12 +16,18 @@
 
 	<!-- Permissions & ADB Setup -->
 	<string name="permission_required">Autorisation requise</string>
-	<string name="permission_message">"Pour utiliser cette application, vous devez accorder des autorisations d\'accès aux paramètres via root ou exécuter cette commande ADB sur votre ordinateur avec le débogage USB activé:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
+	<string name="permission_message">Pour utiliser cette application, vous devez accorder des autorisations d\'accès aux paramètres via root, Shizuku, ou exécuter cette commande ADB sur votre ordinateur avec le débogage USB activé:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
 	<string name="adb_command_label">Commande ADB</string>
-	<string name="copy_command">Copier la commande</string>
+	<string name="adb_command_content_description">Commande ADB: %s</string>
+	<string name="copy_adb_command">Copier la commande ADB</string>
 	<string name="command_copied">Commande copiée dans le presse-papiers</string>
-	<string name="retry_root">Réessayer en root</string>
-	<string name="root_grant_failed">L\'autorisation root a échoué ou a été refusée</string>
+	<string name="grant_via_shizuku">Accorder via Shizuku</string>
+	<string name="grant_via_root">Accorder via Root</string>
+	<string name="grant_auto_fallback">Tentative d\'octroi de permission</string>
+	<string name="toast_attempting_shizuku">Tentative d\'octroi via Shizuku…</string>
+	<string name="toast_attempting_root">Tentative d\'octroi via Root…</string>
+	<string name="toast_attempting_fallback">Tentative d\'octroi automatique…</string>
+	<string name="grant_failed">L\'octroi via Shizuku/Root a échoué ou été refusé</string>
 	<string name="permission_granted">Autorisation accordée</string>
 	<string name="main_permission_title">Autorisation système requise</string>
 	<string name="main_permission_message">L\'application requiert une autorisation spéciale pour modifier les paramètres DNS privés.</string>
@@ -34,6 +40,7 @@
 	<string name="disable_dns_test_summary">Activez ceci uniquement si votre DNS fonctionne, mais que l\'app l\'affiche comme injoignable.</string>
 	<string name="custom_dns_provider">Fournisseur(s) DNS personnalisé</string>
 	<string name="add_hostname">Ajouter une addresse DNS</string>
+	<string name="add_hostname_desc">Enregistrer cette addresse DNS active</string>
 	<string name="edit_hostname">Modifier l\'addresse</string>
 	<string name="dns_hostname_hint">Addresse DNS (ex: dns.nextdns.io)</string>
 	<string name="dns_label_hint">Surnom (optionnel)</string>
@@ -43,6 +50,7 @@
 
 	<!-- Main UI - Status & Reachability -->
 	<string name="status_testing_dns">Test de connexion…</string>
+	<string name="unsaved_active_label">Actif (non enregistré)</string>
 	<string name="status_active_reachable">Actif et joignable</string>
 	<string name="warning_unreachable_dns">Serveur DNS injoignable sur le port 853 (DoT). Android peut possiblement s\'y connecter par d\'autres méthodes.</string>
 	<string name="status_override_vpn">Override VPN en cours</string>
@@ -122,4 +130,5 @@
 	<string name="notif_ssid_added">%s ajouté à la liste</string>
 	<string name="notif_ssid_removed">%s retiré de la liste</string>
 	<string name="toast_dns_changed">DNS privé: %s</string>
+	<string name="hostname_saved">Addresse enregistrée</string>
 </resources>

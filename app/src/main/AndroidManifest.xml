@@ -35,7 +35,8 @@
 			android:name=".ui.MainActivity"
 			android:exported="true"
 			android:launchMode="singleTask"
-			android:theme="@style/Theme.DNSToggle">
+			android:theme="@style/Theme.DNSToggle"
+			android:windowSoftInputMode="adjustResize">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 			</intent-filter>
@@ -135,6 +136,14 @@
 				android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
 				android:value="Monitoring Wi-Fi network connectivity to automate Private DNS mode toggling based on user-defined SSID blacklist." />
 		</service>
+
+		<provider
+			android:name="rikka.shizuku.ShizukuProvider"
+			android:authorities="${applicationId}.shizuku"
+			android:enabled="true"
+			android:exported="true"
+			android:multiprocess="false"
+			android:permission="android.permission.INTERACT_ACROSS_USERS_FULL" />
 
 		<receiver
 			android:name=".service.BootReceiver"

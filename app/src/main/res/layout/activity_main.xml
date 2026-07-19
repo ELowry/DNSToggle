@@ -326,14 +326,14 @@
 
 					<com.google.android.material.materialswitch.MaterialSwitch
 						android:id="@+id/switchAutoBlacklist"
-						android:layout_width="match_parent"
+						android:layout_width="wrap_content"
 						android:layout_height="wrap_content"
 						android:layout_marginTop="8dp"
 						android:text="@string/auto_blacklist_on_disable" />
 
 					<com.google.android.material.materialswitch.MaterialSwitch
 						android:id="@+id/switchAutoWhitelist"
-						android:layout_width="match_parent"
+						android:layout_width="wrap_content"
 						android:layout_height="wrap_content"
 						android:layout_marginTop="4dp"
 						android:text="@string/auto_whitelist_on_enable" />
