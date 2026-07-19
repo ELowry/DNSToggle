@@ -99,7 +99,10 @@ object DnsSettingsRepository {
 	private fun loadAutoDetectedBlacklist() {
 		scope.launch {
 			val encryptedSet =
-				sharedPreferences.getStringSet(Constants.PREF_SSID_AUTO_DETECTED_BLACKLIST, emptySet())
+				sharedPreferences.getStringSet(
+					Constants.PREF_SSID_AUTO_DETECTED_BLACKLIST,
+					emptySet()
+				)
 					?: emptySet()
 
 			var keyInvalidated = false
@@ -208,6 +211,16 @@ object DnsSettingsRepository {
 
 	fun resetKeyInvalidated() {
 		_isKeyInvalidated.value = false
+	}
+
+	fun promoteAutoDetectedSsid(ssid: String) {
+		_autoDetectedBlacklist.update { current ->
+			val safeCurrent = current ?: emptySet()
+			if (ssid !in safeCurrent) return@update safeCurrent
+			val next = safeCurrent - ssid
+			saveAutoDetectedBlacklistAsync(next)
+			next
+		}
 	}
 
 	fun addToBlacklist(ssid: String, autoDetected: Boolean = false) {

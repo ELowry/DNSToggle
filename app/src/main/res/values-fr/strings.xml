@@ -54,16 +54,25 @@
 	<string name="status_active_reachable">Actif et joignable</string>
 	<string name="warning_unreachable_dns">Serveur DNS injoignable sur le port 853 (DoT). Android peut possiblement s\'y connecter par d\'autres méthodes.</string>
 	<string name="status_override_vpn">Override VPN en cours</string>
-	<string name="status_override_ssid">Bloqué par le SSID (%s)</string>
+	<string name="status_override_ssid">SSID exclu (%s)</string>
 
 	<!-- Main UI - SSID Blacklist & Monitoring -->
-	<string name="ssid_blacklist_title">Liste des SSID bloqués</string>
+	<string name="ssid_blacklist_title">Réseaux exclus</string>
 	<string name="wifi_monitoring_info_title">Info sur la surveillance du SSID</string>
 	<string name="wifi_monitoring_info_text">Pour prendre en charge le basculement automatique, l\'application surveille les changements de réseau. L\'impact sur la consommation de la batterie devrait être minimal, mais le système peut afficher une activité en arrière-plan continue.</string>
 	<string name="battery_optimization_explanation">Certains appareils arrêtent la surveillance en arrière-plan pour économiser la batterie. Si l\'automatisation cesse de fonctionner, désactivez les restrictions pour cette application.</string>
 	<string name="ignore_battery_optimizations">Désactiver les restrictions de batterie</string>
-	<string name="auto_blacklist_on_disable">Ajout automatique à la liste des SSID bloqués lors de la désactivation</string>
-	<string name="auto_whitelist_on_enable">Retrait automatique de la liste des SSID bloqués lors de l\'activation</string>
+	<string name="auto_blacklist_on_disable">Ajouter aux exclusions lors d\'une désactivation</string>
+	<string name="auto_whitelist_on_enable">Retirer des exclusions lors d\'une activation</string>
+	<string name="connectivity_watchdog_toggle">Exclure automatiquement si échec de connexion</string>
+	<string name="connectivity_watchdog_info_text">Lorsque le DNS privé échoue mais que l\'internet est toujours disponible, l\'application ajoutera automatiquement le réseau actuel aux exclusions pour restaurer la connectivité.</string>
+	<string name="connectivity_watchdog_debounce_label">Délai avant désactivation</string>
+	<string name="connectivity_watchdog_targets_label">Serveurs de test</string>
+	<string name="connectivity_watchdog_targets_title">Serveurs de test de connectivité</string>
+	<string name="connectivity_watchdog_targets_hint">Adresses IP séparées par des virgules (ex: 9.9.9.9, 5.1.66.255)</string>
+	<string name="connectivity_watchdog_debounce_custom">Personnalisé…</string>
+	<string name="connectivity_watchdog_debounce_invalid">Saisissez une valeur entre 5 et 300 secondes</string>
+	<string name="connectivity_watchdog_debounce_seconds_format">%ds</string>
 	<string name="grant_permission_notice">L\'autorisation de localisation/proximité (y compris en arrière-plan) est requise pour vérifier le nom du Wi-Fi.</string>
 	<string name="grant_permission_button">Accorder les autorisations</string>
 	<string name="permissions_permanently_denied">Les autorisations de localisation et d\'appareils à proximité ont été refusées précédemment. Veuillez ouvrir les paramètres de l\'application pour lui donner les autorisations nécessaires afin d\'utiliser cette fonctionnalité.</string>
@@ -73,7 +82,9 @@
 	<string name="add_ssid">Ajouter un SSID</string>
 	<string name="edit_ssid">Modifier le SSID</string>
 	<string name="ssid_hint">SSID (Nom du Wi-Fi)</string>
-	<string name="delete_ssid_confirm">Retirer ce SSID de la liste?</string>
+	<string name="ssid_saved">Réseau ajouté aux exclusions permanentes</string>
+	<string name="ssid_auto_added_label">Ajouté automatiquement</string>
+	<string name="delete_ssid_confirm">Retirer ce réseau des exclusions ?</string>
 
 	<!-- Main UI - VPN Override -->
 	<string name="vpn_override_title">Override VPN</string>
@@ -84,7 +95,7 @@
 
 	<!-- Main UI - General Options -->
 	<string name="options_title">Options</string>
-	<string name="show_toast_notif">Afficher les notifications toast</string>
+	<string name="show_toast_notif">Afficher les notifications toast d\'état</string>
 	<string name="show_toast_notif_summary">Afficher une notification toast lors des changements de mode de DNS privé.</string>
 	<string name="hide_launcher_icon">"Masquer l\'icône de l\'application</string>
 	<string name="hide_launcher_icon_summary">"Une fois activée, l\'application sera masquée de votre tiroir d\'applications. Vous pourrez toujours y accéder en effectuant un appui long sur la tuile des paramètres rapides. Note: certains appareils refusent parfois de masquer les applications entièrement.</string>
@@ -106,7 +117,7 @@
 
 	<!-- Security -->
 	<string name="keystore_error_title">Réinitialisation de sécurité</string>
-	<string name="keystore_error_message">En raison d\'un changement dans les paramètres de sécurité de votre appareil (comme la modification du verrouillage de l\'écran), votre liste de SSID bloqués a été réinitialisée pour protéger vos données. Vous devrez rajouter vos réseaux à la liste.</string>
+	<string name="keystore_error_message">En raison d\'un changement dans les paramètres de sécurité de votre appareil (comme la modification du verrouillage de l\'écran), votre liste d\'exclusions Wi-Fi a été réinitialisée pour protéger vos données. Vous devrez rajouter vos réseaux exclus.</string>
 
 	<!-- Backup/Restore -->
 	<string name="export">Exporter</string>
@@ -121,14 +132,19 @@
 	<string name="import_failed_password">Échec du déchiffrement. Mot de passe incorrect ou fichier corrompu.</string>
 
 	<!-- Feedback & Notifications -->
-	<string name="notif_channel_name">État du réseau</string>
+	<string name="notif_channel_alerts_name">Alertes d\'automatisation</string>
+	<string name="notif_channel_alerts_desc">Notifications lorsque le DNS privé est automatiquement activé/désactivé ou lorsque des réseaux sont exclus.</string>
+	<string name="notif_channel_service_name">Surveillance en arrière-plan</string>
+	<string name="notif_channel_service_desc">Une notification silencieuse et persistante requise par Android pour surveiller les réseaux Wi-Fi en arrière-plan.</string>
 	<string name="service_notif_title">Surveillance du réseau activée</string>
 	<string name="service_notif_text">DNS Toggle est actif pour automatiser le mode DNS privé.</string>
 	<string name="notif_dns_disabled_auto">DNS privé désactivé automatiquement pour %s</string>
+	<string name="notif_connectivity_watchdog_disabled">DNS privé désactivé et %s exclu en raison d\'un problème de connexion</string>
+	<string name="notif_connectivity_watchdog_restored">Connectivité rétablie. DNS privé réactivé pour %s</string>
 	<string name="notif_vpn_dns_applied">DNS privé défini par le VPN</string>
 	<string name="notif_vpn_dns_restored">DNS privé restauré post-VPN</string>
-	<string name="notif_ssid_added">%s ajouté à la liste</string>
-	<string name="notif_ssid_removed">%s retiré de la liste</string>
+	<string name="notif_ssid_added">%s ajouté aux exclusions</string>
+	<string name="notif_ssid_removed">%s retiré des exclusions</string>
 	<string name="toast_dns_changed">DNS privé: %s</string>
 	<string name="hostname_saved">Addresse enregistrée</string>
 </resources>

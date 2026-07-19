@@ -76,7 +76,8 @@ class WifiMonitoringService : Service() {
 		SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
 			if (key == Constants.PREF_VPN_OVERRIDE_ENABLED ||
 				key == Constants.PREF_VPN_DNS_HOSTNAME ||
-				key == Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED
+				key == Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED ||
+				key == Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS
 			) {
 				evaluateActiveNetworks()
 			}
@@ -415,6 +416,10 @@ class WifiMonitoringService : Service() {
 			Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
 			Constants.CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS
 		)
+		val probeTargets = prefs.getString(
+			Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS,
+			Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
+		) ?: Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
 
 		connectivityWatchdogJob = serviceScope.launch {
 			delay(debounceSeconds.seconds)
@@ -431,7 +436,7 @@ class WifiMonitoringService : Service() {
 				return@launch
 			}
 
-			if (ConnectivityWatchdog.isDnsSpecificFailure(hostname)) {
+			if (ConnectivityWatchdog.isDnsSpecificFailure(hostname, probeTargets)) {
 				DnsSettingsRepository.addToBlacklist(ssid, autoDetected = true)
 			}
 		}
@@ -454,10 +459,20 @@ class WifiMonitoringService : Service() {
 		val hostname = Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
 		if (hostname.isNullOrEmpty()) return
 
+		val probeTargets = prefs.getString(
+			Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS,
+			Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
+		) ?: Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
+
 		serviceScope.launch {
-			if (ConnectivityWatchdog.isRecovered(hostname)) {
+			if (ConnectivityWatchdog.isRecovered(hostname, probeTargets)) {
 				DnsSettingsRepository.removeFromBlacklist(ssid)
-				dispatchStatusNotification(getString(R.string.notif_connectivity_watchdog_restored, ssid))
+				dispatchStatusNotification(
+					getString(
+						R.string.notif_connectivity_watchdog_restored,
+						ssid
+					)
+				)
 			}
 		}
 	}

@@ -62,15 +62,19 @@
 	<string name="wifi_monitoring_info_text">To support automatic toggling, the app monitors network changes. The impact on battery consumption should be minimal, but the system may still report background activity.</string>
 	<string name="battery_optimization_explanation">Some devices kill background monitoring to save battery. If automation stops working, disable restrictions for this app.</string>
 	<string name="ignore_battery_optimizations">Disable battery restrictions</string>
-	<string name="auto_blacklist_on_disable">Auto-blacklist when disabling</string>
-	<string name="auto_whitelist_on_enable">Auto-whitelist when enabling</string>
-	<string name="connectivity_watchdog_toggle">Auto-disable on connectivity failure</string>
+	<string name="auto_blacklist_on_disable">Auto-blacklist when disabling Private DNS</string>
+	<string name="auto_whitelist_on_enable">Auto-whitelist when enabling Private DNS</string>
+	<string name="connectivity_watchdog_toggle">Auto-blacklist on connectivity failure</string>
+	<string name="connectivity_watchdog_info_text">When Private DNS fails but internet is still available, the app will automatically add the current network to the blacklist to restore connectivity.</string>
 	<string name="connectivity_watchdog_debounce_label">Wait before disabling</string>
+	<string name="connectivity_watchdog_targets_label">Connection test servers</string>
+	<string name="connectivity_watchdog_targets_title">Connectivity check target servers</string>
+	<string name="connectivity_watchdog_targets_hint">Comma-separated IPs (e.g. 9.9.9.9, 5.1.66.255)</string>
 	<string name="connectivity_watchdog_debounce_custom">Custom…</string>
 	<string name="connectivity_watchdog_debounce_invalid">Enter a value between 5 and 300 seconds</string>
 	<string name="connectivity_watchdog_debounce_seconds_format">%ds</string>
-	<string name="notif_connectivity_watchdog_disabled">Private DNS disabled and blacklisted for %s due to a connectivity issue</string>
-	<string name="notif_connectivity_watchdog_restored">Connectivity restored — Private DNS re-enabled for %s</string>
+	<string name="notif_connectivity_watchdog_disabled">Private DNS disabled and %s blacklisted due to a connectivity issue</string>
+	<string name="notif_connectivity_watchdog_restored">Connectivity restored. Private DNS re-enabled for %s</string>
 	<string name="grant_permission_notice">Location/Nearby permission (including background) required to verify the Wi-Fi SSID.</string>
 	<string name="grant_permission_button">Grant Permissions</string>
 	<string name="permissions_permanently_denied">Location and Nearby devices permissions have been permanently denied. Please enable them in App Settings to use this feature.</string>
@@ -80,6 +84,8 @@
 	<string name="add_ssid">Add SSID</string>
 	<string name="edit_ssid">Edit SSID</string>
 	<string name="ssid_hint">SSID (Wi-Fi Name)</string>
+	<string name="ssid_saved">SSID permanently blacklisted</string>
+	<string name="ssid_auto_added_label">Auto-added</string>
 	<string name="delete_ssid_confirm">Remove this SSID from blacklist?</string>
 
 	<!-- Main UI - VPN Override -->
@@ -91,7 +97,7 @@
 
 	<!-- Main UI - General Options -->
 	<string name="options_title">Options</string>
-	<string name="show_toast_notif">Show toast notifications</string>
+	<string name="show_toast_notif">Show status toast notifications</string>
 	<string name="show_toast_notif_summary">Show a status notification when Private DNS is toggled via the Quick Settings tile.</string>
 	<string name="hide_launcher_icon">Hide app icon</string>
 	<string name="hide_launcher_icon_summary">When enabled, the app will be hidden from your app drawer. You can still access settings by long-pressing the Quick Settings tile. Note: on some launchers this option may not fully hide the icon.</string>
@@ -128,7 +134,10 @@
 	<string name="import_failed_password">Decryption failed. Incorrect password or corrupted file.</string>
 
 	<!-- Feedback & Notifications -->
-	<string name="notif_channel_name">Network Status</string>
+	<string name="notif_channel_alerts_name">Automation Alerts</string>
+	<string name="notif_channel_alerts_desc">Notifications when Private DNS is automatically toggled or networks are blacklisted.</string>
+	<string name="notif_channel_service_name">Background Monitoring</string>
+	<string name="notif_channel_service_desc">A silent, persistent notification required by Android to monitor Wi-Fi networks in the background.</string>
 	<string name="service_notif_title">Monitoring Network Status</string>
 	<string name="service_notif_text">DNS Toggle is active to automate Private DNS mode.</string>
 	<string name="notif_dns_disabled_auto">Private DNS disabled automatically for %s</string>

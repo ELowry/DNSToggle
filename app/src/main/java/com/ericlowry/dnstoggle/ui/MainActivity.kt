@@ -39,6 +39,7 @@ import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsSettingsRepository
 import com.ericlowry.dnstoggle.data.DnsViewModel
+import com.ericlowry.dnstoggle.data.SsidItem
 import com.ericlowry.dnstoggle.service.DnsToggleService
 import com.ericlowry.dnstoggle.service.TileServiceCompat
 import com.ericlowry.dnstoggle.util.BackupManager
@@ -73,6 +74,7 @@ class MainActivity : AppCompatActivity() {
 
 	private lateinit var dnsViewModel: DnsViewModel
 	private lateinit var hostnamesAdapter: HostnamesAdapter
+	private lateinit var ssidsAdapter: SsidsAdapter
 
 	private lateinit var privateDnsLabel: TextView
 	private lateinit var dnsToggleSwitch: MaterialSwitch
@@ -86,6 +88,8 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var switchConnectivityWatchdog: MaterialSwitch
 	private lateinit var rowConnectivityWatchdogDebounce: View
 	private lateinit var tvConnectivityWatchdogDebounceValue: TextView
+	private lateinit var rowConnectivityWatchdogTargets: View
+	private lateinit var tvConnectivityWatchdogTargetsValue: TextView
 	private lateinit var switchDisableDnsTest: MaterialSwitch
 	private lateinit var switchShowToast: MaterialSwitch
 	private lateinit var switchHideLauncher: MaterialSwitch
@@ -98,11 +102,12 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var tvOverrideStatus: TextView
 	private lateinit var permissionNoticeText: TextView
 	private lateinit var btnGrantPermission: Button
-	private lateinit var ssidListContainer: LinearLayout
+	private lateinit var ssidListContainer: RecyclerView
 	private lateinit var addSsidButton: ImageButton
 	private lateinit var btnSsidInfo: ImageButton
 	private lateinit var btnVpnInfo: ImageButton
 	private lateinit var dividerSsidList: View
+	private lateinit var dividerSsidSettings: View
 
 	private lateinit var cardMainPermission: MaterialCardView
 	private lateinit var btnFixMainPermission: Button
@@ -207,6 +212,7 @@ class MainActivity : AppCompatActivity() {
 	override fun onResume() {
 		super.onResume()
 		dnsViewModel.loadSettings()
+		dnsViewModel.refreshCurrentSsid()
 		updateMainPermissionUiState()
 		updateSsidUiState(PermissionHelper.hasSsidPermissions(this))
 		updateVpnUiState(PermissionHelper.hasNotificationPermission(this))
@@ -273,6 +279,8 @@ class MainActivity : AppCompatActivity() {
 		switchConnectivityWatchdog = findViewById(R.id.switchConnectivityWatchdog)
 		rowConnectivityWatchdogDebounce = findViewById(R.id.rowConnectivityWatchdogDebounce)
 		tvConnectivityWatchdogDebounceValue = findViewById(R.id.tvConnectivityWatchdogDebounceValue)
+		rowConnectivityWatchdogTargets = findViewById(R.id.rowConnectivityWatchdogTargets)
+		tvConnectivityWatchdogTargetsValue = findViewById(R.id.tvConnectivityWatchdogTargetsValue)
 		switchDisableDnsTest = findViewById(R.id.switchDisableDnsTest)
 		switchShowToast = findViewById(R.id.switchShowToast)
 		switchHideLauncher = findViewById(R.id.switchHideLauncher)
@@ -290,13 +298,16 @@ class MainActivity : AppCompatActivity() {
 		btnSsidInfo = findViewById(R.id.btnSsidInfo)
 		btnVpnInfo = findViewById(R.id.btnVpnInfo)
 		dividerSsidList = findViewById(R.id.dividerSsidList)
+		dividerSsidSettings = findViewById(R.id.dividerSsidSettings)
 
-		cardMainPermission = findViewById(R.id.cardMainPermission)
+		cardMainPermission = findViewById(R.id.cardMainPermissionLayout)
 		btnFixMainPermission = findViewById(R.id.btnFixMainPermission)
+		setupFixPermissionButton()
 
-		rowUsbDebuggingTile = findViewById(R.id.rowUsbDebuggingTile)
+		rowUsbDebuggingTile = findViewById(R.id.rowUsbDebuggingTileLayout)
 		switchUsbDebuggingTile = findViewById(R.id.switchUsbDebuggingTile)
 		tvUsbDebuggingTileSummary = findViewById(R.id.tvUsbDebuggingTileSummary)
+		setupUsbDebuggingTile()
 
 		privateDnsLabel.text = getString(R.string.private_dns)
 
@@ -340,6 +351,14 @@ class MainActivity : AppCompatActivity() {
 			refreshSsidListView(blacklist)
 		}
 
+		dnsViewModel.autoDetectedBlacklist.observe(this) {
+			refreshSsidListView(dnsViewModel.ssidBlacklist.value ?: emptySet())
+		}
+
+		dnsViewModel.currentSsid.observe(this) { ssid ->
+			ssidsAdapter.updateActiveSsid(ssid)
+		}
+
 		dnsViewModel.autoBlacklistEnabled.observe(this) { enabled ->
 			switchAutoBlacklist.isChecked = enabled
 		}
@@ -352,11 +371,17 @@ class MainActivity : AppCompatActivity() {
 			switchConnectivityWatchdog.isChecked = enabled
 			rowConnectivityWatchdogDebounce.isEnabled = enabled
 			rowConnectivityWatchdogDebounce.alpha = if (enabled) 1.0f else 0.5f
+			rowConnectivityWatchdogTargets.isEnabled = enabled
+			rowConnectivityWatchdogTargets.alpha = if (enabled) 1.0f else 0.5f
 		}
 
 		dnsViewModel.connectivityWatchdogDebounceSeconds.observe(this) { seconds ->
 			tvConnectivityWatchdogDebounceValue.text =
 				getString(R.string.connectivity_watchdog_debounce_seconds_format, seconds)
+		}
+
+		dnsViewModel.connectivityWatchdogProbeTargets.observe(this) { targets ->
+			tvConnectivityWatchdogTargetsValue.text = targets
 		}
 
 		dnsViewModel.disableDnsTest.observe(this) { disabled ->
@@ -418,6 +443,26 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun setupUserInteractions() {
+		setupDnsToggle()
+		setupAddHostname()
+		setupMenu()
+		setupAutoSettings()
+		setupWatchdog()
+		setupVpnSettings()
+		setupAddSsid()
+		setupHostnamesRecyclerView()
+		setupSsidsRecyclerView()
+		setupFooter()
+
+		val prefs = (application as DnsToggleApplication).getPrefs()
+		if (prefs.getBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, false)) {
+			rowUsbDebuggingTile.visibility = View.VISIBLE
+		}
+
+		setupVersionClick()
+	}
+
+	private fun setupDnsToggle() {
 		dnsToggleSwitch.setOnClickListener {
 			val isChecked = dnsToggleSwitch.isChecked
 
@@ -450,15 +495,21 @@ class MainActivity : AppCompatActivity() {
 				}
 			}
 		}
+	}
 
+	private fun setupAddHostname() {
 		addHostnameButton.setOnClickListener {
 			showAddHostnameDialog()
 		}
+	}
 
+	private fun setupMenu() {
 		btnMenu.setOnClickListener {
 			showMenuBottomSheet()
 		}
+	}
 
+	private fun setupAutoSettings() {
 		switchAutoBlacklist.setOnCheckedChangeListener { _, isChecked ->
 			dnsViewModel.setAutoBlacklist(isChecked)
 			if (isChecked) {
@@ -472,7 +523,9 @@ class MainActivity : AppCompatActivity() {
 				checkSsidPermissions(requestIfNotGranted = true)
 			}
 		}
+	}
 
+	private fun setupWatchdog() {
 		switchConnectivityWatchdog.setOnCheckedChangeListener { _, isChecked ->
 			dnsViewModel.setConnectivityWatchdogEnabled(isChecked)
 		}
@@ -481,6 +534,20 @@ class MainActivity : AppCompatActivity() {
 			showConnectivityWatchdogDebounceDialog()
 		}
 
+		rowConnectivityWatchdogTargets.setOnClickListener {
+			val current = dnsViewModel.connectivityWatchdogProbeTargets.value
+				?: Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
+			DialogHelper.showTextInputDialog(
+				activity = this,
+				titleResId = R.string.connectivity_watchdog_targets_title,
+				hintResId = R.string.connectivity_watchdog_targets_hint,
+				initialValue = current,
+				onSave = { dnsViewModel.setConnectivityWatchdogProbeTargets(it) }
+			)
+		}
+	}
+
+	private fun setupVpnSettings() {
 		switchDisableDnsTest.setOnCheckedChangeListener { _, isChecked ->
 			dnsViewModel.setDisableDnsTest(isChecked)
 		}
@@ -505,6 +572,10 @@ class MainActivity : AppCompatActivity() {
 			checkNotificationPermission()
 		}
 
+		btnVpnInfo.setOnClickListener { showWifiMonitoringInfoDialog() }
+	}
+
+	private fun setupAddSsid() {
 		addSsidButton.setOnClickListener {
 			if (PermissionHelper.hasSsidPermissions(this)) {
 				showAddSsidDialog()
@@ -513,11 +584,11 @@ class MainActivity : AppCompatActivity() {
 			}
 		}
 
-		setupHostnamesRecyclerView()
 		btnGrantPermission.setOnClickListener { requestSsidPermissions() }
 		btnSsidInfo.setOnClickListener { showWifiMonitoringInfoDialog() }
-		btnVpnInfo.setOnClickListener { showWifiMonitoringInfoDialog() }
+	}
 
+	private fun setupFooter() {
 		val btnGithub = findViewById<Button>(R.id.btnGithub)
 		val btnSupport = findViewById<Button>(R.id.btnSupport)
 
@@ -527,7 +598,9 @@ class MainActivity : AppCompatActivity() {
 		btnSupport.setOnClickListener {
 			openUrl("https://github.com/ELowry/DNSToggle/issues/new/choose")
 		}
+	}
 
+	private fun setupFixPermissionButton() {
 		btnFixMainPermission.setOnClickListener {
 			if (PermissionHelper.hasSecureSettingsPermission(this)) {
 				updateMainPermissionUiState()
@@ -557,17 +630,26 @@ class MainActivity : AppCompatActivity() {
 				}
 			}
 		}
+	}
 
+	private fun setupUsbDebuggingTile() {
 		val prefs = (application as DnsToggleApplication).getPrefs()
-		val isDevUnlocked = prefs.getBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, false)
+		switchUsbDebuggingTile.setOnCheckedChangeListener { _, isChecked ->
+			prefs.edit { putBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, isChecked) }
 
-		if (isDevUnlocked) {
-			rowUsbDebuggingTile.visibility = View.VISIBLE
-			switchUsbDebuggingTile.isChecked = true
+			if (!isChecked) {
+				rowUsbDebuggingTile.visibility = View.GONE
+				devHitCount = 0
+			}
+
+			(application as DnsToggleApplication).updateUsbDebuggingTileAvailability()
 		}
+	}
 
+	private fun setupVersionClick() {
 		val tvAppVersion = findViewById<TextView>(R.id.tvAppVersion)
 		tvAppVersion.setOnClickListener {
+			val prefs = (application as DnsToggleApplication).getPrefs()
 			if (prefs.getBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, false)) {
 				return@setOnClickListener
 			}
@@ -617,17 +699,6 @@ class MainActivity : AppCompatActivity() {
 				(application as DnsToggleApplication).updateUsbDebuggingTileAvailability()
 			}
 		}
-
-		switchUsbDebuggingTile.setOnCheckedChangeListener { _, isChecked ->
-			prefs.edit { putBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, isChecked) }
-
-			if (!isChecked) {
-				rowUsbDebuggingTile.visibility = View.GONE
-				devHitCount = 0
-			}
-
-			(application as DnsToggleApplication).updateUsbDebuggingTileAvailability()
-		}
 	}
 
 	private fun updateOverrideStatusUi() {
@@ -653,7 +724,9 @@ class MainActivity : AppCompatActivity() {
 
 	private fun updateMainPermissionUiState() {
 		if (PermissionHelper.hasSecureSettingsPermission(this)) {
-			cardMainPermission.visibility = View.GONE
+			if (::cardMainPermission.isInitialized) {
+				cardMainPermission.visibility = View.GONE
+			}
 		} else {
 			cardMainPermission.visibility = View.VISIBLE
 		}
@@ -740,6 +813,13 @@ class MainActivity : AppCompatActivity() {
 			switchAutoBlacklist.isEnabled = true
 			switchAutoWhitelist.isEnabled = true
 			ssidListContainer.alpha = 1.0f
+
+			val watchdogEnabled = dnsViewModel.connectivityWatchdogEnabled.value ?: false
+			switchConnectivityWatchdog.isEnabled = true
+			rowConnectivityWatchdogDebounce.isEnabled = watchdogEnabled
+			rowConnectivityWatchdogDebounce.alpha = if (watchdogEnabled) 1.0f else 0.5f
+			rowConnectivityWatchdogTargets.isEnabled = watchdogEnabled
+			rowConnectivityWatchdogTargets.alpha = if (watchdogEnabled) 1.0f else 0.5f
 		} else {
 			permissionNoticeText.visibility = View.VISIBLE
 			btnGrantPermission.visibility = View.VISIBLE
@@ -747,6 +827,12 @@ class MainActivity : AppCompatActivity() {
 			switchAutoBlacklist.isEnabled = false
 			switchAutoWhitelist.isEnabled = false
 			ssidListContainer.alpha = 0.5f
+
+			switchConnectivityWatchdog.isEnabled = false
+			rowConnectivityWatchdogDebounce.isEnabled = false
+			rowConnectivityWatchdogDebounce.alpha = 0.5f
+			rowConnectivityWatchdogTargets.isEnabled = false
+			rowConnectivityWatchdogTargets.alpha = 0.5f
 		}
 	}
 
@@ -871,30 +957,37 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
-	private fun refreshSsidListView(blacklist: Set<String>) {
-		ssidListContainer.removeAllViews()
+	private fun setupSsidsRecyclerView() {
+		ssidsAdapter = SsidsAdapter(
+			onEditClick = { ssid -> showAddSsidDialog(ssid) },
+			onDeleteClick = { ssid -> showDeleteConfirmDialog(ssid) },
+			onConfirmClick = { ssid ->
+				dnsViewModel.promoteSsidToPermanent(ssid)
+				Toast.makeText(this, R.string.ssid_saved, Toast.LENGTH_SHORT).show()
+			}
+		)
+		ssidListContainer.adapter = ssidsAdapter
+	}
 
+	private fun refreshSsidListView(blacklist: Set<String>) {
 		if (blacklist.isEmpty()) {
 			dividerSsidList.visibility = View.GONE
+			dividerSsidSettings.visibility = View.GONE
+			ssidsAdapter.submitList(emptyList())
 			return
 		}
 
 		dividerSsidList.visibility = View.VISIBLE
+		dividerSsidSettings.visibility = View.VISIBLE
 
-		val sortedList = blacklist.toMutableList()
-		sortedList.sortWith(String.CASE_INSENSITIVE_ORDER)
-
-		val layoutInflater = LayoutInflater.from(this)
-		sortedList.forEach { ssid ->
-			val itemView = layoutInflater.inflate(R.layout.item_ssid, ssidListContainer, false)
-			itemView.findViewById<TextView>(R.id.tvSsidName).text = ssid
-			itemView.findViewById<View>(R.id.btnEditSsid)
-				.setOnClickListener { showAddSsidDialog(ssid) }
-			itemView.findViewById<View>(R.id.btnDeleteSsid).setOnClickListener {
-				showDeleteConfirmDialog(ssid)
-			}
-			ssidListContainer.addView(itemView)
+		val autoDetected = dnsViewModel.autoDetectedBlacklist.value ?: emptySet()
+		val items = blacklist.map { ssid ->
+			SsidItem(ssid, isAutoDetected = autoDetected.contains(ssid))
+		}.sortedWith { a, b ->
+			String.CASE_INSENSITIVE_ORDER.compare(a.ssid, b.ssid)
 		}
+
+		ssidsAdapter.submitList(items)
 	}
 
 	private fun showAddSsidDialog(existingSsid: String? = null) {
@@ -1251,62 +1344,39 @@ class MainActivity : AppCompatActivity() {
 		val currentValue = dnsViewModel.connectivityWatchdogDebounceSeconds.value
 			?: Constants.CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS
 
-		val dialogView = LayoutInflater.from(this)
-			.inflate(R.layout.dialog_dns_selection, findViewById(android.R.id.content), false)
+		// Create the string array for the dialog
+		val options = presets.map { "${it}s" }.toMutableList()
+		options.add(getString(R.string.connectivity_watchdog_debounce_custom))
 
-		val dialog = Dialog(this)
-		dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-		dialog.setContentView(dialogView)
+		// Find the currently selected index
+		val checkedItem =
+			if (presets.contains(currentValue)) presets.indexOf(currentValue) else options.lastIndex
 
-		val tvPopupTitle = dialogView.findViewById<TextView>(R.id.tvPopupTitle)
-		tvPopupTitle.text = getString(R.string.connectivity_watchdog_debounce_label)
-
-		val listContainer = dialogView.findViewById<LinearLayout>(R.id.dnsListContainer)
-		val btnCancel = dialogView.findViewById<MaterialButton>(R.id.btnSettings)
-		btnCancel.text = getString(R.string.cancel)
-		btnCancel.setOnClickListener { dialog.dismiss() }
-
-		val totalItems = presets.size + 1
-
-		presets.forEachIndexed { index, seconds ->
-			val itemView = createDnsListItem(
-				listContainer,
-				getString(R.string.connectivity_watchdog_debounce_seconds_format, seconds),
-				null,
-				seconds == currentValue,
-				index,
-				totalItems
-			) {
-				dnsViewModel.setConnectivityWatchdogDebounceSeconds(seconds)
-				dialog.dismiss()
+		MaterialAlertDialogBuilder(this)
+			.setTitle(R.string.connectivity_watchdog_debounce_label)
+			.setSingleChoiceItems(options.toTypedArray(), checkedItem) { dialog, which ->
+				if (which < presets.size) {
+					// A preset was selected
+					dnsViewModel.setConnectivityWatchdogDebounceSeconds(presets[which])
+					dialog.dismiss()
+				} else {
+					// "Custom..." was selected
+					dialog.dismiss()
+					DialogHelper.showNumberInputDialog(
+						this,
+						R.string.connectivity_watchdog_debounce_label,
+						R.string.connectivity_watchdog_debounce_label,
+						currentValue,
+						5,
+						300,
+						R.string.connectivity_watchdog_debounce_invalid
+					) { seconds ->
+						dnsViewModel.setConnectivityWatchdogDebounceSeconds(seconds)
+					}
+				}
 			}
-			listContainer.addView(itemView)
-		}
-
-		val customItemView = createDnsListItem(
-			listContainer,
-			getString(R.string.connectivity_watchdog_debounce_custom),
-			null,
-			currentValue !in presets,
-			totalItems - 1,
-			totalItems
-		) {
-			dialog.dismiss()
-			DialogHelper.showNumberInputDialog(
-				this,
-				R.string.connectivity_watchdog_debounce_label,
-				R.string.connectivity_watchdog_debounce_label,
-				currentValue,
-				5,
-				300,
-				R.string.connectivity_watchdog_debounce_invalid,
-			) { seconds ->
-				dnsViewModel.setConnectivityWatchdogDebounceSeconds(seconds)
-			}
-		}
-		listContainer.addView(customItemView)
-
-		dialog.show()
+			.setNegativeButton(R.string.cancel, null)
+			.show()
 	}
 
 	private fun createDnsListItem(

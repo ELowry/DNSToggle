@@ -8,6 +8,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import android.util.Patterns
 import androidx.core.content.edit
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
@@ -52,6 +53,9 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	private val _ssidBlacklist = MutableLiveData<Set<String>>()
 	val ssidBlacklist: LiveData<Set<String>> = _ssidBlacklist
 
+	private val _autoDetectedBlacklist = MutableLiveData<Set<String>>()
+	val autoDetectedBlacklist: LiveData<Set<String>> = _autoDetectedBlacklist
+
 	private val _dnsHostnames = MutableLiveData<List<DnsHostname>>()
 	val dnsHostnames: LiveData<List<DnsHostname>> = _dnsHostnames
 
@@ -66,6 +70,9 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
 	private val _connectivityWatchdogDebounceSeconds = MutableLiveData<Int>()
 	val connectivityWatchdogDebounceSeconds: LiveData<Int> = _connectivityWatchdogDebounceSeconds
+
+	private val _connectivityWatchdogProbeTargets = MutableLiveData<String>()
+	val connectivityWatchdogProbeTargets: LiveData<String> = _connectivityWatchdogProbeTargets
 
 	private val _hideLauncherIcon = MutableLiveData<Boolean>()
 	val hideLauncherIcon: LiveData<Boolean> = _hideLauncherIcon
@@ -90,6 +97,9 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
 	private val _activeSsidOverride = MutableLiveData<String?>()
 	val activeSsidOverride: LiveData<String?> = _activeSsidOverride
+
+	private val _currentSsid = MutableLiveData<String?>(null)
+	val currentSsid: LiveData<String?> = _currentSsid
 
 	private val _isKeyInvalidated = MutableLiveData(false)
 	val isKeyInvalidated: LiveData<Boolean> = _isKeyInvalidated
@@ -116,6 +126,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 				Constants.PREF_ACTIVE_SSID_OVERRIDE,
 				Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED,
 				Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
+				Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS,
 					-> loadSettings()
 			}
 		}
@@ -125,6 +136,11 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		viewModelScope.launch {
 			DnsSettingsRepository.blacklist.collect { list ->
 				list?.let { _ssidBlacklist.postValue(it) }
+			}
+		}
+		viewModelScope.launch {
+			DnsSettingsRepository.autoDetectedBlacklist.collect { list ->
+				list?.let { _autoDetectedBlacklist.postValue(it) }
 			}
 		}
 		viewModelScope.launch {
@@ -164,11 +180,16 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
 			val autoBlacklist = sharedPreferences.getBoolean(Constants.PREF_AUTO_BLACKLIST, false)
 			val autoWhitelist = sharedPreferences.getBoolean(Constants.PREF_AUTO_WHITELIST, false)
-			val connectivityWatchdog = sharedPreferences.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false)
+			val connectivityWatchdog =
+				sharedPreferences.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false)
 			val watchdogDebounce = sharedPreferences.getInt(
 				Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
 				Constants.CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS
 			)
+			val watchdogTargets = sharedPreferences.getString(
+				Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS,
+				Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
+			) ?: Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
 			val hideLauncher =
 				sharedPreferences.getBoolean(Constants.PREF_HIDE_LAUNCHER_ICON, false)
 			val disableDnsTest =
@@ -189,6 +210,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 				_autoWhitelistEnabled.value = autoWhitelist
 				_connectivityWatchdogEnabled.value = connectivityWatchdog
 				_connectivityWatchdogDebounceSeconds.value = watchdogDebounce
+				_connectivityWatchdogProbeTargets.value = watchdogTargets
 				_hideLauncherIcon.value = hideLauncher
 				_disableDnsTest.value = disableDnsTest
 				_showToastEnabled.value = showToast
@@ -197,6 +219,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 				_vpnHostnameRemovedWarning.value = vpnRemovedWarning
 				_isInVpnOverride.value = isInVpn
 				_activeSsidOverride.value = ssidOverride
+				refreshCurrentSsid()
 				refreshDisplayList()
 			}
 		}
@@ -251,6 +274,10 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
 	fun removeFromBlacklist(ssid: String) {
 		DnsSettingsRepository.removeFromBlacklist(ssid)
+	}
+
+	fun promoteSsidToPermanent(ssid: String) {
+		DnsSettingsRepository.promoteAutoDetectedSsid(ssid)
 	}
 
 	fun updateSsidInBlacklist(oldSsid: String, newSsid: String) {
@@ -365,8 +392,31 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	}
 
 	fun setConnectivityWatchdogDebounceSeconds(seconds: Int) {
-		sharedPreferences.edit { putInt(Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS, seconds) }
+		sharedPreferences.edit {
+			putInt(
+				Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
+				seconds
+			)
+		}
 		_connectivityWatchdogDebounceSeconds.value = seconds
+	}
+
+	fun setConnectivityWatchdogProbeTargets(targets: String) {
+		val sanitized = targets.split(",")
+			.map { it.trim() }
+			.filter {
+				Patterns.DOMAIN_NAME.matcher(it).matches() ||
+						@Suppress("DEPRECATION") Patterns.IP_ADDRESS.matcher(it).matches()
+			}
+			.joinToString(", ")
+		val finalValue = sanitized.ifEmpty { Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS }
+		sharedPreferences.edit {
+			putString(
+				Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS,
+				finalValue
+			)
+		}
+		_connectivityWatchdogProbeTargets.value = finalValue
 	}
 
 	fun setHideLauncherIcon(hidden: Boolean) {
@@ -399,6 +449,10 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	fun dismissKeyInvalidatedAlert() {
 		_isKeyInvalidated.value = false
 		DnsSettingsRepository.resetKeyInvalidated()
+	}
+
+	fun refreshCurrentSsid() {
+		_currentSsid.postValue(NetworkUtils.getCurrentWifiSsid(getApplication()))
 	}
 
 	override fun onCleared() {

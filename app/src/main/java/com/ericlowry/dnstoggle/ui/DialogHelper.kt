@@ -163,6 +163,41 @@ object DialogHelper {
 		dialog.show()
 	}
 
+	fun showTextInputDialog(
+		activity: Activity,
+		titleResId: Int,
+		hintResId: Int,
+		initialValue: String,
+		onSave: (String) -> Unit,
+	) {
+		val dialogView =
+			LayoutInflater.from(activity).inflate(R.layout.dialog_text_input, null, false)
+		val textInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayout)
+		val inputTextField = dialogView.findViewById<TextInputEditText>(R.id.etInput)
+
+		textInputLayout.hint = activity.getString(hintResId)
+		inputTextField.setText(initialValue)
+		inputTextField.setSelection(initialValue.length)
+
+		val dialog = MaterialAlertDialogBuilder(activity)
+			.setTitle(activity.getString(titleResId))
+			.setView(dialogView)
+			.setPositiveButton(activity.getString(R.string.ok)) { _, _ ->
+				onSave(inputTextField.text.toString().trim())
+			}
+			.setNegativeButton(activity.getString(R.string.cancel), null)
+			.create()
+
+		dialog.setOnShowListener {
+			inputTextField.requestFocus()
+			dialog.window?.let { window ->
+				WindowCompat.getInsetsController(window, inputTextField)
+					.show(WindowInsetsCompat.Type.ime())
+			}
+		}
+		dialog.show()
+	}
+
 	fun showWifiMonitoringInfo(
 		context: Context,
 		isIgnoringBattery: Boolean,

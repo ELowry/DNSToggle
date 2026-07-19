@@ -1,14 +1,22 @@
 package com.ericlowry.dnstoggle.service
 
 import com.ericlowry.dnstoggle.util.NetworkUtils
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 
 object ConnectivityWatchdog {
-	private val PROBE_TARGETS = listOf("1.1.1.1" to 443, "8.8.8.8" to 443)
 
 	suspend fun isDnsSpecificFailure(
 		dnsHostname: String,
-		isNetworkReachable: suspend () -> Boolean = { probeNetwork() },
-		isDnsHostReachable: suspend () -> Boolean = { NetworkUtils.isHostReachable(dnsHostname, 853) }
+		probeTargetsStr: String,
+		isNetworkReachable: suspend () -> Boolean = { probeNetwork(probeTargetsStr) },
+		isDnsHostReachable: suspend () -> Boolean = {
+			NetworkUtils.isHostReachable(
+				dnsHostname,
+				853
+			)
+		}
 	): Boolean {
 		if (!isNetworkReachable()) return false
 		return !isDnsHostReachable()
@@ -16,16 +24,27 @@ object ConnectivityWatchdog {
 
 	suspend fun isRecovered(
 		dnsHostname: String,
-		isNetworkReachable: suspend () -> Boolean = { probeNetwork() },
-		isDnsHostReachable: suspend () -> Boolean = { NetworkUtils.isHostReachable(dnsHostname, 853) }
+		probeTargetsStr: String,
+		isNetworkReachable: suspend () -> Boolean = { probeNetwork(probeTargetsStr) },
+		isDnsHostReachable: suspend () -> Boolean = {
+			NetworkUtils.isHostReachable(
+				dnsHostname,
+				853
+			)
+		}
 	): Boolean {
 		return isNetworkReachable() && isDnsHostReachable()
 	}
 
-	private suspend fun probeNetwork(): Boolean {
-		for ((host, port) in PROBE_TARGETS) {
-			if (NetworkUtils.isHostReachable(host, port)) return true
-		}
-		return false
+	private suspend fun probeNetwork(targetsStr: String): Boolean = coroutineScope {
+		val targets = targetsStr.split(",")
+			.map { it.trim() }
+			.filter { it.isNotEmpty() }
+
+		val effectiveTargets = targets.ifEmpty { listOf("9.9.9.9") }
+
+		effectiveTargets.map { target ->
+			async { NetworkUtils.isHostReachable(target, 443) }
+		}.awaitAll().any { it }
 	}
 }

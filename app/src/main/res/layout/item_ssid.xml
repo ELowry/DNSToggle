@@ -1,30 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
+	android:layout_marginHorizontal="2dp"
 	android:layout_marginVertical="4dp"
-	app:cardBackgroundColor="?attr/colorSurfaceVariant"
-	app:cardCornerRadius="8dp"
+	android:clickable="true"
+	android:focusable="true"
+	android:foreground="?attr/selectableItemBackground"
+	android:stateListAnimator="@animator/m3_card_bounce"
+	app:cardBackgroundColor="?attr/colorSurfaceContainer"
+	app:cardCornerRadius="12dp"
 	app:cardElevation="0dp"
-	app:strokeWidth="0dp">
+	app:strokeColor="?attr/colorOutlineVariant"
+	app:strokeWidth="1dp">
 
 	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
+		android:animateLayoutChanges="true"
 		android:gravity="center_vertical"
 		android:orientation="horizontal"
 		android:paddingVertical="4dp"
 		android:paddingStart="12dp"
 		android:paddingEnd="4dp">
 
-		<TextView
-			android:id="@+id/tvSsidName"
+		<LinearLayout
 			android:layout_width="0dp"
 			android:layout_height="wrap_content"
 			android:layout_weight="1"
-			android:textAppearance="?attr/textAppearanceBodyLarge"
-			android:textColor="?attr/colorOnSurfaceVariant" />
+			android:orientation="vertical">
+
+			<TextView
+				android:id="@+id/tvSsidName"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textAppearance="?attr/textAppearanceBodyLarge"
+				android:textColor="?attr/colorOnSurface"
+				android:textStyle="bold" />
+
+			<TextView
+				android:id="@+id/tvSsidLabel"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textAppearance="?attr/textAppearanceBodySmall"
+				android:textColor="?attr/colorOnSurfaceVariant"
+				android:visibility="gone"
+				tools:text="Auto-added"
+				tools:visibility="visible" />
+		</LinearLayout>
+
+		<ImageButton
+			android:id="@+id/btnSaveSsid"
+			android:layout_width="48dp"
+			android:layout_height="48dp"
+			android:background="?attr/selectableItemBackgroundBorderless"
+			android:contentDescription="@string/add_ssid"
+			android:src="@drawable/ic_check"
+			android:visibility="gone"
+			app:tint="?attr/colorPrimary" />
 
 		<ImageButton
 			android:id="@+id/btnEditSsid"
@@ -45,4 +80,13 @@
 			app:tint="?attr/colorOnSurfaceVariant" />
 
 	</LinearLayout>
+
+	<View
+		android:id="@+id/unsavedBorder"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:background="@drawable/bg_dashed_border_12dp"
+		android:clickable="false"
+		android:focusable="false"
+		android:visibility="gone" />
 </com.google.android.material.card.MaterialCardView>

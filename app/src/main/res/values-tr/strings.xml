@@ -66,7 +66,6 @@
 	<!-- Backup/Restore -->
 
 	<!-- Feedback & Notifications -->
-	<string name="notif_channel_name">Ağ Durumu</string>
 	<string name="service_notif_title">Wi-Fi İzleniyor</string>
 	<string name="service_notif_text">Özel DNS modunu otomatikleştirmek için DNS Toggle aktif.</string>
 	<string name="notif_dns_disabled_auto">%s için Özel DNS otomatik olarak devre dışı bırakıldı</string>

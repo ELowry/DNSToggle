@@ -148,15 +148,18 @@ class DnsToggleApplication : Application() {
 
 		val statusChannel = NotificationChannel(
 			Constants.CHANNEL_ID_ALERT,
-			getString(R.string.notif_channel_name),
+			getString(R.string.notif_channel_alerts_name),
 			NotificationManager.IMPORTANCE_DEFAULT,
-		)
+		).apply {
+			description = getString(R.string.notif_channel_alerts_desc)
+		}
 
 		val serviceChannel = NotificationChannel(
 			Constants.CHANNEL_ID_SERVICE,
-			getString(R.string.service_notif_title),
+			getString(R.string.notif_channel_service_name),
 			NotificationManager.IMPORTANCE_MIN,
 		).apply {
+			description = getString(R.string.notif_channel_service_desc)
 			setShowBadge(false)
 			enableLights(false)
 			enableVibration(false)
