@@ -23,7 +23,12 @@ object ShizukuUtils {
 	private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
 	private fun userServiceArgs(context: Context): Shizuku.UserServiceArgs =
-		Shizuku.UserServiceArgs(ComponentName(context.packageName, ShizukuUserService::class.java.name))
+		Shizuku.UserServiceArgs(
+			ComponentName(
+				context.packageName,
+				ShizukuUserService::class.java.name
+			)
+		)
 			.daemon(false)
 			.processNameSuffix("shizuku")
 			.debuggable(BuildConfig.DEBUG)
@@ -114,8 +119,13 @@ object ShizukuUtils {
 }
 
 suspend fun attemptSecureSettingsGrant(context: Context, packageName: String): Boolean {
-	if (ShizukuUtils.isAvailable() && ShizukuUtils.grantSecureSettingsPermission(context, packageName)) {
+	if (ShizukuUtils.isAvailable() && ShizukuUtils.grantSecureSettingsPermission(
+			context,
+			packageName
+		)
+	) {
 		return true
 	}
+	// Always try root as the final fallback, even if detection failed (handles hidden root)
 	return RootUtils.grantSecureSettingsPermission(packageName)
 }

@@ -19,9 +19,15 @@
 	<string name="permission_message">To use this toggle, you must grant settings permissions through root, Shizuku, or run this ADB command on your computer with USB debugging enabled:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
 	<string name="adb_command_label">ADB Command</string>
 	<string name="copy_command">Copy Command</string>
+	<string name="copy_adb_command_desc">Copy ADB Command</string>
 	<string name="command_copied">Command copied to clipboard</string>
-	<string name="retry_root">Retry</string>
-	<string name="root_grant_failed">Root grant failed or denied</string>
+	<string name="grant_via_shizuku">Grant via Shizuku</string>
+	<string name="grant_via_root">Grant via Root</string>
+	<string name="grant_auto_fallback">Attempt permission grant</string>
+	<string name="toast_attempting_shizuku">Attempting Shizuku grant…</string>
+	<string name="toast_attempting_root">Attempting Root grant…</string>
+	<string name="toast_attempting_fallback">Attempting auto-grant…</string>
+	<string name="grant_failed">Shizuku/Root grant failed or denied</string>
 	<string name="permission_granted">Permission granted</string>
 	<string name="main_permission_title">System Settings Permission Required</string>
 	<string name="main_permission_message">The app needs a special permission to change Private DNS settings.</string>
