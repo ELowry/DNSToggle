@@ -135,6 +135,9 @@ object DnsManager {
 				}
 			}
 			Settings.Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE, newMode)
+			if (!handledByAuto) {
+				sharedPreferences.edit { putString(Constants.PREF_PREFERRED_DNS_MODE, newMode) }
+			}
 			if (!isInteractiveMainUi && sharedPreferences.getBoolean(
 					Constants.PREF_SHOW_TOAST,
 					true
