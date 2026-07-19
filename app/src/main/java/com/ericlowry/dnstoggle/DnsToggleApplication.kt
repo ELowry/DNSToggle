@@ -20,6 +20,7 @@ import com.ericlowry.dnstoggle.service.DnsToggleService
 import com.ericlowry.dnstoggle.service.TileServiceCompat
 import com.ericlowry.dnstoggle.service.UsbDebuggingTileService
 import com.ericlowry.dnstoggle.service.WifiMonitoringService
+import com.ericlowry.dnstoggle.util.EncryptionManager
 import com.google.android.material.color.DynamicColors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -61,6 +62,31 @@ class DnsToggleApplication : Application() {
 
 	private val dnsObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
 		override fun onChange(selfChange: Boolean) {
+			val resolver = contentResolver
+			val newMode = Settings.Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
+			val prefs = getPrefs()
+			val isInVpn = prefs.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)
+			val activeSsid = prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null)
+
+			if (!isInVpn && activeSsid == null && newMode != null) {
+				prefs.edit {
+					putString(Constants.PREF_PREFERRED_DNS_MODE, newMode)
+					if (newMode == Constants.DNS_MODE_HOSTNAME) {
+						val newSpecifier =
+							Settings.Global.getString(
+								resolver,
+								Constants.SETTINGS_PRIVATE_DNS_SPECIFIER
+							)
+						if (!newSpecifier.isNullOrEmpty()) {
+							putString(
+								Constants.PREF_LAST_USED_HOSTNAME,
+								EncryptionManager.encrypt(newSpecifier)
+							)
+						}
+					}
+				}
+			}
+
 			TileServiceCompat.requestListeningState(
 				this@DnsToggleApplication,
 				ComponentName(this@DnsToggleApplication, DnsToggleService::class.java)

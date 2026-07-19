@@ -26,7 +26,8 @@ class DnsManagerTest {
 
 	@Test
 	fun manualToggleOn_updatesPreferredDnsMode() {
-		app.getPrefs().edit { putString(Constants.PREF_PREFERRED_DNS_MODE, Constants.DNS_MODE_OPPORTUNISTIC) }
+		app.getPrefs()
+			.edit { putString(Constants.PREF_PREFERRED_DNS_MODE, Constants.DNS_MODE_OPPORTUNISTIC) }
 
 		DnsManager.togglePrivateDns(app, enabled = true, targetHostname = "dns.google")
 
@@ -38,7 +39,8 @@ class DnsManagerTest {
 
 	@Test
 	fun manualToggleOff_updatesPreferredDnsMode() {
-		app.getPrefs().edit { putString(Constants.PREF_PREFERRED_DNS_MODE, Constants.DNS_MODE_HOSTNAME) }
+		app.getPrefs()
+			.edit { putString(Constants.PREF_PREFERRED_DNS_MODE, Constants.DNS_MODE_HOSTNAME) }
 
 		DnsManager.togglePrivateDns(app, enabled = false)
 
