@@ -12,6 +12,27 @@ object RootUtils {
 	private const val TAG = "RootUtils"
 
 	/**
+	 * Checks if su binary is available in common paths.
+	 */
+	fun isAvailable(): Boolean {
+		val paths = arrayOf(
+			"/system/bin/su",
+			"/system/xbin/su",
+			"/sbin/su",
+			"/system/sd/xbin/su",
+			"/system/bin/failsafe/su",
+			"/data/local/xbin/su",
+			"/data/local/bin/su",
+			"/data/local/su",
+			"/su/bin/su"
+		)
+		for (path in paths) {
+			if (java.io.File(path).exists()) return true
+		}
+		return false
+	}
+
+	/**
 	 * Attempts to grant WRITE_SECURE_SETTINGS permission using root access.
 	 * Returns true if the command was executed successfully.
 	 */

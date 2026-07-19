@@ -6,10 +6,14 @@ import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.widget.ImageButton
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.ericlowry.dnstoggle.R
+import com.ericlowry.dnstoggle.util.RootUtils
+import com.ericlowry.dnstoggle.util.ShizukuUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -227,18 +231,34 @@ object DialogHelper {
 		context: Context,
 		packageName: String,
 		onCopyCommand: (String) -> Unit,
-		onRetryRoot: () -> Unit
+		onAttemptElevatedGrant: () -> Unit
 	): AlertDialog {
 		val adbCommand = "adb shell pm grant $packageName android.permission.WRITE_SECURE_SETTINGS"
-		return MaterialAlertDialogBuilder(context)
+
+		val dialogView =
+			LayoutInflater.from(context).inflate(R.layout.dialog_permission_secure_settings, null)
+		val tvAdbCommand = dialogView.findViewById<TextView>(R.id.tvAdbCommand)
+		val btnCopy = dialogView.findViewById<ImageButton>(R.id.btnCopyAdbCommand)
+
+		tvAdbCommand.text = adbCommand
+		btnCopy.setOnClickListener { onCopyCommand(adbCommand) }
+
+		val builder = MaterialAlertDialogBuilder(context)
 			.setTitle(context.getString(R.string.permission_required))
-			.setMessage(context.getString(R.string.permission_message))
-			.setPositiveButton(context.getString(R.string.copy_command)) { _, _ ->
-				onCopyCommand(adbCommand)
-			}
-			.setNeutralButton(R.string.retry_root) { _, _ -> onRetryRoot() }
+			.setView(dialogView)
 			.setNegativeButton(context.getString(R.string.ok), null)
-			.show()
+
+		val shizukuAvailable = ShizukuUtils.isAvailable()
+		val rootAvailable = RootUtils.isAvailable()
+
+		val btnTextRes = when {
+			shizukuAvailable -> R.string.grant_via_shizuku
+			rootAvailable -> R.string.grant_via_root
+			else -> R.string.grant_auto_fallback
+		}
+		builder.setPositiveButton(btnTextRes) { _, _ -> onAttemptElevatedGrant() }
+
+		return builder.show()
 	}
 
 	fun showPasswordDialog(

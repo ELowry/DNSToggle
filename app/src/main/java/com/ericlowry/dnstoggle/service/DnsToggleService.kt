@@ -16,7 +16,7 @@ import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsManager
 import com.ericlowry.dnstoggle.data.DnsSettingsRepository
 import com.ericlowry.dnstoggle.ui.MainActivity
-import com.ericlowry.dnstoggle.util.RootUtils
+import com.ericlowry.dnstoggle.util.attemptSecureSettingsGrant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -43,7 +43,7 @@ class DnsToggleService : TileService() {
 		serviceScope.launch(Dispatchers.IO) {
 			if (checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) != PackageManager.PERMISSION_GRANTED) {
 				// Attempt root grant
-				if ((RootUtils.grantSecureSettingsPermission(packageName)) &&
+				if ((attemptSecureSettingsGrant(this@DnsToggleService, packageName)) &&
 					(checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED)
 				) {
 					// Success

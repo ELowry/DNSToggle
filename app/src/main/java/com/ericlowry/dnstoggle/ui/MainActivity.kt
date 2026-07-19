@@ -45,6 +45,8 @@ import com.ericlowry.dnstoggle.util.BackupManager
 import com.ericlowry.dnstoggle.util.NetworkUtils
 import com.ericlowry.dnstoggle.util.PermissionHelper
 import com.ericlowry.dnstoggle.util.RootUtils
+import com.ericlowry.dnstoggle.util.ShizukuUtils
+import com.ericlowry.dnstoggle.util.attemptSecureSettingsGrant
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -218,7 +220,7 @@ class MainActivity : AppCompatActivity() {
 			) == true && !PermissionHelper.hasSecureSettingsPermission(this)
 		) {
 			lifecycleScope.launch {
-				RootUtils.grantSecureSettingsPermission(packageName)
+				attemptSecureSettingsGrant(this@MainActivity, packageName)
 				updateMainPermissionUiState()
 				if (!PermissionHelper.hasSecureSettingsPermission(this@MainActivity)) {
 					showInitialPermissionDialog()
@@ -417,10 +419,17 @@ class MainActivity : AppCompatActivity() {
 				dnsViewModel.togglePrivateDns(isChecked)
 				requestTileUpdate()
 			} else {
-				// Attempt root grant again
+				val toastMsgRes = when {
+					ShizukuUtils.isAvailable() -> R.string.toast_attempting_shizuku
+					RootUtils.isAvailable() -> R.string.toast_attempting_root
+					else -> R.string.toast_attempting_fallback
+				}
+				Toast.makeText(this@MainActivity, toastMsgRes, Toast.LENGTH_SHORT).show()
+
+				// Attempt grant again
 				setLoadingState(true)
 				lifecycleScope.launch {
-					RootUtils.grantSecureSettingsPermission(packageName)
+					attemptSecureSettingsGrant(this@MainActivity, packageName)
 					setLoadingState(false)
 					updateMainPermissionUiState()
 
@@ -509,9 +518,16 @@ class MainActivity : AppCompatActivity() {
 			if (PermissionHelper.hasSecureSettingsPermission(this)) {
 				updateMainPermissionUiState()
 			} else {
+				val toastMsgRes = when {
+					ShizukuUtils.isAvailable() -> R.string.toast_attempting_shizuku
+					RootUtils.isAvailable() -> R.string.toast_attempting_root
+					else -> R.string.toast_attempting_fallback
+				}
+				Toast.makeText(this@MainActivity, toastMsgRes, Toast.LENGTH_SHORT).show()
+
 				setLoadingState(true)
 				lifecycleScope.launch {
-					val success = RootUtils.grantSecureSettingsPermission(packageName)
+					val success = attemptSecureSettingsGrant(this@MainActivity, packageName)
 					setLoadingState(false)
 					updateMainPermissionUiState()
 
@@ -977,11 +993,18 @@ class MainActivity : AppCompatActivity() {
 				clipboard.setPrimaryClip(clip)
 				Toast.makeText(this, getString(R.string.command_copied), Toast.LENGTH_SHORT).show()
 			},
-			onRetryRoot = {
+			onAttemptElevatedGrant = {
+				val toastMsgRes = when {
+					ShizukuUtils.isAvailable() -> R.string.toast_attempting_shizuku
+					RootUtils.isAvailable() -> R.string.toast_attempting_root
+					else -> R.string.toast_attempting_fallback
+				}
+				Toast.makeText(this@MainActivity, toastMsgRes, Toast.LENGTH_SHORT).show()
+
 				setLoadingState(true)
 				lifecycleScope.launch {
 					val startTime = System.currentTimeMillis()
-					RootUtils.grantSecureSettingsPermission(packageName)
+					attemptSecureSettingsGrant(this@MainActivity, packageName)
 
 					val elapsedTime = System.currentTimeMillis() - startTime
 					if (elapsedTime < 1000) delay(1000.milliseconds - elapsedTime.milliseconds)
@@ -992,7 +1015,7 @@ class MainActivity : AppCompatActivity() {
 					if (!PermissionHelper.hasSecureSettingsPermission(this@MainActivity)) {
 						Toast.makeText(
 							this@MainActivity,
-							R.string.root_grant_failed,
+							R.string.grant_failed,
 							Toast.LENGTH_SHORT
 						).show()
 						showInitialPermissionDialog()
