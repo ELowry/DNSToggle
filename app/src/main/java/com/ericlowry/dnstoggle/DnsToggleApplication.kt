@@ -35,7 +35,8 @@ class DnsToggleApplication : Application() {
 		SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
 			if (key == Constants.PREF_AUTO_BLACKLIST ||
 				key == Constants.PREF_AUTO_WHITELIST ||
-				key == Constants.PREF_VPN_OVERRIDE_ENABLED
+				key == Constants.PREF_VPN_OVERRIDE_ENABLED ||
+				key == Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED
 			) {
 				updateWifiMonitoringRegistration()
 			}
@@ -176,7 +177,8 @@ class DnsToggleApplication : Application() {
 		val sharedPreferences = getPrefs()
 		val vpnEnabled = sharedPreferences.getBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, false)
 		val autoEnabled = sharedPreferences.getBoolean(Constants.PREF_AUTO_BLACKLIST, false) ||
-				sharedPreferences.getBoolean(Constants.PREF_AUTO_WHITELIST, false)
+				sharedPreferences.getBoolean(Constants.PREF_AUTO_WHITELIST, false) ||
+				sharedPreferences.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false)
 
 		val blacklist = DnsSettingsRepository.blacklist.value
 		val hasActiveBlacklist = !blacklist.isNullOrEmpty()

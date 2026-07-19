@@ -59,6 +59,12 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	private val _autoWhitelistEnabled = MutableLiveData<Boolean>()
 	val autoWhitelistEnabled: LiveData<Boolean> = _autoWhitelistEnabled
 
+	private val _connectivityWatchdogEnabled = MutableLiveData<Boolean>()
+	val connectivityWatchdogEnabled: LiveData<Boolean> = _connectivityWatchdogEnabled
+
+	private val _connectivityWatchdogDebounceSeconds = MutableLiveData<Int>()
+	val connectivityWatchdogDebounceSeconds: LiveData<Int> = _connectivityWatchdogDebounceSeconds
+
 	private val _hideLauncherIcon = MutableLiveData<Boolean>()
 	val hideLauncherIcon: LiveData<Boolean> = _hideLauncherIcon
 
@@ -106,6 +112,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 				Constants.PREF_SHOW_TOAST,
 				Constants.PREF_IS_IN_VPN_OVERRIDE,
 				Constants.PREF_ACTIVE_SSID_OVERRIDE,
+				Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED,
+				Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
 					-> loadSettings()
 			}
 		}
@@ -180,6 +188,18 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 				sharedPreferences.getBoolean(
 					Constants.PREF_AUTO_WHITELIST,
 					false
+				)
+			)
+			_connectivityWatchdogEnabled.postValue(
+				sharedPreferences.getBoolean(
+					Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED,
+					false
+				)
+			)
+			_connectivityWatchdogDebounceSeconds.postValue(
+				sharedPreferences.getInt(
+					Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
+					Constants.CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS
 				)
 			)
 			_hideLauncherIcon.postValue(
@@ -347,6 +367,16 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	fun setAutoWhitelist(enabled: Boolean) {
 		sharedPreferences.edit { putBoolean(Constants.PREF_AUTO_WHITELIST, enabled) }
 		_autoWhitelistEnabled.value = enabled
+	}
+
+	fun setConnectivityWatchdogEnabled(enabled: Boolean) {
+		sharedPreferences.edit { putBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, enabled) }
+		_connectivityWatchdogEnabled.value = enabled
+	}
+
+	fun setConnectivityWatchdogDebounceSeconds(seconds: Int) {
+		sharedPreferences.edit { putInt(Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS, seconds) }
+		_connectivityWatchdogDebounceSeconds.value = seconds
 	}
 
 	fun setHideLauncherIcon(hidden: Boolean) {

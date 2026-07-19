@@ -56,6 +56,13 @@
 	<string name="ignore_battery_optimizations">Disable battery restrictions</string>
 	<string name="auto_blacklist_on_disable">Auto-blacklist when disabling</string>
 	<string name="auto_whitelist_on_enable">Auto-whitelist when enabling</string>
+	<string name="connectivity_watchdog_toggle">Auto-disable on connectivity failure</string>
+	<string name="connectivity_watchdog_debounce_label">Wait before disabling</string>
+	<string name="connectivity_watchdog_debounce_custom">Custom…</string>
+	<string name="connectivity_watchdog_debounce_invalid">Enter a value between 5 and 300 seconds</string>
+	<string name="connectivity_watchdog_debounce_seconds_format">%ds</string>
+	<string name="notif_connectivity_watchdog_disabled">Private DNS disabled and blacklisted for %s due to a connectivity issue</string>
+	<string name="notif_connectivity_watchdog_restored">Connectivity restored — Private DNS re-enabled for %s</string>
 	<string name="grant_permission_notice">Location/Nearby permission (including background) required to verify the Wi-Fi SSID.</string>
 	<string name="grant_permission_button">Grant Permissions</string>
 	<string name="permissions_permanently_denied">Location and Nearby devices permissions have been permanently denied. Please enable them in App Settings to use this feature.</string>

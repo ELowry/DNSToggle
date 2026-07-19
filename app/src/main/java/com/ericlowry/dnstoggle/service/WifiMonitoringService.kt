@@ -51,6 +51,8 @@ class WifiMonitoringService : Service() {
 	private val activeNetworks = mutableMapOf<Network, NetworkCapabilities>()
 	private val serviceScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
 	private var debounceJob: Job? = null
+	private var connectivityWatchdogJob: Job? = null
+	private var retriedAutoBlacklistForNetwork: Network? = null
 
 	private val dnsSettingsObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
 		override fun onChange(selfChange: Boolean) {
@@ -72,7 +74,10 @@ class WifiMonitoringService : Service() {
 
 	private val preferenceChangeListener =
 		SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-			if (key == Constants.PREF_VPN_OVERRIDE_ENABLED || key == Constants.PREF_VPN_DNS_HOSTNAME) {
+			if (key == Constants.PREF_VPN_OVERRIDE_ENABLED ||
+				key == Constants.PREF_VPN_DNS_HOSTNAME ||
+				key == Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED
+			) {
 				evaluateActiveNetworks()
 			}
 		}
@@ -217,6 +222,11 @@ class WifiMonitoringService : Service() {
 	): Boolean {
 		if (oldCaps == null) return true
 
+		if (oldCaps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) != newCaps.hasCapability(
+				NetworkCapabilities.NET_CAPABILITY_VALIDATED
+			)
+		) return true
+
 		// Check transport changes
 		if (oldCaps.hasTransport(NetworkCapabilities.TRANSPORT_VPN) != newCaps.hasTransport(
 				NetworkCapabilities.TRANSPORT_VPN
@@ -242,7 +252,10 @@ class WifiMonitoringService : Service() {
 	private fun evaluateActiveNetworks() {
 		val allCaps = activeNetworks.values
 		val isVpnActive = allCaps.any { it.hasTransport(NetworkCapabilities.TRANSPORT_VPN) }
-		val wifiCaps = allCaps.find { it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) }
+		val wifiEntry =
+			activeNetworks.entries.find { it.value.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) }
+		val wifiNetwork = wifiEntry?.key
+		val wifiCaps = wifiEntry?.value
 
 		val hasLocationPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 			checkSelfPermission(Manifest.permission.NEARBY_WIFI_DEVICES) == PackageManager.PERMISSION_GRANTED
@@ -270,6 +283,8 @@ class WifiMonitoringService : Service() {
 		val isInVpnOverride = prefs.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)
 
 		if (isVpnActive && vpnOverrideEnabled) {
+			connectivityWatchdogJob?.cancel()
+			connectivityWatchdogJob = null
 			if (!isInVpnOverride) {
 				// Enter VPN override
 				saveCurrentDnsState()
@@ -288,6 +303,8 @@ class WifiMonitoringService : Service() {
 
 		// Normal Wi-Fi logic
 		if (currentSsid == null || currentSsid == "<unknown ssid>" || currentSsid.isEmpty()) {
+			connectivityWatchdogJob?.cancel()
+			connectivityWatchdogJob = null
 			if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != null) {
 				prefs.edit { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) }
 			}
@@ -297,15 +314,24 @@ class WifiMonitoringService : Service() {
 
 		val blacklist = DnsSettingsRepository.blacklist.value ?: emptySet()
 		if (blacklist.contains(currentSsid)) {
+			connectivityWatchdogJob?.cancel()
+			connectivityWatchdogJob = null
 			if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != currentSsid) {
 				prefs.edit { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, currentSsid) }
 			}
-			applyOpportunisticDns(currentSsid)
+			val isAutoDetected =
+				DnsSettingsRepository.autoDetectedBlacklist.value?.contains(currentSsid) == true
+			applyOpportunisticDns(
+				currentSsid,
+				if (isAutoDetected) R.string.notif_connectivity_watchdog_disabled else R.string.notif_dns_disabled_auto
+			)
+			maybeRetryAutoDetectedSsid(currentSsid, isAutoDetected, wifiNetwork)
 		} else {
 			if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != null) {
 				prefs.edit { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) }
 			}
 			restorePreferredDns()
+			evaluateConnectivityWatchdog(currentSsid, wifiCaps)
 		}
 	}
 
@@ -356,9 +382,84 @@ class WifiMonitoringService : Service() {
 		networkCallback = null
 	}
 
-	private fun applyOpportunisticDns(ssid: String) {
+	private fun applyOpportunisticDns(
+		ssid: String,
+		reasonStringResId: Int = R.string.notif_dns_disabled_auto
+	) {
 		debounceJob?.cancel()
-		updateDnsSetting(Constants.DNS_MODE_OPPORTUNISTIC, ssid)
+		updateDnsSetting(Constants.DNS_MODE_OPPORTUNISTIC, ssid, reasonStringResId)
+	}
+
+	private fun evaluateConnectivityWatchdog(ssid: String, wifiCaps: NetworkCapabilities?) {
+		val prefs = getPrefs()
+		if (!prefs.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false) ||
+			cachedDnsMode != Constants.DNS_MODE_HOSTNAME
+		) {
+			connectivityWatchdogJob?.cancel()
+			connectivityWatchdogJob = null
+			return
+		}
+
+		if (wifiCaps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true) {
+			connectivityWatchdogJob?.cancel()
+			connectivityWatchdogJob = null
+			return
+		}
+
+		if (connectivityWatchdogJob?.isActive == true) return
+
+		val hostname = Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
+		if (hostname.isNullOrEmpty()) return
+
+		val debounceSeconds = prefs.getInt(
+			Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
+			Constants.CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS
+		)
+
+		connectivityWatchdogJob = serviceScope.launch {
+			delay(debounceSeconds.seconds)
+
+			val stillNotValidated = activeNetworks.values
+				.find { it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) }
+				?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) != true
+
+			if (!stillNotValidated ||
+				cachedDnsMode != Constants.DNS_MODE_HOSTNAME ||
+				(application as DnsToggleApplication).detectedSsid != ssid ||
+				!getPrefs().getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false)
+			) {
+				return@launch
+			}
+
+			if (ConnectivityWatchdog.isDnsSpecificFailure(hostname)) {
+				DnsSettingsRepository.addToBlacklist(ssid, autoDetected = true)
+			}
+		}
+	}
+
+	private fun maybeRetryAutoDetectedSsid(
+		ssid: String,
+		isAutoDetected: Boolean,
+		wifiNetwork: Network?
+	) {
+		val prefs = getPrefs()
+		if (!isAutoDetected ||
+			!prefs.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false) ||
+			retriedAutoBlacklistForNetwork == wifiNetwork
+		) {
+			return
+		}
+		retriedAutoBlacklistForNetwork = wifiNetwork
+
+		val hostname = Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
+		if (hostname.isNullOrEmpty()) return
+
+		serviceScope.launch {
+			if (ConnectivityWatchdog.isRecovered(hostname)) {
+				DnsSettingsRepository.removeFromBlacklist(ssid)
+				dispatchStatusNotification(getString(R.string.notif_connectivity_watchdog_restored, ssid))
+			}
+		}
 	}
 
 	private fun restorePreferredDns() {
@@ -405,14 +506,18 @@ class WifiMonitoringService : Service() {
 		}
 	}
 
-	private fun updateDnsSetting(newMode: String, ssidForNotification: String?) {
+	private fun updateDnsSetting(
+		newMode: String,
+		ssidForNotification: String?,
+		reasonStringResId: Int = R.string.notif_dns_disabled_auto
+	) {
 		try {
 			val resolver = contentResolver
 			if (cachedDnsMode != newMode) {
 				Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE, newMode)
 				cachedDnsMode = newMode
 				ssidForNotification?.let {
-					dispatchStatusNotification(getString(R.string.notif_dns_disabled_auto, it))
+					dispatchStatusNotification(getString(reasonStringResId, it))
 				}
 				TileServiceCompat.requestListeningState(
 					this,
