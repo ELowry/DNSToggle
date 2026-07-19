@@ -356,6 +356,7 @@ object DialogHelper {
 		titleResId: Int,
 		actionResId: Int,
 		messageResId: Int? = null,
+		onCancel: (() -> Unit)? = null,
 		onPasswordEntered: (CharArray) -> Unit,
 	) {
 		val dialogView =
@@ -374,11 +375,13 @@ object DialogHelper {
 				val password = inputTextField.text?.toString()?.toCharArray() ?: CharArray(0)
 				onPasswordEntered(password)
 			}
-			.setNegativeButton(R.string.cancel, null)
+			.setNegativeButton(R.string.cancel) { _, _ -> onCancel?.invoke() }
 
 		messageResId?.let { builder.setMessage(it) }
 
 		val dialog = builder.create()
+
+		dialog.setOnCancelListener { onCancel?.invoke() }
 
 		dialog.setOnShowListener {
 			val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)

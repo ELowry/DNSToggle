@@ -231,8 +231,6 @@ class HostnamesAdapter(
 			}
 
 			holder.btnEdit.setOnClickListener { editCallback(hostname) }
-			holder.btnDelete.isEnabled = currentList.size > 1
-			holder.btnDelete.alpha = if (currentList.size > 1) 1.0f else 0.5f
 			holder.btnDelete.setOnClickListener { deleteCallback(hostname) }
 			holder.btnAdd.setOnClickListener { addInPlaceCallback(hostname) }
 			holder.itemView.setOnClickListener {

@@ -2,7 +2,6 @@ package com.ericlowry.dnstoggle.data
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.provider.Settings
 import android.util.Log
 import androidx.core.content.edit
 import com.ericlowry.dnstoggle.DnsToggleApplication
@@ -191,20 +190,6 @@ object DnsSettingsRepository {
 				}
 			}
 
-			if (resultList.isEmpty()) {
-				val legacyHostname = Settings.Global.getString(
-					app.contentResolver,
-					Constants.SETTINGS_PRIVATE_DNS_SPECIFIER
-				)
-				if (!legacyHostname.isNullOrEmpty() && NetworkUtils.isValidDnsHostname(
-						legacyHostname
-					)
-				) {
-					val entry = DnsHostname(legacyHostname)
-					resultList.add(entry)
-					saveHostnamesAsync(resultList)
-				}
-			}
 			_dnsHostnames.value = resultList
 		}
 	}
@@ -314,7 +299,7 @@ object DnsSettingsRepository {
 	fun removeHostname(hostname: String) {
 		_dnsHostnames.update { current ->
 			val safeCurrent = current ?: emptyList()
-			if (safeCurrent.none { it.hostname == hostname } || safeCurrent.size <= 1) return@update safeCurrent
+			if (safeCurrent.none { it.hostname == hostname }) return@update safeCurrent
 			val next = safeCurrent.filter { it.hostname != hostname }
 
 			// Check if the removed hostname was being used for VPN override

@@ -76,42 +76,46 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var hostnamesAdapter: HostnamesAdapter
 	private lateinit var ssidsAdapter: SsidsAdapter
 
-	private lateinit var privateDnsLabel: TextView
-	private lateinit var dnsToggleSwitch: MaterialSwitch
-	private lateinit var progressRootAction: CircularProgressIndicator
-	private lateinit var dnsHostnameListContainer: RecyclerView
-	private lateinit var addHostnameButton: ImageButton
 	private lateinit var btnMenu: ImageButton
 
+	private lateinit var cardMainPermission: MaterialCardView
+	private lateinit var btnFixMainPermission: Button
+
+	private lateinit var cardOverrideStatus: MaterialCardView
+	private lateinit var tvOverrideStatus: TextView
+
+	private lateinit var privateDnsLabel: TextView
+	private lateinit var progressRootAction: CircularProgressIndicator
+	private lateinit var dnsToggleSwitch: MaterialSwitch
+	private lateinit var addHostnameButton: ImageButton
+	private lateinit var dnsHostnameListContainer: RecyclerView
+	private lateinit var switchDisableDnsTest: MaterialSwitch
+
+	private lateinit var btnSsidInfo: ImageButton
+	private lateinit var addSsidButton: ImageButton
+	private lateinit var permissionNoticeText: TextView
+	private lateinit var btnGrantPermission: Button
+	private lateinit var dividerSsidList: View
+	private lateinit var ssidListContainer: RecyclerView
+	private lateinit var dividerSsidSettings: View
 	private lateinit var switchAutoBlacklist: MaterialSwitch
 	private lateinit var switchAutoWhitelist: MaterialSwitch
+	private lateinit var rowConnectivityWatchdogToggle: View
 	private lateinit var switchConnectivityWatchdog: MaterialSwitch
 	private lateinit var rowConnectivityWatchdogDebounce: View
 	private lateinit var tvConnectivityWatchdogDebounceValue: TextView
 	private lateinit var rowConnectivityWatchdogTargets: View
 	private lateinit var tvConnectivityWatchdogTargetsValue: TextView
-	private lateinit var switchDisableDnsTest: MaterialSwitch
-	private lateinit var switchShowToast: MaterialSwitch
-	private lateinit var switchHideLauncher: MaterialSwitch
+
+	private lateinit var btnVpnInfo: ImageButton
 	private lateinit var switchVpnOverride: MaterialSwitch
 	private lateinit var rowVpnDns: View
 	private lateinit var tvVpnDnsValue: TextView
 	private lateinit var vpnPermissionNoticeText: TextView
 	private lateinit var btnGrantVpnPermission: Button
-	private lateinit var cardOverrideStatus: MaterialCardView
-	private lateinit var tvOverrideStatus: TextView
-	private lateinit var permissionNoticeText: TextView
-	private lateinit var btnGrantPermission: Button
-	private lateinit var ssidListContainer: RecyclerView
-	private lateinit var addSsidButton: ImageButton
-	private lateinit var btnSsidInfo: ImageButton
-	private lateinit var btnVpnInfo: ImageButton
-	private lateinit var dividerSsidList: View
-	private lateinit var dividerSsidSettings: View
 
-	private lateinit var cardMainPermission: MaterialCardView
-	private lateinit var btnFixMainPermission: Button
-
+	private lateinit var switchShowToast: MaterialSwitch
+	private lateinit var switchHideLauncher: MaterialSwitch
 	private lateinit var rowUsbDebuggingTile: View
 	private lateinit var switchUsbDebuggingTile: MaterialSwitch
 	private lateinit var tvUsbDebuggingTileSummary: TextView
@@ -130,6 +134,17 @@ class MainActivity : AppCompatActivity() {
 					R.string.export_config,
 					R.string.export,
 					R.string.export_password_description,
+					onCancel = {
+						// Delete empty file it creates
+						try {
+							android.provider.DocumentsContract.deleteDocument(
+								contentResolver,
+								targetUri
+							)
+						} catch (e: Exception) {
+							Log.e(TAG, "Failed to delete empty export file", e)
+						}
+					}
 				) { password ->
 					lifecycleScope.launch(Dispatchers.IO) {
 						try {
@@ -267,48 +282,52 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun initializeViews() {
-		privateDnsLabel = findViewById(R.id.tvToggleLabel)
-		dnsToggleSwitch = findViewById(R.id.switchPrivateDns)
-		progressRootAction = findViewById(R.id.progressRootAction)
-		dnsHostnameListContainer = findViewById(R.id.dnsHostnameListContainer)
-		addHostnameButton = findViewById(R.id.btnAddHostname)
 		btnMenu = findViewById(R.id.btnMenu)
 
+		cardMainPermission = findViewById(R.id.cardMainPermissionLayout)
+		btnFixMainPermission = findViewById(R.id.btnFixMainPermission)
+
+		cardOverrideStatus = findViewById(R.id.cardOverrideStatus)
+		tvOverrideStatus = findViewById(R.id.tvOverrideStatus)
+
+		privateDnsLabel = findViewById(R.id.tvToggleLabel)
+		progressRootAction = findViewById(R.id.progressRootAction)
+		dnsToggleSwitch = findViewById(R.id.switchPrivateDns)
+		addHostnameButton = findViewById(R.id.btnAddHostname)
+		dnsHostnameListContainer = findViewById(R.id.dnsHostnameListContainer)
+		switchDisableDnsTest = findViewById(R.id.switchDisableDnsTest)
+
+		btnSsidInfo = findViewById(R.id.btnSsidInfo)
+		addSsidButton = findViewById(R.id.btnAddSsid)
+		permissionNoticeText = findViewById(R.id.tvPermissionNotice)
+		btnGrantPermission = findViewById(R.id.btnGrantPermission)
+		dividerSsidList = findViewById(R.id.dividerSsidList)
+		ssidListContainer = findViewById(R.id.ssidListContainer)
+		dividerSsidSettings = findViewById(R.id.dividerSsidSettings)
 		switchAutoBlacklist = findViewById(R.id.switchAutoBlacklist)
 		switchAutoWhitelist = findViewById(R.id.switchAutoWhitelist)
+		rowConnectivityWatchdogToggle = findViewById(R.id.rowConnectivityWatchdogToggle)
 		switchConnectivityWatchdog = findViewById(R.id.switchConnectivityWatchdog)
 		rowConnectivityWatchdogDebounce = findViewById(R.id.rowConnectivityWatchdogDebounce)
 		tvConnectivityWatchdogDebounceValue = findViewById(R.id.tvConnectivityWatchdogDebounceValue)
 		rowConnectivityWatchdogTargets = findViewById(R.id.rowConnectivityWatchdogTargets)
 		tvConnectivityWatchdogTargetsValue = findViewById(R.id.tvConnectivityWatchdogTargetsValue)
-		switchDisableDnsTest = findViewById(R.id.switchDisableDnsTest)
-		switchShowToast = findViewById(R.id.switchShowToast)
-		switchHideLauncher = findViewById(R.id.switchHideLauncher)
+
+		btnVpnInfo = findViewById(R.id.btnVpnInfo)
 		switchVpnOverride = findViewById(R.id.switchVpnOverride)
 		rowVpnDns = findViewById(R.id.rowVpnDns)
 		tvVpnDnsValue = findViewById(R.id.tvVpnDnsValue)
 		vpnPermissionNoticeText = findViewById(R.id.tvVpnPermissionNotice)
 		btnGrantVpnPermission = findViewById(R.id.btnGrantVpnPermission)
-		cardOverrideStatus = findViewById(R.id.cardOverrideStatus)
-		tvOverrideStatus = findViewById(R.id.tvOverrideStatus)
-		permissionNoticeText = findViewById(R.id.tvPermissionNotice)
-		btnGrantPermission = findViewById(R.id.btnGrantPermission)
-		ssidListContainer = findViewById(R.id.ssidListContainer)
-		addSsidButton = findViewById(R.id.btnAddSsid)
-		btnSsidInfo = findViewById(R.id.btnSsidInfo)
-		btnVpnInfo = findViewById(R.id.btnVpnInfo)
-		dividerSsidList = findViewById(R.id.dividerSsidList)
-		dividerSsidSettings = findViewById(R.id.dividerSsidSettings)
 
-		cardMainPermission = findViewById(R.id.cardMainPermissionLayout)
-		btnFixMainPermission = findViewById(R.id.btnFixMainPermission)
-		setupFixPermissionButton()
-
+		switchShowToast = findViewById(R.id.switchShowToast)
+		switchHideLauncher = findViewById(R.id.switchHideLauncher)
 		rowUsbDebuggingTile = findViewById(R.id.rowUsbDebuggingTileLayout)
 		switchUsbDebuggingTile = findViewById(R.id.switchUsbDebuggingTile)
 		tvUsbDebuggingTileSummary = findViewById(R.id.tvUsbDebuggingTileSummary)
-		setupUsbDebuggingTile()
 
+		setupFixPermissionButton()
+		setupUsbDebuggingTile()
 		privateDnsLabel.text = getString(R.string.private_dns)
 
 		val tvAppVersion = findViewById<TextView>(R.id.tvAppVersion)
@@ -634,6 +653,10 @@ class MainActivity : AppCompatActivity() {
 
 	private fun setupUsbDebuggingTile() {
 		val prefs = (application as DnsToggleApplication).getPrefs()
+
+		switchUsbDebuggingTile.isChecked =
+			prefs.getBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, false)
+
 		switchUsbDebuggingTile.setOnCheckedChangeListener { _, isChecked ->
 			prefs.edit { putBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, isChecked) }
 
@@ -770,7 +793,6 @@ class MainActivity : AppCompatActivity() {
 				requestBackgroundLocationPermission()
 			},
 			onDecline = {
-				// If they decline, we just proceed with the foreground permissions they already granted
 				updateSsidUiState(true)
 				(application as DnsToggleApplication).updateWifiMonitoringRegistration()
 				checkNotificationPermission()
@@ -816,6 +838,7 @@ class MainActivity : AppCompatActivity() {
 
 			val watchdogEnabled = dnsViewModel.connectivityWatchdogEnabled.value ?: false
 			switchConnectivityWatchdog.isEnabled = true
+			rowConnectivityWatchdogToggle.alpha = 1.0f
 			rowConnectivityWatchdogDebounce.isEnabled = watchdogEnabled
 			rowConnectivityWatchdogDebounce.alpha = if (watchdogEnabled) 1.0f else 0.5f
 			rowConnectivityWatchdogTargets.isEnabled = watchdogEnabled
@@ -829,6 +852,7 @@ class MainActivity : AppCompatActivity() {
 			ssidListContainer.alpha = 0.5f
 
 			switchConnectivityWatchdog.isEnabled = false
+			rowConnectivityWatchdogToggle.alpha = 0.5f
 			rowConnectivityWatchdogDebounce.isEnabled = false
 			rowConnectivityWatchdogDebounce.alpha = 0.5f
 			rowConnectivityWatchdogTargets.isEnabled = false
