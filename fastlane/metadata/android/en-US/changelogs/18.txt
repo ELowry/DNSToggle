@@ -1,0 +1,1 @@
+- Updated fastlane full description to use HTML instead of Markdown

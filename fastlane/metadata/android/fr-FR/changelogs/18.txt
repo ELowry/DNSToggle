@@ -1,0 +1,1 @@
+- La description fastlane utilise maintenant du HTML à la place du Markdown

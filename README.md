@@ -35,15 +35,15 @@ By long-pressing the Quick Settings tile, you can access the configuration menu 
   Set and label one or more custom Private DNS hostnames you can easily toggle between (e.g., `dns.adguard.com`).
     - Optional automatic DNS hostname reachability check.
     - Automatically detects your active system DNS so you can easily save it to your list.
-- **Wi-Fi Blocklist**:  
+- **Wi-Fi Blacklist**:  
   Automatically disable Private DNS when connected to specific Wi-Fi networks.
-    - Optional automated addition/removal of the current Wi-Fi SSID from the blocklist when manually toggling the Quick Settings tile.
-    - Optional connectivity watchdog that auto-disables Private DNS when a network's DNS provider is unreachable, then re-enables it once the network recovers.
+    - Optional automated addition/removal of the current Wi-Fi SSID from the blacklist when manually toggling the Quick Settings tile.
+    - Optional connectivity watchdog that automatically blacklists the current Wi-Fi SSID when Private DNS causes connectivity issues.
 - **VPN toggling**:  
   Automatically set a DNS hostname or toggle Private DNS when a VPN is in use on the device.
 - **Backup & Restore**:  
   Export and import your configuration via password-encrypted `.dnstoggle` files.
-    > _Note: For security, your encrypted hostnames and blocklists are excluded from cloud backups and must be transferred manually._
+    > _Note: For security, your encrypted hostnames and blacklists are excluded from cloud backups and must be transferred manually._
 - **Dynamic Tile Labeling**:  
   Rename the Quick Settings tile.
 - **Hide App Icon**:  
