@@ -15,9 +15,9 @@ class EncryptionManagerTest {
 	fun encryptDecrypt_worksWithPrefix() {
 		val original = "secret_dns_hostname"
 		val encrypted = EncryptionManager.encrypt(original)
-		
+
 		assertTrue("Should have prefix", encrypted.startsWith("enc:"))
-		
+
 		val result = EncryptionManager.decrypt(encrypted)
 		assertTrue(result is EncryptionManager.DecryptResult.Success)
 		assertEquals(original, (result as EncryptionManager.DecryptResult.Success).data)
@@ -29,7 +29,7 @@ class EncryptionManagerTest {
 		val original = "legacy_data"
 		val encryptedWithPrefix = EncryptionManager.encrypt(original)
 		val legacyEncrypted = encryptedWithPrefix.removePrefix("enc:")
-		
+
 		val result = EncryptionManager.decrypt(legacyEncrypted)
 		assertTrue(result is EncryptionManager.DecryptResult.Success)
 		assertEquals(original, (result as EncryptionManager.DecryptResult.Success).data)
@@ -39,7 +39,7 @@ class EncryptionManagerTest {
 	fun decrypt_fallsBackToPlaintext() {
 		val plaintext = "not_encrypted_hostname"
 		val result = EncryptionManager.decrypt(plaintext)
-		
+
 		assertTrue(result is EncryptionManager.DecryptResult.Success)
 		assertEquals(plaintext, (result as EncryptionManager.DecryptResult.Success).data)
 	}

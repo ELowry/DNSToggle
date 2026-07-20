@@ -135,7 +135,10 @@ object EncryptionManager {
 			DecryptResult.KeyInvalidated
 		} catch (e: Exception) {
 			if (encryptedBase64.length > 20) {
-				Log.w(TAG, "Decryption failed for input of length ${encryptedBase64.length}: ${e.message}")
+				Log.w(
+					TAG,
+					"Decryption failed for input of length ${encryptedBase64.length}: ${e.message}"
+				)
 			}
 			DecryptResult.Failed
 		}

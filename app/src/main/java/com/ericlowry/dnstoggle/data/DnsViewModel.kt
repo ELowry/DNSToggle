@@ -433,7 +433,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		DnsSettingsRepository.updateVpnOverrideEnabled(enabled)
 	}
 
-	fun setVpnDnsHostname(hostname: String) {
+	fun setVpnDnsHostname(hostname: String?) {
 		DnsSettingsRepository.updateVpnDnsHostname(hostname)
 	}
 

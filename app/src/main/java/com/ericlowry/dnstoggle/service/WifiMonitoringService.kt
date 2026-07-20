@@ -347,13 +347,13 @@ class WifiMonitoringService : Service() {
 	}
 
 	private fun applyVpnDns() {
-		val vpnDns = DnsSettingsRepository.vpnDnsHostname.value ?: "off"
+		val vpnDns = DnsSettingsRepository.vpnDnsHostname.value
 
 		val resolver = contentResolver
 		val currentMode = Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
 		val currentSpecifier = Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
 
-		if (vpnDns == "off") {
+		if (vpnDns == null) {
 			if (currentMode != Constants.DNS_MODE_OPPORTUNISTIC) {
 				updateDnsSetting(Constants.DNS_MODE_OPPORTUNISTIC, null)
 				dispatchStatusNotification(getString(R.string.notif_vpn_dns_applied))

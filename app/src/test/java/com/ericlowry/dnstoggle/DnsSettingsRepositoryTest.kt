@@ -89,4 +89,14 @@ class DnsSettingsRepositoryTest {
 		val hostnames = DnsSettingsRepository.dnsHostnames.value
 		assertTrue(hostnames?.any { it.hostname == hostname } == true)
 	}
+
+	@Test
+	fun vpnDnsHostname_nullableBehavior() = runTest {
+		val hostname = "dns.google"
+		DnsSettingsRepository.updateVpnDnsHostname(hostname)
+		assertEquals(hostname, DnsSettingsRepository.vpnDnsHostname.value)
+
+		DnsSettingsRepository.updateVpnDnsHostname(null)
+		assertEquals(null, DnsSettingsRepository.vpnDnsHostname.value)
+	}
 }

@@ -372,7 +372,16 @@ object DialogHelper {
 			.setTitle(titleResId)
 			.setView(dialogView)
 			.setPositiveButton(actionResId) { _, _ ->
-				val password = inputTextField.text?.toString()?.toCharArray() ?: CharArray(0)
+				val editable = inputTextField.text
+				val password = if (!editable.isNullOrEmpty()) {
+					val chars = CharArray(editable.length)
+					for (i in chars.indices) {
+						chars[i] = editable[i]
+					}
+					chars
+				} else {
+					CharArray(0)
+				}
 				onPasswordEntered(password)
 			}
 			.setNegativeButton(R.string.cancel) { _, _ -> onCancel?.invoke() }

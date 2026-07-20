@@ -360,7 +360,7 @@ class MainActivity : AppCompatActivity() {
 
 			// Also refresh VPN display name in case a label was added/changed
 			val vpnHostname = dnsViewModel.vpnDnsHostname.value
-			if (vpnHostname != null && vpnHostname != "off") {
+			if (vpnHostname != null) {
 				tvVpnDnsValue.text = hostnames.find { it.hostname == vpnHostname }
 					?.getDisplayName() ?: vpnHostname
 			}
@@ -417,7 +417,7 @@ class MainActivity : AppCompatActivity() {
 		}
 
 		dnsViewModel.vpnDnsHostname.observe(this) { hostname ->
-			tvVpnDnsValue.text = if (hostname == "off" || hostname == null) {
+			tvVpnDnsValue.text = if (hostname == null) {
 				getString(R.string.automatic_off)
 			} else {
 				dnsViewModel.dnsHostnames.value
@@ -1305,8 +1305,8 @@ class MainActivity : AppCompatActivity() {
 
 		if (hostnames.size == 1) {
 			val hostname = hostnames.first().hostname
-			val current = dnsViewModel.vpnDnsHostname.value ?: "off"
-			val newValue = if (current == hostname) "off" else hostname
+			val current = dnsViewModel.vpnDnsHostname.value
+			val newValue = if (current == hostname) null else hostname
 			dnsViewModel.setVpnDnsHostname(newValue)
 			return
 		}
@@ -1326,7 +1326,7 @@ class MainActivity : AppCompatActivity() {
 		btnCancel.text = getString(R.string.cancel)
 		btnCancel.setOnClickListener { dialog.dismiss() }
 
-		val currentVpnDns = dnsViewModel.vpnDnsHostname.value ?: "off"
+		val currentVpnDns = dnsViewModel.vpnDnsHostname.value
 		val totalItems = hostnames.size + 1
 
 		hostnames.forEachIndexed { index, dnsEntry ->
@@ -1346,7 +1346,7 @@ class MainActivity : AppCompatActivity() {
 			listContainer.addView(itemView)
 		}
 
-		val isAutoActive = (currentVpnDns == "off")
+		val isAutoActive = (currentVpnDns == null)
 		val autoItemView = createDnsListItem(
 			listContainer,
 			getString(R.string.automatic_off),
@@ -1355,7 +1355,7 @@ class MainActivity : AppCompatActivity() {
 			totalItems - 1,
 			totalItems
 		) {
-			dnsViewModel.setVpnDnsHostname("off")
+			dnsViewModel.setVpnDnsHostname(null)
 			dialog.dismiss()
 		}
 		listContainer.addView(autoItemView)

@@ -75,7 +75,7 @@ object DnsManager {
 					DnsSettingsRepository.updateVpnDnsHostname(hostname)
 				}
 			} else {
-				DnsSettingsRepository.updateVpnDnsHostname("off")
+				DnsSettingsRepository.updateVpnDnsHostname(null)
 			}
 		}
 

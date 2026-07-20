@@ -54,16 +54,25 @@ object DnsSettingsRepository {
 		val encryptedVpnHostname =
 			sharedPreferences.getString(Constants.PREF_VPN_DNS_HOSTNAME, null)
 		_vpnDnsHostname.value = if (encryptedVpnHostname == null) {
-			"off"
+			null
 		} else {
 			when (val result = EncryptionManager.decrypt(encryptedVpnHostname)) {
-				is EncryptionManager.DecryptResult.Success -> result.data
-				is EncryptionManager.DecryptResult.KeyInvalidated -> {
-					_isKeyInvalidated.value = true
-					"off"
+				is EncryptionManager.DecryptResult.Success -> {
+					if (result.data == "off") {
+						// Migration from app versions <1.6
+						sharedPreferences.edit { remove(Constants.PREF_VPN_DNS_HOSTNAME) }
+						null
+					} else {
+						result.data
+					}
 				}
 
-				else -> "off"
+				is EncryptionManager.DecryptResult.KeyInvalidated -> {
+					_isKeyInvalidated.value = true
+					null
+				}
+
+				else -> null
 			}
 		}
 	}
@@ -304,12 +313,12 @@ object DnsSettingsRepository {
 
 			// Check if the removed hostname was being used for VPN override
 			if (_vpnDnsHostname.value == hostname) {
-				updateVpnDnsHostname("off")
+				updateVpnDnsHostname(null)
 				sharedPreferences.edit {
 					putBoolean(Constants.PREF_VPN_HOSTNAME_REMOVED_WARNING, true)
 				}
-			} else if (next.size == 1 && _vpnDnsHostname.value != "off") {
-				updateVpnDnsHostname("off")
+			} else if (next.size == 1 && _vpnDnsHostname.value != null) {
+				updateVpnDnsHostname(null)
 			}
 
 			saveHostnamesAsync(next)
@@ -343,10 +352,14 @@ object DnsSettingsRepository {
 		sharedPreferences.edit { putBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, enabled) }
 	}
 
-	fun updateVpnDnsHostname(hostname: String) {
+	fun updateVpnDnsHostname(hostname: String?) {
 		_vpnDnsHostname.value = hostname
-		val encrypted = EncryptionManager.encrypt(hostname)
-		sharedPreferences.edit { putString(Constants.PREF_VPN_DNS_HOSTNAME, encrypted) }
+		if (hostname == null) {
+			sharedPreferences.edit { remove(Constants.PREF_VPN_DNS_HOSTNAME) }
+		} else {
+			val encrypted = EncryptionManager.encrypt(hostname)
+			sharedPreferences.edit { putString(Constants.PREF_VPN_DNS_HOSTNAME, encrypted) }
+		}
 	}
 
 	private fun saveHostnamesAsync(list: List<DnsHostname>) {
@@ -450,7 +463,9 @@ object DnsSettingsRepository {
 
 			if (json.has("vpn_dns")) {
 				val parsedVpnDns = json.getString("vpn_dns")
-				if (parsedVpnDns == "off" || NetworkUtils.isValidDnsHostname(parsedVpnDns)) {
+				if (parsedVpnDns == "off") {
+					updateVpnDnsHostname(null)
+				} else if (NetworkUtils.isValidDnsHostname(parsedVpnDns)) {
 					updateVpnDnsHostname(parsedVpnDns)
 				}
 			}

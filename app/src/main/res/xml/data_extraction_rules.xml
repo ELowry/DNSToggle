@@ -6,24 +6,24 @@
 			path="." />
 		<exclude
 			domain="sharedpref"
-			path="app_prefs_v2.xml"
-			key="dns_hostnames" />
+			key="dns_hostnames"
+			path="app_prefs_v2.xml" />
 		<exclude
 			domain="sharedpref"
-			path="app_prefs_v2.xml"
-			key="ssid_blacklist" />
+			key="ssid_blacklist"
+			path="app_prefs_v2.xml" />
 		<exclude
 			domain="sharedpref"
-			path="app_prefs_v2.xml"
-			key="ssid_auto_detected_blacklist" />
+			key="ssid_auto_detected_blacklist"
+			path="app_prefs_v2.xml" />
 		<exclude
 			domain="sharedpref"
-			path="app_prefs_v2.xml"
-			key="last_used_hostname" />
+			key="last_used_hostname"
+			path="app_prefs_v2.xml" />
 		<exclude
 			domain="sharedpref"
-			path="app_prefs_v2.xml"
-			key="vpn_dns_hostname" />
+			key="vpn_dns_hostname"
+			path="app_prefs_v2.xml" />
 	</cloud-backup>
 	<device-transfer>
 		<include
@@ -31,23 +31,23 @@
 			path="." />
 		<exclude
 			domain="sharedpref"
-			path="app_prefs_v2.xml"
-			key="dns_hostnames" />
+			key="dns_hostnames"
+			path="app_prefs_v2.xml" />
 		<exclude
 			domain="sharedpref"
-			path="app_prefs_v2.xml"
-			key="ssid_blacklist" />
+			key="ssid_blacklist"
+			path="app_prefs_v2.xml" />
 		<exclude
 			domain="sharedpref"
-			path="app_prefs_v2.xml"
-			key="ssid_auto_detected_blacklist" />
+			key="ssid_auto_detected_blacklist"
+			path="app_prefs_v2.xml" />
 		<exclude
 			domain="sharedpref"
-			path="app_prefs_v2.xml"
-			key="last_used_hostname" />
+			key="last_used_hostname"
+			path="app_prefs_v2.xml" />
 		<exclude
 			domain="sharedpref"
-			path="app_prefs_v2.xml"
-			key="vpn_dns_hostname" />
+			key="vpn_dns_hostname"
+			path="app_prefs_v2.xml" />
 	</device-transfer>
 </data-extraction-rules>
