@@ -72,13 +72,15 @@ class DnsToggleApplication : Application() {
 			if (!isInVpn && activeSsid == null && newMode != null) {
 				prefs.edit {
 					putString(Constants.PREF_PREFERRED_DNS_MODE, newMode)
-					if (newMode == Constants.DNS_MODE_HOSTNAME) {
-						val newSpecifier =
-							Settings.Global.getString(
-								resolver,
-								Constants.SETTINGS_PRIVATE_DNS_SPECIFIER
-							)
-						if (!newSpecifier.isNullOrEmpty()) {
+				}
+				if (newMode == Constants.DNS_MODE_HOSTNAME) {
+					val newSpecifier =
+						Settings.Global.getString(
+							resolver,
+							Constants.SETTINGS_PRIVATE_DNS_SPECIFIER
+						)
+					if (!newSpecifier.isNullOrEmpty()) {
+						getEncryptedPrefs().edit {
 							putString(
 								Constants.PREF_LAST_USED_HOSTNAME,
 								EncryptionManager.encrypt(newSpecifier)
@@ -141,6 +143,10 @@ class DnsToggleApplication : Application() {
 
 	fun getPrefs(): SharedPreferences {
 		return getSharedPreferences("app_prefs_v2", MODE_PRIVATE)
+	}
+
+	fun getEncryptedPrefs(): SharedPreferences {
+		return getSharedPreferences("encrypted_prefs", MODE_PRIVATE)
 	}
 
 	private fun initializeNotificationChannels() {

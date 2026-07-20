@@ -507,8 +507,9 @@ class WifiMonitoringService : Service() {
 
 			if (preferredMode == Constants.DNS_MODE_HOSTNAME) {
 				// Try to restore from last used hostname
+				val encryptedPrefs = (application as DnsToggleApplication).getEncryptedPrefs()
 				val encryptedHostname =
-					sharedPreferences.getString(Constants.PREF_LAST_USED_HOSTNAME, null)
+					encryptedPrefs.getString(Constants.PREF_LAST_USED_HOSTNAME, null)
 				val hostname = encryptedHostname?.let {
 					when (val result = EncryptionManager.decrypt(it)) {
 						is EncryptionManager.DecryptResult.Success -> result.data

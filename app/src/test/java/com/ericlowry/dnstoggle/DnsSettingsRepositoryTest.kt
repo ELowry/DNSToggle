@@ -87,4 +87,15 @@ class DnsSettingsRepositoryTest {
 		DnsSettingsRepository.updateVpnDnsHostname(null)
 		assertEquals(null, DnsSettingsRepository.vpnDnsHostname.value)
 	}
+
+	@Test
+	fun removeHostname_allowsEmptyList() = runTest {
+		val hostname = "dns.google"
+		DnsSettingsRepository.addHostname(hostname)
+
+		DnsSettingsRepository.removeHostname(hostname)
+
+		val hostnames = DnsSettingsRepository.dnsHostnames.value
+		assertTrue(hostnames?.isEmpty() == true)
+	}
 }

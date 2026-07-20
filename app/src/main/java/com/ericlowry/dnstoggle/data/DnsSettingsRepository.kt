@@ -21,6 +21,7 @@ import org.json.JSONObject
 object DnsSettingsRepository {
 	private lateinit var app: DnsToggleApplication
 	private lateinit var sharedPreferences: SharedPreferences
+	private lateinit var encryptedPrefs: SharedPreferences
 	private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
 	private val _blacklist = MutableStateFlow<Set<String>?>(null)
@@ -45,6 +46,32 @@ object DnsSettingsRepository {
 		if (::app.isInitialized) return
 		app = context.applicationContext as DnsToggleApplication
 		sharedPreferences = app.getPrefs()
+		encryptedPrefs = app.getEncryptedPrefs()
+
+		// Migration Block: Move encrypted keys from standard to encrypted prefs
+		val keysToMigrate = listOf(
+			Constants.PREF_DNS_HOSTNAMES,
+			Constants.PREF_SSID_BLACKLIST,
+			Constants.PREF_SSID_AUTO_DETECTED_BLACKLIST,
+			Constants.PREF_LAST_USED_HOSTNAME,
+			Constants.PREF_VPN_DNS_HOSTNAME
+		)
+
+		sharedPreferences.all.forEach { (key, value) ->
+			if (key in keysToMigrate) {
+				encryptedPrefs.edit {
+					when (value) {
+						is String -> putString(key, value)
+						is Set<*> -> @Suppress("UNCHECKED_CAST") putStringSet(
+							key,
+							value as Set<String>
+						)
+					}
+				}
+				sharedPreferences.edit { remove(key) }
+			}
+		}
+
 		loadBlacklist()
 		loadAutoDetectedBlacklist()
 		loadHostnames()
@@ -53,7 +80,7 @@ object DnsSettingsRepository {
 
 		scope.launch {
 			val encryptedVpnHostname =
-				sharedPreferences.getString(Constants.PREF_VPN_DNS_HOSTNAME, null)
+				encryptedPrefs.getString(Constants.PREF_VPN_DNS_HOSTNAME, null)
 			_vpnDnsHostname.value = if (encryptedVpnHostname == null) {
 				null
 			} else {
@@ -61,7 +88,7 @@ object DnsSettingsRepository {
 					is EncryptionManager.DecryptResult.Success -> {
 						if (result.data == "off") {
 							// Migration from app versions <1.6
-							sharedPreferences.edit { remove(Constants.PREF_VPN_DNS_HOSTNAME) }
+							encryptedPrefs.edit { remove(Constants.PREF_VPN_DNS_HOSTNAME) }
 							null
 						} else {
 							result.data
@@ -82,7 +109,7 @@ object DnsSettingsRepository {
 	private fun loadBlacklist() {
 		scope.launch {
 			val encryptedSet =
-				sharedPreferences.getStringSet(Constants.PREF_SSID_BLACKLIST, emptySet())
+				encryptedPrefs.getStringSet(Constants.PREF_SSID_BLACKLIST, emptySet())
 					?: emptySet()
 
 			var keyInvalidated = false
@@ -100,7 +127,7 @@ object DnsSettingsRepository {
 
 			if (keyInvalidated) {
 				_isKeyInvalidated.value = true
-				sharedPreferences.edit { remove(Constants.PREF_SSID_BLACKLIST) }
+				encryptedPrefs.edit { remove(Constants.PREF_SSID_BLACKLIST) }
 			}
 			_blacklist.value = decryptedSet
 		}
@@ -109,7 +136,7 @@ object DnsSettingsRepository {
 	private fun loadAutoDetectedBlacklist() {
 		scope.launch {
 			val encryptedSet =
-				sharedPreferences.getStringSet(
+				encryptedPrefs.getStringSet(
 					Constants.PREF_SSID_AUTO_DETECTED_BLACKLIST,
 					emptySet()
 				)
@@ -130,7 +157,7 @@ object DnsSettingsRepository {
 
 			if (keyInvalidated) {
 				_isKeyInvalidated.value = true
-				sharedPreferences.edit { remove(Constants.PREF_SSID_AUTO_DETECTED_BLACKLIST) }
+				encryptedPrefs.edit { remove(Constants.PREF_SSID_AUTO_DETECTED_BLACKLIST) }
 			}
 			_autoDetectedBlacklist.value = decryptedSet
 		}
@@ -138,7 +165,7 @@ object DnsSettingsRepository {
 
 	private fun loadHostnames() {
 		scope.launch {
-			val rawData = sharedPreferences.all[Constants.PREF_DNS_HOSTNAMES]
+			val rawData = encryptedPrefs.all[Constants.PREF_DNS_HOSTNAMES]
 
 			var keyInvalidated = false
 			val resultList = mutableListOf<DnsHostname>()
@@ -194,7 +221,7 @@ object DnsSettingsRepository {
 
 			if (keyInvalidated) {
 				_isKeyInvalidated.value = true
-				sharedPreferences.edit {
+				encryptedPrefs.edit {
 					remove(Constants.PREF_SSID_BLACKLIST)
 					remove(Constants.PREF_DNS_HOSTNAMES)
 					remove(Constants.PREF_LAST_USED_HOSTNAME)
@@ -275,14 +302,14 @@ object DnsSettingsRepository {
 	private fun saveBlacklistAsync(list: Set<String>) {
 		scope.launch {
 			val encryptedSet = list.map { EncryptionManager.encrypt(it) }.toSet()
-			sharedPreferences.edit { putStringSet(Constants.PREF_SSID_BLACKLIST, encryptedSet) }
+			encryptedPrefs.edit { putStringSet(Constants.PREF_SSID_BLACKLIST, encryptedSet) }
 		}
 	}
 
 	private fun saveAutoDetectedBlacklistAsync(list: Set<String>) {
 		scope.launch {
 			val encryptedSet = list.map { EncryptionManager.encrypt(it) }.toSet()
-			sharedPreferences.edit {
+			encryptedPrefs.edit {
 				putStringSet(Constants.PREF_SSID_AUTO_DETECTED_BLACKLIST, encryptedSet)
 			}
 		}
@@ -357,10 +384,10 @@ object DnsSettingsRepository {
 	fun updateVpnDnsHostname(hostname: String?) {
 		_vpnDnsHostname.value = hostname
 		if (hostname == null) {
-			sharedPreferences.edit { remove(Constants.PREF_VPN_DNS_HOSTNAME) }
+			encryptedPrefs.edit { remove(Constants.PREF_VPN_DNS_HOSTNAME) }
 		} else {
 			val encrypted = EncryptionManager.encrypt(hostname)
-			sharedPreferences.edit { putString(Constants.PREF_VPN_DNS_HOSTNAME, encrypted) }
+			encryptedPrefs.edit { putString(Constants.PREF_VPN_DNS_HOSTNAME, encrypted) }
 		}
 	}
 
@@ -369,7 +396,7 @@ object DnsSettingsRepository {
 			val jsonArray = JSONArray()
 			list.forEach { jsonArray.put(it.toSerializedString()) }
 			val encrypted = EncryptionManager.encrypt(jsonArray.toString())
-			sharedPreferences.edit { putString(Constants.PREF_DNS_HOSTNAMES, encrypted) }
+			encryptedPrefs.edit { putString(Constants.PREF_DNS_HOSTNAMES, encrypted) }
 		}
 	}
 
@@ -434,7 +461,7 @@ object DnsSettingsRepository {
 				scope.launch {
 					val encryptedSet =
 						importedBlacklist.map { EncryptionManager.encrypt(it) }.toSet()
-					sharedPreferences.edit {
+					encryptedPrefs.edit {
 						putStringSet(
 							Constants.PREF_SSID_BLACKLIST,
 							encryptedSet,

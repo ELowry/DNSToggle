@@ -4,25 +4,8 @@
 		domain="sharedpref"
 		path="." />
 
-	<!-- Exclude encrypted properties whichh cannot be restored -->
+	<!-- Exclude encrypted properties which cannot be restored -->
 	<exclude
 		domain="sharedpref"
-		key="dns_hostnames"
-		path="app_prefs_v2.xml" />
-	<exclude
-		domain="sharedpref"
-		key="ssid_blacklist"
-		path="app_prefs_v2.xml" />
-	<exclude
-		domain="sharedpref"
-		key="ssid_auto_detected_blacklist"
-		path="app_prefs_v2.xml" />
-	<exclude
-		domain="sharedpref"
-		key="last_used_hostname"
-		path="app_prefs_v2.xml" />
-	<exclude
-		domain="sharedpref"
-		key="vpn_dns_hostname"
-		path="app_prefs_v2.xml" />
+		path="encrypted_prefs.xml" />
 </full-backup-content>
