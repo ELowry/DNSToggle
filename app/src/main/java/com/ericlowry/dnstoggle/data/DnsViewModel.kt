@@ -115,19 +115,54 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	}
 
 	private val preferenceChangeListener =
-		SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+		SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
 			when (key) {
-				Constants.PREF_AUTO_BLACKLIST,
-				Constants.PREF_AUTO_WHITELIST,
-				Constants.PREF_HIDE_LAUNCHER_ICON,
-				Constants.PREF_DISABLE_DNS_TEST,
-				Constants.PREF_SHOW_TOAST,
-				Constants.PREF_IS_IN_VPN_OVERRIDE,
-				Constants.PREF_ACTIVE_SSID_OVERRIDE,
-				Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED,
-				Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
-				Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS,
-					-> loadSettings()
+				Constants.PREF_AUTO_BLACKLIST -> {
+					_autoBlacklistEnabled.value = prefs.getBoolean(key, false)
+				}
+
+				Constants.PREF_AUTO_WHITELIST -> {
+					_autoWhitelistEnabled.value = prefs.getBoolean(key, false)
+				}
+
+				Constants.PREF_HIDE_LAUNCHER_ICON -> {
+					_hideLauncherIcon.value = prefs.getBoolean(key, false)
+				}
+
+				Constants.PREF_DISABLE_DNS_TEST -> {
+					_disableDnsTest.value = prefs.getBoolean(key, false)
+					refreshDisplayList()
+				}
+
+				Constants.PREF_SHOW_TOAST -> {
+					_showToastEnabled.value = prefs.getBoolean(key, true)
+				}
+
+				Constants.PREF_IS_IN_VPN_OVERRIDE -> {
+					_isInVpnOverride.value = prefs.getBoolean(key, false)
+				}
+
+				Constants.PREF_ACTIVE_SSID_OVERRIDE -> {
+					_activeSsidOverride.value = prefs.getString(key, null)
+				}
+
+				Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED -> {
+					_connectivityWatchdogEnabled.value = prefs.getBoolean(key, false)
+				}
+
+				Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS -> {
+					_connectivityWatchdogDebounceSeconds.value = prefs.getInt(
+						key,
+						Constants.CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS
+					)
+				}
+
+				Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS -> {
+					_connectivityWatchdogProbeTargets.value = prefs.getString(
+						key,
+						Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
+					)
+				}
 			}
 		}
 

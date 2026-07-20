@@ -52,6 +52,7 @@ class WifiMonitoringService : Service() {
 	private val serviceScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
 	private var debounceJob: Job? = null
 	private var connectivityWatchdogJob: Job? = null
+	private var autoRecoveryJob: Job? = null
 	private var retriedAutoBlacklistForNetwork: Network? = null
 
 	private val dnsSettingsObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
@@ -120,6 +121,9 @@ class WifiMonitoringService : Service() {
 
 	override fun onDestroy() {
 		serviceScope.cancel()
+		debounceJob = null
+		connectivityWatchdogJob = null
+		autoRecoveryJob = null
 		unregisterNetworkCallback()
 		contentResolver.unregisterContentObserver(dnsSettingsObserver)
 		getPrefs().unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
@@ -286,6 +290,8 @@ class WifiMonitoringService : Service() {
 		if (isVpnActive && vpnOverrideEnabled) {
 			connectivityWatchdogJob?.cancel()
 			connectivityWatchdogJob = null
+			autoRecoveryJob?.cancel()
+			autoRecoveryJob = null
 			if (!isInVpnOverride) {
 				// Enter VPN override
 				saveCurrentDnsState()
@@ -306,6 +312,8 @@ class WifiMonitoringService : Service() {
 		if (currentSsid == null || currentSsid == "<unknown ssid>" || currentSsid.isEmpty()) {
 			connectivityWatchdogJob?.cancel()
 			connectivityWatchdogJob = null
+			autoRecoveryJob?.cancel()
+			autoRecoveryJob = null
 			if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != null) {
 				prefs.edit { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) }
 			}
@@ -317,6 +325,8 @@ class WifiMonitoringService : Service() {
 		if (blacklist.contains(currentSsid)) {
 			connectivityWatchdogJob?.cancel()
 			connectivityWatchdogJob = null
+			autoRecoveryJob?.cancel()
+			autoRecoveryJob = null
 			if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != currentSsid) {
 				prefs.edit { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, currentSsid) }
 			}
@@ -464,7 +474,8 @@ class WifiMonitoringService : Service() {
 			Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
 		) ?: Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
 
-		serviceScope.launch {
+		autoRecoveryJob?.cancel()
+		autoRecoveryJob = serviceScope.launch {
 			if (ConnectivityWatchdog.isRecovered(hostname, probeTargets)) {
 				DnsSettingsRepository.removeFromBlacklist(ssid)
 				dispatchStatusNotification(

@@ -51,28 +51,30 @@ object DnsSettingsRepository {
 		_vpnOverrideEnabled.value =
 			sharedPreferences.getBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, false)
 
-		val encryptedVpnHostname =
-			sharedPreferences.getString(Constants.PREF_VPN_DNS_HOSTNAME, null)
-		_vpnDnsHostname.value = if (encryptedVpnHostname == null) {
-			null
-		} else {
-			when (val result = EncryptionManager.decrypt(encryptedVpnHostname)) {
-				is EncryptionManager.DecryptResult.Success -> {
-					if (result.data == "off") {
-						// Migration from app versions <1.6
-						sharedPreferences.edit { remove(Constants.PREF_VPN_DNS_HOSTNAME) }
-						null
-					} else {
-						result.data
+		scope.launch {
+			val encryptedVpnHostname =
+				sharedPreferences.getString(Constants.PREF_VPN_DNS_HOSTNAME, null)
+			_vpnDnsHostname.value = if (encryptedVpnHostname == null) {
+				null
+			} else {
+				when (val result = EncryptionManager.decrypt(encryptedVpnHostname)) {
+					is EncryptionManager.DecryptResult.Success -> {
+						if (result.data == "off") {
+							// Migration from app versions <1.6
+							sharedPreferences.edit { remove(Constants.PREF_VPN_DNS_HOSTNAME) }
+							null
+						} else {
+							result.data
+						}
 					}
-				}
 
-				is EncryptionManager.DecryptResult.KeyInvalidated -> {
-					_isKeyInvalidated.value = true
-					null
-				}
+					is EncryptionManager.DecryptResult.KeyInvalidated -> {
+						_isKeyInvalidated.value = true
+						null
+					}
 
-				else -> null
+					else -> null
+				}
 			}
 		}
 	}

@@ -91,8 +91,16 @@ class HostnamesAdapter(
 	override fun onBindViewHolder(holder: ViewHolder, position: Int, payloads: List<Any>) {
 		val dnsEntry = getItem(position)
 		val hostname = dnsEntry.hostname
-		val label = dnsEntry.label
 		val context = holder.itemView.context
+
+		if (payloads.size == 1 && payloads.contains("metadata")) {
+			val reachability = reachabilityMap[hostname] ?: DnsViewModel.ReachabilityState.IDLE
+			val isActive = (hostname == activeSpecifier) && isToggleChecked
+			updateStatusTextOnly(holder, reachability, isActive)
+			return
+		}
+
+		val label = dnsEntry.label
 
 		if (payloads.contains("saved")) {
 			triggerSaveAnimation(holder)
@@ -166,75 +174,84 @@ class HostnamesAdapter(
 				}
 			}
 
-			if (isActive) {
-				holder.tvStatus.visibility = View.VISIBLE
-
-				when (reachability) {
-					DnsViewModel.ReachabilityState.TESTING -> {
-						holder.tvStatus.text = context.getString(R.string.status_testing_dns)
-						holder.tvStatus.setTextColor(
-							MaterialColors.getColor(
-								holder.itemView,
-								android.R.attr.textColorSecondary,
-							),
-						)
-					}
-
-					DnsViewModel.ReachabilityState.REACHABLE -> {
-						holder.tvStatus.text = context.getString(R.string.status_active_reachable)
-						holder.tvStatus.setTextColor(
-							MaterialColors.getColor(
-								holder.itemView,
-								android.R.attr.colorPrimary,
-							),
-						)
-					}
-
-					DnsViewModel.ReachabilityState.UNREACHABLE -> {
-						holder.tvStatus.text = context.getString(R.string.warning_unreachable_dns)
-						holder.tvStatus.setTextColor(
-							MaterialColors.getColor(
-								holder.itemView,
-								R.attr.warning_color,
-							),
-						)
-					}
-
-					else -> holder.tvStatus.visibility = View.GONE
-				}
-			} else {
-				when (reachability) {
-					DnsViewModel.ReachabilityState.TESTING -> {
-						holder.tvStatus.visibility = View.VISIBLE
-						holder.tvStatus.text = context.getString(R.string.status_testing_dns)
-						holder.tvStatus.setTextColor(
-							MaterialColors.getColor(
-								holder.itemView,
-								android.R.attr.textColorSecondary,
-							),
-						)
-					}
-
-					DnsViewModel.ReachabilityState.UNREACHABLE -> {
-						holder.tvStatus.visibility = View.VISIBLE
-						holder.tvStatus.text = context.getString(R.string.warning_unreachable_dns)
-						holder.tvStatus.setTextColor(
-							MaterialColors.getColor(
-								holder.itemView,
-								R.attr.warning_color,
-							),
-						)
-					}
-
-					else -> holder.tvStatus.visibility = View.GONE
-				}
-			}
+			updateStatusTextOnly(holder, reachability, isActive)
 
 			holder.btnEdit.setOnClickListener { editCallback(hostname) }
 			holder.btnDelete.setOnClickListener { deleteCallback(hostname) }
 			holder.btnAdd.setOnClickListener { addInPlaceCallback(hostname) }
 			holder.itemView.setOnClickListener {
 				if (!isActive) clickCallback(hostname)
+			}
+		}
+	}
+
+	private fun updateStatusTextOnly(
+		holder: ViewHolder,
+		reachability: DnsViewModel.ReachabilityState,
+		isActive: Boolean
+	) {
+		val context = holder.itemView.context
+		if (isActive) {
+			holder.tvStatus.visibility = View.VISIBLE
+
+			when (reachability) {
+				DnsViewModel.ReachabilityState.TESTING -> {
+					holder.tvStatus.text = context.getString(R.string.status_testing_dns)
+					holder.tvStatus.setTextColor(
+						MaterialColors.getColor(
+							holder.itemView,
+							android.R.attr.textColorSecondary,
+						),
+					)
+				}
+
+				DnsViewModel.ReachabilityState.REACHABLE -> {
+					holder.tvStatus.text = context.getString(R.string.status_active_reachable)
+					holder.tvStatus.setTextColor(
+						MaterialColors.getColor(
+							holder.itemView,
+							android.R.attr.colorPrimary,
+						),
+					)
+				}
+
+				DnsViewModel.ReachabilityState.UNREACHABLE -> {
+					holder.tvStatus.text = context.getString(R.string.warning_unreachable_dns)
+					holder.tvStatus.setTextColor(
+						MaterialColors.getColor(
+							holder.itemView,
+							R.attr.warning_color,
+						),
+					)
+				}
+
+				else -> holder.tvStatus.visibility = View.GONE
+			}
+		} else {
+			when (reachability) {
+				DnsViewModel.ReachabilityState.TESTING -> {
+					holder.tvStatus.visibility = View.VISIBLE
+					holder.tvStatus.text = context.getString(R.string.status_testing_dns)
+					holder.tvStatus.setTextColor(
+						MaterialColors.getColor(
+							holder.itemView,
+							android.R.attr.textColorSecondary,
+						),
+					)
+				}
+
+				DnsViewModel.ReachabilityState.UNREACHABLE -> {
+					holder.tvStatus.visibility = View.VISIBLE
+					holder.tvStatus.text = context.getString(R.string.warning_unreachable_dns)
+					holder.tvStatus.setTextColor(
+						MaterialColors.getColor(
+							holder.itemView,
+							R.attr.warning_color,
+						),
+					)
+				}
+
+				else -> holder.tvStatus.visibility = View.GONE
 			}
 		}
 	}
