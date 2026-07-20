@@ -49,7 +49,7 @@ By long-pressing the Quick Settings tile, you can access the configuration menu 
 - **Hide App Icon**:  
   Optionally hide the app from your launcher drawer to keep your home screen clean.
 - **USB Debugging Tile**:  
-  (_Required Developer Mode_) Tap the app version number at the bottom of the settings menu 5 times in quick succession to add a USB Debugging Quick Settings tile.
+  (_Requires Developer Mode_) Tap the app version number at the bottom of the settings menu 5 times in quick succession to add a USB Debugging Quick Settings tile.
 
 ## Usage
 
