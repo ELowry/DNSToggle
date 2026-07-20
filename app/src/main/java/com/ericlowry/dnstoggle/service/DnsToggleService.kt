@@ -160,7 +160,10 @@ class DnsToggleService : TileService() {
 		val intent = Intent(this, MainActivity::class.java).apply {
 			flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
 			if (showPermissionDialog) putExtra("show_permission_dialog", true)
-			if (focusDnsInput) putExtra(MainActivity.EXTRA_FOCUS_DNS_INPUT, true)
+			if (focusDnsInput) {
+				putExtra(MainActivity.EXTRA_FOCUS_DNS_INPUT, true)
+				putExtra(MainActivity.EXTRA_ENABLE_DNS_AFTER_SAVE, true)
+			}
 		}
 
 		TileServiceCompat.startActivityAndCollapse(this, intent)

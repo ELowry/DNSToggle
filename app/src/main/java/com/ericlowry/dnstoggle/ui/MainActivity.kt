@@ -70,6 +70,7 @@ class MainActivity : AppCompatActivity() {
 	companion object {
 		private const val TAG = "MainActivity"
 		const val EXTRA_FOCUS_DNS_INPUT = "focus_dns_input"
+		const val EXTRA_ENABLE_DNS_AFTER_SAVE = "enable_dns_after_save"
 	}
 
 	private lateinit var dnsViewModel: DnsViewModel
@@ -255,7 +256,8 @@ class MainActivity : AppCompatActivity() {
 
 		if (intent?.getBooleanExtra(EXTRA_FOCUS_DNS_INPUT, false) == true) {
 			isRedirectedFromTile = true
-			showAddHostnameDialog()
+			val enableAfterSave = intent.getBooleanExtra(EXTRA_ENABLE_DNS_AFTER_SAVE, false)
+			showAddHostnameDialog(enableAfterSave = enableAfterSave)
 		}
 
 		if (intent?.action == Intent.ACTION_VIEW) {
@@ -953,7 +955,10 @@ class MainActivity : AppCompatActivity() {
 		itemTouchHelper.attachToRecyclerView(dnsHostnameListContainer)
 	}
 
-	private fun showAddHostnameDialog(existingHostname: String? = null) {
+	private fun showAddHostnameDialog(
+		existingHostname: String? = null,
+		enableAfterSave: Boolean = false
+	) {
 		val existingEntry = existingHostname?.let { host ->
 			dnsViewModel.dnsHostnames.value?.find { it.hostname == host }
 		}
@@ -968,6 +973,10 @@ class MainActivity : AppCompatActivity() {
 					dnsViewModel.updateHostname(existingHostname, newHostname, newLabel)
 				} else {
 					dnsViewModel.addHostname(newHostname, newLabel)
+				}
+
+				if (enableAfterSave) {
+					dnsViewModel.togglePrivateDns(true, newHostname)
 				}
 			} else {
 				Toast.makeText(this, R.string.error_invalid_dns_host, Toast.LENGTH_SHORT).show()
