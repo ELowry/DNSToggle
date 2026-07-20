@@ -3,11 +3,51 @@
 	<cloud-backup>
 		<include
 			domain="sharedpref"
-			path="app_prefs.xml" />
+			path="." />
+		<exclude
+			domain="sharedpref"
+			path="app_prefs_v2.xml"
+			key="dns_hostnames" />
+		<exclude
+			domain="sharedpref"
+			path="app_prefs_v2.xml"
+			key="ssid_blacklist" />
+		<exclude
+			domain="sharedpref"
+			path="app_prefs_v2.xml"
+			key="ssid_auto_detected_blacklist" />
+		<exclude
+			domain="sharedpref"
+			path="app_prefs_v2.xml"
+			key="last_used_hostname" />
+		<exclude
+			domain="sharedpref"
+			path="app_prefs_v2.xml"
+			key="vpn_dns_hostname" />
 	</cloud-backup>
 	<device-transfer>
 		<include
 			domain="sharedpref"
-			path="app_prefs.xml" />
+			path="." />
+		<exclude
+			domain="sharedpref"
+			path="app_prefs_v2.xml"
+			key="dns_hostnames" />
+		<exclude
+			domain="sharedpref"
+			path="app_prefs_v2.xml"
+			key="ssid_blacklist" />
+		<exclude
+			domain="sharedpref"
+			path="app_prefs_v2.xml"
+			key="ssid_auto_detected_blacklist" />
+		<exclude
+			domain="sharedpref"
+			path="app_prefs_v2.xml"
+			key="last_used_hostname" />
+		<exclude
+			domain="sharedpref"
+			path="app_prefs_v2.xml"
+			key="vpn_dns_hostname" />
 	</device-transfer>
 </data-extraction-rules>
