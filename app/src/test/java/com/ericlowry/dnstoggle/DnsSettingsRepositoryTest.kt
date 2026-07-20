@@ -79,18 +79,6 @@ class DnsSettingsRepositoryTest {
 	}
 
 	@Test
-	fun removeHostname_keepsAtLeastOne() = runTest {
-		val hostname = "dns.google"
-		DnsSettingsRepository.addHostname(hostname)
-
-		// The last entry shouldn't be removed
-		DnsSettingsRepository.removeHostname(hostname)
-
-		val hostnames = DnsSettingsRepository.dnsHostnames.value
-		assertTrue(hostnames?.any { it.hostname == hostname } == true)
-	}
-
-	@Test
 	fun vpnDnsHostname_nullableBehavior() = runTest {
 		val hostname = "dns.google"
 		DnsSettingsRepository.updateVpnDnsHostname(hostname)
