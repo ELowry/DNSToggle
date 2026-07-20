@@ -2,5 +2,10 @@
 <full-backup-content>
 	<include
 		domain="sharedpref"
-		path="app_prefs.xml" />
+		path="." />
+
+	<!-- Exclude encrypted properties which cannot be restored -->
+	<exclude
+		domain="sharedpref"
+		path="encrypted_prefs.xml" />
 </full-backup-content>

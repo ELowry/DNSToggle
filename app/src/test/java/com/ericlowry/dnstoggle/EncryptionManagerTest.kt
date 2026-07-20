@@ -12,13 +12,36 @@ import org.robolectric.RobolectricTestRunner
 class EncryptionManagerTest {
 
 	@Test
-	fun encryptDecrypt_worksCorrectly() {
+	fun encryptDecrypt_worksWithPrefix() {
 		val original = "secret_dns_hostname"
 		val encrypted = EncryptionManager.encrypt(original)
-		val result = EncryptionManager.decrypt(encrypted)
 
+		assertTrue("Should have prefix", encrypted.startsWith("enc:"))
+
+		val result = EncryptionManager.decrypt(encrypted)
 		assertTrue(result is EncryptionManager.DecryptResult.Success)
 		assertEquals(original, (result as EncryptionManager.DecryptResult.Success).data)
+	}
+
+	@Test
+	fun decrypt_handlesLegacyData() {
+		// Fallback for app version <1.6, stripped of prefix
+		val original = "legacy_data"
+		val encryptedWithPrefix = EncryptionManager.encrypt(original)
+		val legacyEncrypted = encryptedWithPrefix.removePrefix("enc:")
+
+		val result = EncryptionManager.decrypt(legacyEncrypted)
+		assertTrue(result is EncryptionManager.DecryptResult.Success)
+		assertEquals(original, (result as EncryptionManager.DecryptResult.Success).data)
+	}
+
+	@Test
+	fun decrypt_fallsBackToPlaintext() {
+		val plaintext = "not_encrypted_hostname"
+		val result = EncryptionManager.decrypt(plaintext)
+
+		assertTrue(result is EncryptionManager.DecryptResult.Success)
+		assertEquals(plaintext, (result as EncryptionManager.DecryptResult.Success).data)
 	}
 
 	@Test
@@ -28,13 +51,9 @@ class EncryptionManagerTest {
 	}
 
 	@Test
-	fun decrypt_handlesCorruptedData() {
-		// Invalid Base64
-		val result1 = EncryptionManager.decrypt("not-base64-!")
-		assertEquals(EncryptionManager.DecryptResult.Failed, result1)
-
-		// Valid Base64 but invalid format
-		val result2 = EncryptionManager.decrypt("SGVsbG8gd29ybGQ=")
-		assertEquals(EncryptionManager.DecryptResult.Failed, result2)
+	fun decrypt_handlesPrefixedCorruptedData() {
+		// If it starts with enc: but is corrupted, it should fail (not fallback to plaintext)
+		val result = EncryptionManager.decrypt("enc:invalid-data")
+		assertEquals(EncryptionManager.DecryptResult.Failed, result)
 	}
 }

@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/cardDnsSettings"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	app:cardCornerRadius="12dp"
+	app:cardElevation="0dp"
+	app:strokeColor="?attr/colorOutline"
+	app:strokeWidth="1dp"
+	tools:showIn="@layout/activity_main">
+
+	<androidx.constraintlayout.widget.ConstraintLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:padding="16dp">
+
+		<TextView
+			android:id="@+id/tvToggleLabel"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:text="@string/private_dns"
+			android:textAppearance="?attr/textAppearanceTitleMedium"
+			android:textStyle="bold"
+			app:layout_constraintBottom_toBottomOf="@id/switchPrivateDns"
+			app:layout_constraintEnd_toStartOf="@id/progressRootAction"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toTopOf="@id/switchPrivateDns" />
+
+		<com.google.android.material.progressindicator.CircularProgressIndicator
+			android:id="@+id/progressRootAction"
+			android:layout_width="24dp"
+			android:layout_height="24dp"
+			android:layout_marginEnd="8dp"
+			android:indeterminate="true"
+			android:visibility="gone"
+			app:indicatorSize="24dp"
+			app:layout_constraintBottom_toBottomOf="@id/switchPrivateDns"
+			app:layout_constraintEnd_toStartOf="@id/switchPrivateDns"
+			app:layout_constraintTop_toTopOf="@id/switchPrivateDns" />
+
+		<com.google.android.material.materialswitch.MaterialSwitch
+			android:id="@+id/switchPrivateDns"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:contentDescription="@string/private_dns"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintTop_toTopOf="parent" />
+
+		<LinearLayout
+			android:id="@+id/dnsHostnamesHeader"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="16dp"
+			android:gravity="center_vertical"
+			android:orientation="horizontal"
+			app:layout_constraintTop_toBottomOf="@id/switchPrivateDns">
+
+			<TextView
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:text="@string/custom_dns_provider"
+				android:textAppearance="?attr/textAppearanceBodyLarge"
+				android:textStyle="bold" />
+
+			<ImageButton
+				android:id="@+id/btnAddHostname"
+				android:layout_width="48dp"
+				android:layout_height="48dp"
+				android:background="?attr/selectableItemBackgroundBorderless"
+				android:contentDescription="@string/add_hostname"
+				android:src="@drawable/ic_add" />
+		</LinearLayout>
+
+		<androidx.recyclerview.widget.RecyclerView
+			android:id="@+id/dnsHostnameListContainer"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:nestedScrollingEnabled="false"
+			android:orientation="vertical"
+			app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+			app:layout_constraintTop_toBottomOf="@id/dnsHostnamesHeader"
+			tools:listitem="@layout/item_hostname" />
+
+		<com.google.android.material.divider.MaterialDivider
+			android:id="@+id/dividerDnsSettings"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="8dp"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@id/dnsHostnameListContainer" />
+
+		<LinearLayout
+			android:id="@+id/rowDisableDnsTest"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="12dp"
+			android:gravity="center_vertical"
+			android:minHeight="48dp"
+			android:orientation="horizontal"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@id/dividerDnsSettings">
+
+			<LinearLayout
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:orientation="vertical">
+
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/disable_dns_test"
+					android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+				<TextView
+					android:id="@+id/tvDisableDnsTestSummary"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/disable_dns_test_summary"
+					android:textAppearance="?attr/textAppearanceBodyMedium"
+					android:textColor="?attr/colorOnSurfaceVariant" />
+			</LinearLayout>
+
+			<com.google.android.material.materialswitch.MaterialSwitch
+				android:id="@+id/switchDisableDnsTest"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_marginStart="16dp" />
+		</LinearLayout>
+	</androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

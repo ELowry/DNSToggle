@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:id="@+id/cardMainPermission"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	app:cardBackgroundColor="?attr/colorSecondaryContainer"
+	app:cardElevation="0dp"
+	app:strokeColor="?attr/warning_color"
+	app:strokeWidth="1.5dp">
+
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:gravity="center_vertical"
+		android:orientation="horizontal"
+		android:padding="12dp">
+
+		<ImageView
+			android:layout_width="24dp"
+			android:layout_height="24dp"
+			android:contentDescription="@null"
+			android:src="@drawable/ic_warning"
+			app:tint="?attr/warning_color" />
+
+		<LinearLayout
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_marginStart="12dp"
+			android:layout_marginEnd="12dp"
+			android:layout_weight="1"
+			android:orientation="vertical">
+
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="@string/main_permission_title"
+				android:textColor="?attr/colorOnSecondaryContainer"
+				android:textStyle="bold" />
+
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="@string/main_permission_message"
+				android:textAppearance="?attr/textAppearanceBodySmall"
+				android:textColor="?attr/colorOnSecondaryContainer" />
+		</LinearLayout>
+
+		<Button
+			android:id="@+id/btnFixMainPermission"
+			style="@style/Widget.Material3.Button.TextButton"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/btn_fix_permission"
+			android:textColor="?attr/warning_color" />
+	</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

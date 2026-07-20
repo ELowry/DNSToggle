@@ -42,8 +42,9 @@ object DnsManager {
 		if (enabled) {
 			if (effectiveHostname.isNullOrEmpty()) {
 				// Try last used hostname
+				val encryptedPrefs = app.getEncryptedPrefs()
 				val encryptedHostname =
-					sharedPreferences.getString(Constants.PREF_LAST_USED_HOSTNAME, null)
+					encryptedPrefs.getString(Constants.PREF_LAST_USED_HOSTNAME, null)
 				if (encryptedHostname != null) {
 					effectiveHostname =
 						when (val result = EncryptionManager.decrypt(encryptedHostname)) {
@@ -75,7 +76,7 @@ object DnsManager {
 					DnsSettingsRepository.updateVpnDnsHostname(hostname)
 				}
 			} else {
-				DnsSettingsRepository.updateVpnDnsHostname("off")
+				DnsSettingsRepository.updateVpnDnsHostname(null)
 			}
 		}
 
@@ -109,7 +110,7 @@ object DnsManager {
 
 		if (!handledByAuto) {
 			effectiveHostname?.let { hostname ->
-				sharedPreferences.edit {
+				app.getEncryptedPrefs().edit {
 					putString(
 						Constants.PREF_LAST_USED_HOSTNAME,
 						EncryptionManager.encrypt(hostname)
@@ -126,7 +127,7 @@ object DnsManager {
 						Constants.SETTINGS_PRIVATE_DNS_SPECIFIER,
 						hostname
 					)
-					sharedPreferences.edit {
+					app.getEncryptedPrefs().edit {
 						putString(
 							Constants.PREF_LAST_USED_HOSTNAME,
 							EncryptionManager.encrypt(hostname)
@@ -135,6 +136,9 @@ object DnsManager {
 				}
 			}
 			Settings.Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE, newMode)
+			if (!handledByAuto) {
+				sharedPreferences.edit { putString(Constants.PREF_PREFERRED_DNS_MODE, newMode) }
+			}
 			if (!isInteractiveMainUi && sharedPreferences.getBoolean(
 					Constants.PREF_SHOW_TOAST,
 					true

@@ -48,14 +48,54 @@ class DnsSettingsRepositoryTest {
 	}
 
 	@Test
-	fun removeHostname_keepsAtLeastOne() = runTest {
+	fun addToBlacklist_autoDetected_appearsInBothSets() = runTest {
+		val ssid = "AutoDetectedWiFi"
+
+		DnsSettingsRepository.addToBlacklist(ssid, autoDetected = true)
+
+		assertTrue(DnsSettingsRepository.blacklist.value?.contains(ssid) == true)
+		assertTrue(DnsSettingsRepository.autoDetectedBlacklist.value?.contains(ssid) == true)
+	}
+
+	@Test
+	fun addToBlacklist_manual_notInAutoDetectedSet() = runTest {
+		val ssid = "ManualWiFi"
+
+		DnsSettingsRepository.addToBlacklist(ssid)
+
+		assertTrue(DnsSettingsRepository.blacklist.value?.contains(ssid) == true)
+		assertTrue(DnsSettingsRepository.autoDetectedBlacklist.value?.contains(ssid) != true)
+	}
+
+	@Test
+	fun removeFromBlacklist_autoDetected_removedFromBothSets() = runTest {
+		val ssid = "AutoDetectedRemovable"
+
+		DnsSettingsRepository.addToBlacklist(ssid, autoDetected = true)
+		DnsSettingsRepository.removeFromBlacklist(ssid)
+
+		assertTrue(DnsSettingsRepository.blacklist.value?.contains(ssid) != true)
+		assertTrue(DnsSettingsRepository.autoDetectedBlacklist.value?.contains(ssid) != true)
+	}
+
+	@Test
+	fun vpnDnsHostname_nullableBehavior() = runTest {
+		val hostname = "dns.google"
+		DnsSettingsRepository.updateVpnDnsHostname(hostname)
+		assertEquals(hostname, DnsSettingsRepository.vpnDnsHostname.value)
+
+		DnsSettingsRepository.updateVpnDnsHostname(null)
+		assertEquals(null, DnsSettingsRepository.vpnDnsHostname.value)
+	}
+
+	@Test
+	fun removeHostname_allowsEmptyList() = runTest {
 		val hostname = "dns.google"
 		DnsSettingsRepository.addHostname(hostname)
 
-		// The last entry shouldn't be removed
 		DnsSettingsRepository.removeHostname(hostname)
 
 		val hostnames = DnsSettingsRepository.dnsHostnames.value
-		assertTrue(hostnames?.any { it.hostname == hostname } == true)
+		assertTrue(hostnames?.isEmpty() == true)
 	}
 }

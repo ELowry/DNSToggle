@@ -10,8 +10,8 @@ android {
 		applicationId = "com.ericlowry.dnstoggle"
 		minSdk = 28
 		targetSdk = 37
-		versionCode = 16
-		versionName = "1.5.2"
+		versionCode = 17
+		versionName = "1.6.0"
 	}
 
 	buildTypes {
@@ -33,6 +33,10 @@ android {
 		sourceCompatibility = JavaVersion.VERSION_11
 		targetCompatibility = JavaVersion.VERSION_11
 	}
+	buildFeatures {
+		aidl = true
+		buildConfig = true
+	}
 	dependenciesInfo {
 		includeInApk = false
 		includeInBundle = false
@@ -52,6 +56,8 @@ dependencies {
 	implementation(libs.androidx.activity)
 	implementation(libs.androidx.constraintlayout)
 	implementation(libs.androidx.lifecycle.viewmodel.ktx)
+	implementation(libs.shizuku.api)
+	implementation(libs.shizuku.provider)
 	testImplementation(libs.junit)
 	testImplementation(libs.robolectric)
 	testImplementation(libs.kotlinx.coroutines.test)

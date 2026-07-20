@@ -20,6 +20,7 @@ import com.ericlowry.dnstoggle.service.DnsToggleService
 import com.ericlowry.dnstoggle.service.TileServiceCompat
 import com.ericlowry.dnstoggle.service.UsbDebuggingTileService
 import com.ericlowry.dnstoggle.service.WifiMonitoringService
+import com.ericlowry.dnstoggle.util.EncryptionManager
 import com.google.android.material.color.DynamicColors
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,7 +36,8 @@ class DnsToggleApplication : Application() {
 		SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
 			if (key == Constants.PREF_AUTO_BLACKLIST ||
 				key == Constants.PREF_AUTO_WHITELIST ||
-				key == Constants.PREF_VPN_OVERRIDE_ENABLED
+				key == Constants.PREF_VPN_OVERRIDE_ENABLED ||
+				key == Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED
 			) {
 				updateWifiMonitoringRegistration()
 			}
@@ -61,6 +63,33 @@ class DnsToggleApplication : Application() {
 
 	private val dnsObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
 		override fun onChange(selfChange: Boolean) {
+			val resolver = contentResolver
+			val newMode = Settings.Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
+			val prefs = getPrefs()
+			val isInVpn = prefs.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)
+			val activeSsid = prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null)
+
+			if (!isInVpn && activeSsid == null && newMode != null) {
+				prefs.edit {
+					putString(Constants.PREF_PREFERRED_DNS_MODE, newMode)
+				}
+				if (newMode == Constants.DNS_MODE_HOSTNAME) {
+					val newSpecifier =
+						Settings.Global.getString(
+							resolver,
+							Constants.SETTINGS_PRIVATE_DNS_SPECIFIER
+						)
+					if (!newSpecifier.isNullOrEmpty()) {
+						getEncryptedPrefs().edit {
+							putString(
+								Constants.PREF_LAST_USED_HOSTNAME,
+								EncryptionManager.encrypt(newSpecifier)
+							)
+						}
+					}
+				}
+			}
+
 			TileServiceCompat.requestListeningState(
 				this@DnsToggleApplication,
 				ComponentName(this@DnsToggleApplication, DnsToggleService::class.java)
@@ -116,20 +145,27 @@ class DnsToggleApplication : Application() {
 		return getSharedPreferences("app_prefs_v2", MODE_PRIVATE)
 	}
 
+	fun getEncryptedPrefs(): SharedPreferences {
+		return getSharedPreferences("encrypted_prefs", MODE_PRIVATE)
+	}
+
 	private fun initializeNotificationChannels() {
 		val manager = getSystemService(NotificationManager::class.java)
 
 		val statusChannel = NotificationChannel(
 			Constants.CHANNEL_ID_ALERT,
-			getString(R.string.notif_channel_name),
+			getString(R.string.notif_channel_alerts_name),
 			NotificationManager.IMPORTANCE_DEFAULT,
-		)
+		).apply {
+			description = getString(R.string.notif_channel_alerts_desc)
+		}
 
 		val serviceChannel = NotificationChannel(
 			Constants.CHANNEL_ID_SERVICE,
-			getString(R.string.service_notif_title),
+			getString(R.string.notif_channel_service_name),
 			NotificationManager.IMPORTANCE_MIN,
 		).apply {
+			description = getString(R.string.notif_channel_service_desc)
 			setShowBadge(false)
 			enableLights(false)
 			enableVibration(false)
@@ -176,7 +212,8 @@ class DnsToggleApplication : Application() {
 		val sharedPreferences = getPrefs()
 		val vpnEnabled = sharedPreferences.getBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, false)
 		val autoEnabled = sharedPreferences.getBoolean(Constants.PREF_AUTO_BLACKLIST, false) ||
-				sharedPreferences.getBoolean(Constants.PREF_AUTO_WHITELIST, false)
+				sharedPreferences.getBoolean(Constants.PREF_AUTO_WHITELIST, false) ||
+				sharedPreferences.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false)
 
 		val blacklist = DnsSettingsRepository.blacklist.value
 		val hasActiveBlacklist = !blacklist.isNullOrEmpty()

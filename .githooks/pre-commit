@@ -6,7 +6,8 @@ check_length() {
     local file="$1"
     local max_len="$2"
 
-    local char_count=$(wc -m < "$file")
+    local char_count
+    char_count=$(wc -m < "$file")
 
     if [ "$char_count" -gt "$max_len" ]; then
         echo "❌ Error: File '$file' is $char_count characters long (Max: $max_len)."

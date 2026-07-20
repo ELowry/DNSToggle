@@ -7,6 +7,10 @@ import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
 import com.ericlowry.dnstoggle.DnsToggleApplication
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.net.InetSocketAddress
+import java.net.Socket
 
 fun String.stripSsidQuotes(): String {
 	return this.removePrefix("\"").removeSuffix("\"")
@@ -49,6 +53,16 @@ object NetworkUtils {
 
 		return if (ssid == "<unknown ssid>" || ssid.isNullOrEmpty()) null else ssid
 	}
+
+	suspend fun isHostReachable(host: String, port: Int, timeoutMs: Int = 3000): Boolean =
+		withContext(Dispatchers.IO) {
+			try {
+				Socket().use { it.connect(InetSocketAddress(host, port), timeoutMs) }
+				true
+			} catch (e: Exception) {
+				false
+			}
+		}
 
 	fun isValidDnsHostname(hostname: String): Boolean {
 		val hostnameRegex =

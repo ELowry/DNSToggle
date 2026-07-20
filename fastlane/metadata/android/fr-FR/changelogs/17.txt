@@ -1,0 +1,4 @@
+- Option pour bloquer un SSID Wi-Fi automatiquement lorsque le DNS privé échoue.
+- Compatibilité Shizuku pour l'octroi de permissions.
+- Affiche l'addresse de DNS privé des paramètres de l'appareil lorsqu'elle n'est pas dans la liste pour pouvoir l'ajouter facilement.
+- Répare des bugs avec la tuide de Débogage USB et les sauvegardes locales et cloud.

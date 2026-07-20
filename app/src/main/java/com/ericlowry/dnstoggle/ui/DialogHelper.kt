@@ -6,10 +6,14 @@ import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
 import android.view.LayoutInflater
+import android.widget.ImageButton
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.ericlowry.dnstoggle.R
+import com.ericlowry.dnstoggle.util.RootUtils
+import com.ericlowry.dnstoggle.util.ShizukuUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -62,6 +66,7 @@ object DialogHelper {
 					.show(WindowInsetsCompat.Type.ime())
 			}
 		}
+
 		dialog.show()
 	}
 
@@ -114,6 +119,7 @@ object DialogHelper {
 					.show(WindowInsetsCompat.Type.ime())
 			}
 		}
+
 		dialog.show()
 	}
 
@@ -144,6 +150,42 @@ object DialogHelper {
 				d.dismiss()
 			}
 			.setNegativeButton(activity.getString(R.string.cancel)) { d, _ -> d.cancel() }
+			.create()
+
+		dialog.setOnShowListener {
+			inputTextField.requestFocus()
+			dialog.window?.let { window ->
+				WindowCompat.getInsetsController(window, inputTextField)
+					.show(WindowInsetsCompat.Type.ime())
+			}
+		}
+
+		dialog.show()
+	}
+
+	fun showTextInputDialog(
+		activity: Activity,
+		titleResId: Int,
+		hintResId: Int,
+		initialValue: String,
+		onSave: (String) -> Unit,
+	) {
+		val dialogView =
+			LayoutInflater.from(activity).inflate(R.layout.dialog_text_input, null, false)
+		val textInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayout)
+		val inputTextField = dialogView.findViewById<TextInputEditText>(R.id.etInput)
+
+		textInputLayout.hint = activity.getString(hintResId)
+		inputTextField.setText(initialValue)
+		inputTextField.setSelection(initialValue.length)
+
+		val dialog = MaterialAlertDialogBuilder(activity)
+			.setTitle(activity.getString(titleResId))
+			.setView(dialogView)
+			.setPositiveButton(activity.getString(R.string.ok)) { _, _ ->
+				onSave(inputTextField.text.toString().trim())
+			}
+			.setNegativeButton(activity.getString(R.string.cancel), null)
 			.create()
 
 		dialog.setOnShowListener {
@@ -227,18 +269,86 @@ object DialogHelper {
 		context: Context,
 		packageName: String,
 		onCopyCommand: (String) -> Unit,
-		onRetryRoot: () -> Unit
+		onAttemptElevatedGrant: () -> Unit
 	): AlertDialog {
 		val adbCommand = "adb shell pm grant $packageName android.permission.WRITE_SECURE_SETTINGS"
-		return MaterialAlertDialogBuilder(context)
+
+		val dialogView =
+			LayoutInflater.from(context).inflate(R.layout.dialog_permission_secure_settings, null)
+		val tvAdbCommand = dialogView.findViewById<TextView>(R.id.tvAdbCommand)
+		val btnCopy = dialogView.findViewById<ImageButton>(R.id.btnCopyAdbCommand)
+
+		tvAdbCommand.text = adbCommand
+		tvAdbCommand.contentDescription =
+			context.getString(R.string.adb_command_content_description, adbCommand)
+		btnCopy.setOnClickListener { onCopyCommand(adbCommand) }
+
+		val builder = MaterialAlertDialogBuilder(context)
 			.setTitle(context.getString(R.string.permission_required))
-			.setMessage(context.getString(R.string.permission_message))
-			.setPositiveButton(context.getString(R.string.copy_command)) { _, _ ->
-				onCopyCommand(adbCommand)
-			}
-			.setNeutralButton(R.string.retry_root) { _, _ -> onRetryRoot() }
+			.setView(dialogView)
 			.setNegativeButton(context.getString(R.string.ok), null)
-			.show()
+
+		val shizukuAvailable = ShizukuUtils.isAvailable()
+		val rootAvailable = RootUtils.isAvailable()
+
+		val btnTextRes = when {
+			shizukuAvailable -> R.string.grant_via_shizuku
+			rootAvailable -> R.string.grant_via_root
+			else -> R.string.grant_auto_fallback
+		}
+		builder.setPositiveButton(btnTextRes) { _, _ -> onAttemptElevatedGrant() }
+
+		return builder.show()
+	}
+
+	fun showNumberInputDialog(
+		activity: Activity,
+		titleResId: Int,
+		hintResId: Int,
+		initialValue: Int,
+		minValue: Int,
+		maxValue: Int,
+		invalidRangeMessageResId: Int,
+		onSave: (Int) -> Unit,
+	) {
+		val dialogView =
+			LayoutInflater.from(activity).inflate(R.layout.dialog_text_input, null, false)
+		val textInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayout)
+		val inputTextField = dialogView.findViewById<TextInputEditText>(R.id.etInput)
+
+		textInputLayout.hint = activity.getString(hintResId)
+		inputTextField.inputType = InputType.TYPE_CLASS_NUMBER
+		inputTextField.setText(initialValue.toString())
+		inputTextField.setSelection(inputTextField.text?.length ?: 0)
+
+		val dialog = MaterialAlertDialogBuilder(activity)
+			.setTitle(titleResId)
+			.setView(dialogView)
+			.setPositiveButton(activity.getString(R.string.ok), null)
+			.setNegativeButton(activity.getString(R.string.cancel), null)
+			.create()
+
+		dialog.setOnShowListener {
+			dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+				val value = inputTextField.text.toString().trim().toIntOrNull()
+				if (value == null || value < minValue || value > maxValue) {
+					android.widget.Toast.makeText(
+						activity,
+						invalidRangeMessageResId,
+						android.widget.Toast.LENGTH_SHORT
+					).show()
+				} else {
+					onSave(value)
+					dialog.dismiss()
+				}
+			}
+			inputTextField.requestFocus()
+			dialog.window?.let { window ->
+				WindowCompat.getInsetsController(window, inputTextField)
+					.show(WindowInsetsCompat.Type.ime())
+			}
+		}
+		dialog.show()
 	}
 
 	fun showPasswordDialog(
@@ -246,6 +356,7 @@ object DialogHelper {
 		titleResId: Int,
 		actionResId: Int,
 		messageResId: Int? = null,
+		onCancel: (() -> Unit)? = null,
 		onPasswordEntered: (CharArray) -> Unit,
 	) {
 		val dialogView =
@@ -261,14 +372,25 @@ object DialogHelper {
 			.setTitle(titleResId)
 			.setView(dialogView)
 			.setPositiveButton(actionResId) { _, _ ->
-				val password = inputTextField.text?.toString()?.toCharArray() ?: CharArray(0)
+				val editable = inputTextField.text
+				val password = if (!editable.isNullOrEmpty()) {
+					val chars = CharArray(editable.length)
+					for (i in chars.indices) {
+						chars[i] = editable[i]
+					}
+					chars
+				} else {
+					CharArray(0)
+				}
 				onPasswordEntered(password)
 			}
-			.setNegativeButton(R.string.cancel, null)
+			.setNegativeButton(R.string.cancel) { _, _ -> onCancel?.invoke() }
 
 		messageResId?.let { builder.setMessage(it) }
 
 		val dialog = builder.create()
+
+		dialog.setOnCancelListener { onCancel?.invoke() }
 
 		dialog.setOnShowListener {
 			val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
@@ -303,6 +425,7 @@ object DialogHelper {
 					.show(WindowInsetsCompat.Type.ime())
 			}
 		}
+
 		dialog.show()
 	}
 }

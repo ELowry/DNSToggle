@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/cardVpnSettings"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	app:cardCornerRadius="12dp"
+	app:cardElevation="0dp"
+	app:strokeColor="?attr/colorOutline"
+	app:strokeWidth="1dp">
+
+	<androidx.constraintlayout.widget.ConstraintLayout
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:padding="16dp">
+
+		<TextView
+			android:id="@+id/tvVpnOverrideTitle"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/vpn_override_title"
+			android:textAppearance="?attr/textAppearanceTitleMedium"
+			android:textStyle="bold"
+			app:layout_constraintBottom_toBottomOf="@id/btnVpnInfo"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toTopOf="@id/btnVpnInfo" />
+
+		<ImageButton
+			android:id="@+id/btnVpnInfo"
+			android:layout_width="48dp"
+			android:layout_height="48dp"
+			android:background="?attr/selectableItemBackgroundBorderless"
+			android:contentDescription="@string/info_content_description"
+			android:src="@drawable/ic_info"
+			app:layout_constraintHorizontal_bias="0.0"
+			app:layout_constraintStart_toEndOf="@id/tvVpnOverrideTitle"
+			app:layout_constraintTop_toTopOf="parent" />
+
+		<TextView
+			android:id="@+id/tvVpnOverrideSummary"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="2dp"
+			android:text="@string/vpn_override_summary"
+			android:textAppearance="?attr/textAppearanceBodySmall"
+			android:textColor="?attr/colorOnSurfaceVariant"
+			app:layout_constraintEnd_toStartOf="@id/switchVpnOverride"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@id/btnVpnInfo" />
+
+		<com.google.android.material.materialswitch.MaterialSwitch
+			android:id="@+id/switchVpnOverride"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			app:layout_constraintBottom_toBottomOf="@id/tvVpnOverrideSummary"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintTop_toTopOf="@id/tvVpnOverrideTitle" />
+
+		<LinearLayout
+			android:id="@+id/rowVpnDns"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="16dp"
+			android:background="?attr/selectableItemBackground"
+			android:clickable="true"
+			android:focusable="true"
+			android:gravity="center_vertical"
+			android:minHeight="48dp"
+			android:orientation="horizontal"
+			android:paddingVertical="8dp"
+			app:layout_constraintTop_toBottomOf="@id/tvVpnOverrideSummary">
+
+			<TextView
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:text="@string/vpn_dns_label"
+				android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+			<TextView
+				android:id="@+id/tvVpnDnsValue"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textAppearance="?attr/textAppearanceBodyMedium"
+				android:textColor="?attr/colorPrimary"
+				tools:text="Automatic (Off)" />
+
+			<ImageView
+				android:layout_width="20dp"
+				android:layout_height="20dp"
+				android:layout_marginStart="4dp"
+				android:contentDescription="@null"
+				android:src="@drawable/ic_chevron_right"
+				app:tint="?attr/colorOnSurfaceVariant" />
+		</LinearLayout>
+
+		<TextView
+			android:id="@+id/tvVpnPermissionNotice"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="8dp"
+			android:text="@string/vpn_permission_notice"
+			android:textColor="?attr/colorError"
+			android:visibility="gone"
+			app:layout_constraintTop_toBottomOf="@id/rowVpnDns" />
+
+		<Button
+			android:id="@+id/btnGrantVpnPermission"
+			style="@style/Widget.Material3.Button.TextButton"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="@string/grant_permission_button"
+			android:visibility="gone"
+			app:layout_constraintStart_toStartOf="parent"
+			app:layout_constraintTop_toBottomOf="@id/tvVpnPermissionNotice" />
+
+	</androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

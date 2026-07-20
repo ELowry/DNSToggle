@@ -5,11 +5,7 @@ import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import android.util.Log
-
-import java.security.GeneralSecurityException
 import java.security.KeyStore
-
-import javax.crypto.AEADBadTagException
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -23,35 +19,30 @@ object EncryptionManager {
 	private const val PADDING = KeyProperties.ENCRYPTION_PADDING_NONE
 	private const val TRANSFORMATION = "$ALGORITHM/$BLOCK_MODE/$PADDING"
 	private const val KEY_ALIAS = "dns_toggle_key"
+	private const val PREFIX = "enc:"
 
-	private val keyStore: KeyStore by lazy {
+	private val keyStore: KeyStore? by lazy {
 		try {
 			KeyStore.getInstance("AndroidKeyStore").apply {
 				load(null)
 			}
 		} catch (e: Exception) {
-			Log.w(TAG, "AndroidKeyStore not found, falling back to default", e)
-			KeyStore.getInstance(KeyStore.getDefaultType()).apply {
-				load(null)
-			}
+			Log.e(TAG, "AndroidKeyStore initialization failed", e)
+			null
 		}
 	}
 
-	private var fallbackKey: SecretKey? = null
-
-	private fun getKey(): SecretKey {
-		if (keyStore.type != "AndroidKeyStore") {
-			return fallbackKey ?: createKey().also { fallbackKey = it }
-		}
+	private fun getKey(): SecretKey? {
+		val ks = keyStore ?: return null
 		return try {
-			val existingKey = keyStore.getEntry(KEY_ALIAS, null) as? KeyStore.SecretKeyEntry
+			val existingKey = ks.getEntry(KEY_ALIAS, null) as? KeyStore.SecretKeyEntry
 			existingKey?.secretKey ?: createKey()
 		} catch (_: Exception) {
 			createKey()
 		}
 	}
 
-	private fun createKey(): SecretKey {
+	private fun createKey(): SecretKey? {
 		return try {
 			KeyGenerator.getInstance(ALGORITHM, "AndroidKeyStore").apply {
 				init(
@@ -67,25 +58,29 @@ object EncryptionManager {
 				)
 			}.generateKey()
 		} catch (e: Exception) {
-			Log.w(TAG, "Failed to create key in AndroidKeyStore, falling back", e)
-			KeyGenerator.getInstance(ALGORITHM).apply {
-				init(256)
-			}.generateKey()
+			Log.e(TAG, "Failed to create key in AndroidKeyStore", e)
+			null
 		}
 	}
 
 	fun encrypt(data: String): String {
-		val cipher = Cipher.getInstance(TRANSFORMATION)
-		cipher.init(Cipher.ENCRYPT_MODE, getKey())
-		val iv = cipher.iv
-		val encryptedData = cipher.doFinal(data.toByteArray(Charsets.UTF_8))
+		return try {
+			val key = getKey() ?: return data
+			val cipher = Cipher.getInstance(TRANSFORMATION)
+			cipher.init(Cipher.ENCRYPT_MODE, key)
+			val iv = cipher.iv
+			val encryptedData = cipher.doFinal(data.toByteArray(Charsets.UTF_8))
 
-		val combined = ByteArray(1 + iv.size + encryptedData.size)
-		combined[0] = iv.size.toByte()
-		System.arraycopy(iv, 0, combined, 1, iv.size)
-		System.arraycopy(encryptedData, 0, combined, 1 + iv.size, encryptedData.size)
+			val combined = ByteArray(1 + iv.size + encryptedData.size)
+			combined[0] = iv.size.toByte()
+			System.arraycopy(iv, 0, combined, 1, iv.size)
+			System.arraycopy(encryptedData, 0, combined, 1 + iv.size, encryptedData.size)
 
-		return Base64.encodeToString(combined, Base64.NO_WRAP)
+			PREFIX + Base64.encodeToString(combined, Base64.NO_WRAP)
+		} catch (e: Exception) {
+			Log.e(TAG, "Encryption failed, falling back to plaintext", e)
+			data
+		}
 	}
 
 	sealed class DecryptResult {
@@ -94,7 +89,24 @@ object EncryptionManager {
 		object Failed : DecryptResult()
 	}
 
-	fun decrypt(encryptedBase64: String): DecryptResult {
+	fun decrypt(input: String): DecryptResult {
+		if (input.isEmpty()) return DecryptResult.Failed
+
+		return if (input.startsWith(PREFIX)) {
+			decryptInternal(input.substring(PREFIX.length))
+		} else {
+			// Try legacy decryption (no prefix)
+			val result = decryptInternal(input)
+			if (result is DecryptResult.Success || result is DecryptResult.KeyInvalidated) {
+				result
+			} else {
+				// If legacy decryption failed, and it doesn't have the prefix, assume it is plaintext
+				DecryptResult.Success(input)
+			}
+		}
+	}
+
+	private fun decryptInternal(encryptedBase64: String): DecryptResult {
 		return try {
 			val combined = Base64.decode(encryptedBase64, Base64.NO_WRAP)
 			if (combined.isEmpty()) return DecryptResult.Failed
@@ -111,33 +123,30 @@ object EncryptionManager {
 			val encryptedData = ByteArray(encryptedDataSize)
 			System.arraycopy(combined, 1 + ivSize, encryptedData, 0, encryptedDataSize)
 
+			val key = getKey() ?: return DecryptResult.Failed
 			val cipher = Cipher.getInstance(TRANSFORMATION)
 			val spec = GCMParameterSpec(128, iv)
-			cipher.init(Cipher.DECRYPT_MODE, getKey(), spec)
+			cipher.init(Cipher.DECRYPT_MODE, key, spec)
 
 			DecryptResult.Success(String(cipher.doFinal(encryptedData), Charsets.UTF_8))
 		} catch (_: KeyPermanentlyInvalidatedException) {
-			Log.e(TAG, "Key was permanently invalidated. Recreating...")
+			Log.e(TAG, "Key was permanently invalidated")
 			deleteKey()
 			DecryptResult.KeyInvalidated
-		} catch (_: AEADBadTagException) {
-			Log.e(
-				TAG,
-				"Decryption failed: AEAD tag mismatch. The data might be corrupted or the key is wrong.",
-			)
-			DecryptResult.Failed
-		} catch (_: GeneralSecurityException) {
-			Log.e(TAG, "Cryptographic error during decryption")
-			DecryptResult.Failed
-		} catch (_: Exception) {
-			Log.e(TAG, "Unexpected error during decryption")
+		} catch (e: Exception) {
+			if (encryptedBase64.length > 20) {
+				Log.w(
+					TAG,
+					"Decryption failed for input of length ${encryptedBase64.length}: ${e.message}"
+				)
+			}
 			DecryptResult.Failed
 		}
 	}
 
 	private fun deleteKey() {
 		try {
-			keyStore.deleteEntry(KEY_ALIAS)
+			keyStore?.deleteEntry(KEY_ALIAS)
 		} catch (e: Exception) {
 			Log.e(TAG, "Failed to delete key from Keystore", e)
 		}

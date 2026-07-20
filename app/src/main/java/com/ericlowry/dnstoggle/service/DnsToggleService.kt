@@ -16,7 +16,7 @@ import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsManager
 import com.ericlowry.dnstoggle.data.DnsSettingsRepository
 import com.ericlowry.dnstoggle.ui.MainActivity
-import com.ericlowry.dnstoggle.util.RootUtils
+import com.ericlowry.dnstoggle.util.attemptSecureSettingsGrant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -43,7 +43,7 @@ class DnsToggleService : TileService() {
 		serviceScope.launch(Dispatchers.IO) {
 			if (checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) != PackageManager.PERMISSION_GRANTED) {
 				// Attempt root grant
-				if ((RootUtils.grantSecureSettingsPermission(packageName)) &&
+				if ((attemptSecureSettingsGrant(this@DnsToggleService, packageName)) &&
 					(checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED)
 				) {
 					// Success
@@ -160,7 +160,10 @@ class DnsToggleService : TileService() {
 		val intent = Intent(this, MainActivity::class.java).apply {
 			flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
 			if (showPermissionDialog) putExtra("show_permission_dialog", true)
-			if (focusDnsInput) putExtra(MainActivity.EXTRA_FOCUS_DNS_INPUT, true)
+			if (focusDnsInput) {
+				putExtra(MainActivity.EXTRA_FOCUS_DNS_INPUT, true)
+				putExtra(MainActivity.EXTRA_ENABLE_DNS_AFTER_SAVE, true)
+			}
 		}
 
 		TileServiceCompat.startActivityAndCollapse(this, intent)
