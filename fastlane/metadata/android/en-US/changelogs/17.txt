@@ -1,0 +1,4 @@
+- Option to automatically block SSID when Private DNS connection fails repeatedly.
+- Shizuku support for permission grant.
+- Display Private DNS form system settings using a visual placeholder so it can be easily saved.
+- Fixed issues with the USB debugging toggle, device backups, and network restores.
