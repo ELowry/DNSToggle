@@ -84,7 +84,8 @@ If you encounter issues not covered here, please [open a support ticket](https:/
 
 - **WRITE_SECURE_SETTINGS**:  
   Required to modify system Private DNS settings. Must be granted via root, Shizuku, or using ADB.
-- **INTERNET** _(optional)_: Used to verify that your Custom DNS Provider is online and reachable before applying it.
+- **INTERNET** _(optional)_:  
+  Used to verify that your Custom DNS Provider is online and reachable before applying it.
 - **Location & Nearby Devices** _(optional)_:  
   Required only for **Wi-Fi Blocklist** automation. Used to identify the Wi-Fi network name (SSID) locally.
 - **Notifications** _(optional)_:  
