@@ -8,6 +8,7 @@
 	<!-- Global -->
 	<string name="ok">OK</string>
 	<string name="cancel">Cancel</string>
+	<string name="close">Close</string>
 	<string name="settings">Settings</string>
 	<string name="on_label">On</string>
 	<string name="off_label">Off</string>
@@ -16,7 +17,7 @@
 
 	<!-- Permissions & ADB Setup -->
 	<string name="permission_required">Permission Required</string>
-	<string name="permission_message">To use this toggle, you must grant settings permissions through root, Shizuku, or run this ADB command on your computer with USB debugging enabled:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
+	<string name="permission_message">To use this toggle, you must grant settings permissions through root, Shizuku, or run this ADB command on your computer with USB debugging enabled:</string>
 	<string name="adb_command_label">ADB Command</string>
 	<string name="adb_command_content_description">ADB command: %s</string>
 	<string name="copy_adb_command">Copy ADB Command</string>

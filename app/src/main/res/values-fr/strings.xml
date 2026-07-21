@@ -8,6 +8,7 @@
 	<!-- Global -->
 	<string name="ok">OK</string>
 	<string name="cancel">Annuler</string>
+	<string name="close">Fermer</string>
 	<string name="settings">Paramètres</string>
 	<string name="on_label">Activé</string>
 	<string name="off_label">Désactivé</string>
@@ -16,7 +17,7 @@
 
 	<!-- Permissions & ADB Setup -->
 	<string name="permission_required">Autorisation requise</string>
-	<string name="permission_message">Pour utiliser cette application, vous devez accorder des autorisations d\'accès aux paramètres via root, Shizuku, ou exécuter cette commande ADB sur votre ordinateur avec le débogage USB activé:\n\nadb shell pm grant com.ericlowry.dnstoggle android.permission.WRITE_SECURE_SETTINGS</string>
+	<string name="permission_message">Pour utiliser cette application, vous devez accorder des autorisations d\'accès aux paramètres via root, Shizuku, ou exécuter cette commande ADB sur votre ordinateur avec le débogage USB activé:</string>
 	<string name="adb_command_label">Commande ADB</string>
 	<string name="adb_command_content_description">Commande ADB: %s</string>
 	<string name="copy_adb_command">Copier la commande ADB</string>

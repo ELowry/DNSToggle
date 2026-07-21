@@ -46,11 +46,19 @@ Regardless, a GitHub workflow is in place that will automatically re-route your 
 
 ## Translations
 
-[![Translation status](https://hosted.weblate.org/widget/dns-toggle/multi-red.svg)](https://hosted.weblate.org/engage/dns-toggle/)
-
 Want to see DNS Toggle in your native language? You don't need any coding experience to help out!
 
 - **Weblate (preferred):**  
   You can translate directly from your browser using our [Weblate project](https://hosted.weblate.org/engage/dns-toggle/).
 - **GitHub PR:**  
   Alternatively, you can submit standard Pull Requests modifying the XML string resources.
+
+#### App Translation Status
+
+[![App translation status](https://hosted.weblate.org/widget/elowry/dnstoggle-strings/multi-auto.svg)](https://hosted.weblate.org/engage/elowry/)
+
+#### Metadata Translation Status
+
+_This includes the app description and changelogs displayed on F-Droid and IzzyOnDroid._
+
+[![Metadata translation status](https://hosted.weblate.org/widget/elowry/dnstoggle-metadata/multi-auto.svg)](https://hosted.weblate.org/engage/elowry/)
