@@ -1,4 +1,4 @@
-[![License: MIT](https://img.shields.io/badge/License-MIT-3d383b.svg)](LICENSE) [![GitHub release (latest by date)](https://img.shields.io/github/v/release/ELowry/DNSToggle?logo=GitHub&color=a4785e)](https://github.com/ELowry/DNSToggle/releases/latest) [![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.ericlowry.dnstoggle&label=IzzyOnDroid&color=e29186)](https://apt.izzysoft.de/fdroid/index/apk/com.ericlowry.dnstoggle) <!--[![F-Droid](https://img.shields.io/f-droid/v/com.ericlowry.dnstoggle?logo=FDroid&color=e29186)](https://f-droid.org/packages/com.ericlowry.dnstoggle/) -->
+[![License: MIT](https://img.shields.io/badge/License-MIT-3d383b.svg)](LICENSE) [![GitHub release (latest by date)](https://img.shields.io/github/v/release/ELowry/DNSToggle?logo=GitHub&color=a4785e)](https://github.com/ELowry/DNSToggle/releases/latest) [![IzzyOnDroid](https://img.shields.io/endpoint?url=https://apt.izzysoft.de/fdroid/api/v1/shield/com.ericlowry.dnstoggle&label=IzzyOnDroid&color=e29186)](https://apt.izzysoft.de/fdroid/index/apk/com.ericlowry.dnstoggle) <!--[![F-Droid](https://img.shields.io/f-droid/v/com.ericlowry.dnstoggle?logo=FDroid&color=e29186)](https://f-droid.org/packages/com.ericlowry.dnstoggle/) --> [![Translation status](https://hosted.weblate.org/widget/elowry/dnstoggle-strings/svg-badge.svg)](https://hosted.weblate.org/engage/elowry/)
 
 # [![DNS Toggle](fastlane/metadata/android/en-US/images/featureGraphic.png)](#)
 
@@ -101,7 +101,15 @@ Contributions are always welcome! Whether you want to add a new feature, fix a b
 
 ### Translation Status
 
-[![Translation status](https://hosted.weblate.org/widget/dns-toggle/multi-red.svg)](https://hosted.weblate.org/engage/dns-toggle/)
+#### App Translation Status
+
+[![App translation status](https://hosted.weblate.org/widget/elowry/dnstoggle-strings/multi-auto.svg)](https://hosted.weblate.org/engage/elowry/)
+
+#### Metadata Translation Status
+
+_This includes the app description and changelogs displayed on F-Droid and IzzyOnDroid._
+
+[![Metadata translation status](https://hosted.weblate.org/widget/elowry/dnstoggle-metadata/multi-auto.svg)](https://hosted.weblate.org/engage/elowry/)
 
 ## License
 
