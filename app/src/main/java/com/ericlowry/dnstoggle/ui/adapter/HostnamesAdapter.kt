@@ -1,4 +1,4 @@
-package com.ericlowry.dnstoggle.ui
+package com.ericlowry.dnstoggle.ui.adapter
 
 import android.animation.ValueAnimator
 import android.view.LayoutInflater
@@ -13,14 +13,24 @@ import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.DnsHostname
 import com.ericlowry.dnstoggle.data.DnsViewModel
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.color.MaterialColors
 import java.util.Collections
+
+data class HostnameColors(
+	val colorSurface: Int,
+	val colorSurfaceContainer: Int,
+	val colorSecondaryContainer: Int,
+	val colorPrimary: Int,
+	val colorOutlineVariant: Int,
+	val textColorSecondary: Int,
+	val warningColor: Int
+)
 
 class HostnamesAdapter(
 	private val onEditClick: (String) -> Unit,
 	private val onDeleteClick: (String) -> Unit,
 	private val onItemClick: (String) -> Unit,
 	private val onAddInPlaceClick: (String) -> Unit,
+	private val colors: HostnameColors
 ) : ListAdapter<DnsHostname, HostnamesAdapter.ViewHolder>(DnsHostnameDiffCallback()) {
 
 	private var reachabilityMap: Map<String, DnsViewModel.ReachabilityState> = emptyMap()
@@ -58,15 +68,8 @@ class HostnamesAdapter(
 	private fun triggerSaveAnimation(holder: ViewHolder) {
 		val card = holder.card
 
-		// Background color pulse
-		val pulseColor = MaterialColors.getColor(
-			card,
-			com.google.android.material.R.attr.colorSecondaryContainer
-		)
-		val surfaceColor = MaterialColors.getColor(
-			card,
-			com.google.android.material.R.attr.colorSurfaceContainer
-		)
+		val pulseColor = colors.colorSecondaryContainer
+		val surfaceColor = colors.colorSurfaceContainer
 
 		val colorAnim = ValueAnimator.ofArgb(surfaceColor, pulseColor, surfaceColor)
 		colorAnim.addUpdateListener { animator ->
@@ -91,12 +94,11 @@ class HostnamesAdapter(
 	override fun onBindViewHolder(holder: ViewHolder, position: Int, payloads: List<Any>) {
 		val dnsEntry = getItem(position)
 		val hostname = dnsEntry.hostname
-		val context = holder.itemView.context
 
 		if (payloads.size == 1 && payloads.contains("metadata")) {
 			val reachability = reachabilityMap[hostname] ?: DnsViewModel.ReachabilityState.IDLE
 			val isActive = (hostname == activeSpecifier) && isToggleChecked
-			updateStatusTextOnly(holder, reachability, isActive)
+			updateStatusTextOnly(holder, reachability, isActive, dnsEntry.isUnsaved)
 			return
 		}
 
@@ -134,12 +136,7 @@ class HostnamesAdapter(
 
 				holder.tvHostname.setTypeface(null, android.graphics.Typeface.ITALIC)
 
-				holder.card.setCardBackgroundColor(
-					MaterialColors.getColor(
-						holder.itemView,
-						com.google.android.material.R.attr.colorSurface
-					)
-				)
+				holder.card.setCardBackgroundColor(colors.colorSurface)
 				holder.unsavedBorder.visibility = View.VISIBLE
 				holder.card.strokeWidth = 0
 			} else {
@@ -152,29 +149,23 @@ class HostnamesAdapter(
 				holder.tvSecondaryHostname.alpha = 1.0f
 				holder.tvHostname.setTypeface(null, android.graphics.Typeface.NORMAL)
 
-				holder.card.setCardBackgroundColor(
-					MaterialColors.getColor(
-						holder.itemView,
-						com.google.android.material.R.attr.colorSurfaceContainer
-					)
-				)
+				holder.card.setCardBackgroundColor(colors.colorSurfaceContainer)
 
 				if (isActive) {
-					holder.card.strokeColor = MaterialColors.getColor(
-						holder.itemView,
-						android.R.attr.colorPrimary
-					)
-					holder.card.strokeWidth = (2 * context.resources.displayMetrics.density).toInt()
+					holder.card.strokeColor = colors.colorPrimary
+					holder.card.strokeWidth =
+						(2 * holder.itemView.context.resources.displayMetrics.density).toInt()
 				} else {
-					holder.card.strokeColor = MaterialColors.getColor(
-						holder.itemView,
-						com.google.android.material.R.attr.colorOutlineVariant
-					)
-					holder.card.strokeWidth = (1 * context.resources.displayMetrics.density).toInt()
+					holder.card.strokeColor = colors.colorOutlineVariant
+					holder.card.strokeWidth =
+						(1 * holder.itemView.context.resources.displayMetrics.density).toInt()
 				}
 			}
 
-			updateStatusTextOnly(holder, reachability, isActive)
+			updateStatusTextOnly(holder, reachability, isActive, dnsEntry.isUnsaved)
+
+			holder.btnDelete.isEnabled = currentList.size > 1
+			holder.btnDelete.alpha = if (currentList.size > 1) 1.0f else 0.5f
 
 			holder.btnEdit.setOnClickListener { editCallback(hostname) }
 			holder.btnDelete.setOnClickListener { deleteCallback(hostname) }
@@ -188,41 +179,38 @@ class HostnamesAdapter(
 	private fun updateStatusTextOnly(
 		holder: ViewHolder,
 		reachability: DnsViewModel.ReachabilityState,
-		isActive: Boolean
+		isActive: Boolean,
+		isUnsaved: Boolean
 	) {
 		val context = holder.itemView.context
+
+		if (!isUnsaved) {
+			if (isActive) {
+				holder.card.strokeColor = colors.colorPrimary
+				holder.card.strokeWidth = (2 * context.resources.displayMetrics.density).toInt()
+			} else {
+				holder.card.strokeColor = colors.colorOutlineVariant
+				holder.card.strokeWidth = (1 * context.resources.displayMetrics.density).toInt()
+			}
+		}
+
 		if (isActive) {
 			holder.tvStatus.visibility = View.VISIBLE
 
 			when (reachability) {
 				DnsViewModel.ReachabilityState.TESTING -> {
 					holder.tvStatus.text = context.getString(R.string.status_testing_dns)
-					holder.tvStatus.setTextColor(
-						MaterialColors.getColor(
-							holder.itemView,
-							android.R.attr.textColorSecondary,
-						),
-					)
+					holder.tvStatus.setTextColor(colors.textColorSecondary)
 				}
 
 				DnsViewModel.ReachabilityState.REACHABLE -> {
 					holder.tvStatus.text = context.getString(R.string.status_active_reachable)
-					holder.tvStatus.setTextColor(
-						MaterialColors.getColor(
-							holder.itemView,
-							android.R.attr.colorPrimary,
-						),
-					)
+					holder.tvStatus.setTextColor(colors.colorPrimary)
 				}
 
 				DnsViewModel.ReachabilityState.UNREACHABLE -> {
 					holder.tvStatus.text = context.getString(R.string.warning_unreachable_dns)
-					holder.tvStatus.setTextColor(
-						MaterialColors.getColor(
-							holder.itemView,
-							R.attr.warning_color,
-						),
-					)
+					holder.tvStatus.setTextColor(colors.warningColor)
 				}
 
 				else -> holder.tvStatus.visibility = View.GONE
@@ -232,23 +220,13 @@ class HostnamesAdapter(
 				DnsViewModel.ReachabilityState.TESTING -> {
 					holder.tvStatus.visibility = View.VISIBLE
 					holder.tvStatus.text = context.getString(R.string.status_testing_dns)
-					holder.tvStatus.setTextColor(
-						MaterialColors.getColor(
-							holder.itemView,
-							android.R.attr.textColorSecondary,
-						),
-					)
+					holder.tvStatus.setTextColor(colors.textColorSecondary)
 				}
 
 				DnsViewModel.ReachabilityState.UNREACHABLE -> {
 					holder.tvStatus.visibility = View.VISIBLE
 					holder.tvStatus.text = context.getString(R.string.warning_unreachable_dns)
-					holder.tvStatus.setTextColor(
-						MaterialColors.getColor(
-							holder.itemView,
-							R.attr.warning_color,
-						),
-					)
+					holder.tvStatus.setTextColor(colors.warningColor)
 				}
 
 				else -> holder.tvStatus.visibility = View.GONE
