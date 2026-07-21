@@ -48,8 +48,9 @@ Regardless, a GitHub workflow is in place that will automatically re-route your 
 
 Want to see DNS Toggle in your native language? You don't need any coding experience to help out!
 
-- **Weblate (preferred):**  
-  You can translate directly from your browser using our [Weblate project](https://hosted.weblate.org/engage/dns-toggle/).
+- **Weblate** (preferred)**:**  
+  You can translate directly from your browser using our [Weblate project](https://hosted.weblate.org/engage/elowry/).  
+  _Please note that the Weblate page includes other projects I work on so please pay attention to which one you are contributing to._
 - **GitHub PR:**  
   Alternatively, you can submit standard Pull Requests modifying the XML string resources.
 
