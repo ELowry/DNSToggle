@@ -1,6 +1,6 @@
 <resources>
 	<!-- App Info -->
-	<string name="app_name">DNS Toggle</string>
+	<string name="app_name" translatable="false">DNS Toggle</string>
 	<string name="app_version_format">App version: %s</string>
 	<string name="github">GitHub (source code)</string>
 	<string name="support">Get Support</string>
