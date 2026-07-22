@@ -1,0 +1,5 @@
+- Simplification du processus d'octroi initial des autorisations
+- Ajout d'un indicateur visuel pendant l'octroi des autorisations via Root ou Shizuku
+- Détection Wi-Fi automatique plus rapide et plus fiable sur les réseaux restrictifs
+- Mise à jour des informations sur l'appli, des captures d'écran et de la gestion des traductions
+- Restructuration et optimisation du code

@@ -1,9 +1,11 @@
 package com.ericlowry.dnstoggle.service
 
+import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.util.NetworkUtils
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 object ConnectivityWatchdog {
 
@@ -41,10 +43,32 @@ object ConnectivityWatchdog {
 			.map { it.trim() }
 			.filter { it.isNotEmpty() }
 
-		val effectiveTargets = targets.ifEmpty { listOf("9.9.9.9") }
+		val effectiveTargets = targets.ifEmpty {
+			Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS.split(",")
+				.map { it.trim() }
+				.filter { it.isNotEmpty() }
+		}
 
-		effectiveTargets.map { target ->
-			async { NetworkUtils.isHostReachable(target, 443) }
-		}.awaitAll().any { it }
+		val resultChannel = Channel<Boolean>()
+
+		effectiveTargets.forEach { target ->
+			launch {
+				resultChannel.send(NetworkUtils.isHostReachable(target, 443))
+			}
+		}
+
+		var isConnected = false
+		var receivedCount = 0
+		while (receivedCount < effectiveTargets.size) {
+			if (resultChannel.receive()) {
+				isConnected = true
+				break
+			}
+			receivedCount++
+		}
+
+		coroutineContext.cancelChildren()
+
+		return@coroutineScope isConnected
 	}
 }

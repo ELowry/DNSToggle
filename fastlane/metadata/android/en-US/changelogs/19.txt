@@ -1,0 +1,5 @@
+- Simplified the initial permissions setup process
+- Added a loading indicator while granting permissions via Root or Shizuku
+- Made automated Wi-Fi detection much faster and more reliable on restrictive networks
+- Updated store listing information, screenshots and translation tracking
+- Under-the-hood code restructuring and performance optimizations

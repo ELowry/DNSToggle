@@ -1,4 +1,4 @@
-package com.ericlowry.dnstoggle.ui
+package com.ericlowry.dnstoggle.ui.adapter
 
 import android.view.LayoutInflater
 import android.view.View
@@ -10,12 +10,19 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.SsidItem
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.color.MaterialColors
+
+data class SsidColors(
+	val colorSurface: Int,
+	val colorSurfaceContainer: Int,
+	val colorPrimary: Int,
+	val colorOutlineVariant: Int
+)
 
 class SsidsAdapter(
 	private val onEditClick: (String) -> Unit,
 	private val onDeleteClick: (String) -> Unit,
 	private val onConfirmClick: (String) -> Unit,
+	private val colors: SsidColors
 ) : ListAdapter<SsidItem, SsidsAdapter.ViewHolder>(SsidItemDiffCallback()) {
 
 	private var activeSsid: String? = null
@@ -62,12 +69,7 @@ class SsidsAdapter(
 				holder.btnConfirm.visibility = View.VISIBLE
 				holder.unsavedBorder.visibility = View.VISIBLE
 
-				holder.card.setCardBackgroundColor(
-					MaterialColors.getColor(
-						holder.itemView,
-						com.google.android.material.R.attr.colorSurface,
-					)
-				)
+				holder.card.setCardBackgroundColor(colors.colorSurface)
 				holder.card.alpha = 0.7f
 			} else {
 				holder.tvSsidName.setTypeface(null, android.graphics.Typeface.NORMAL)
@@ -77,29 +79,18 @@ class SsidsAdapter(
 				holder.btnConfirm.visibility = View.GONE
 				holder.unsavedBorder.visibility = View.GONE
 
-				holder.card.setCardBackgroundColor(
-					MaterialColors.getColor(
-						holder.itemView,
-						com.google.android.material.R.attr.colorSurfaceContainer
-					)
-				)
+				holder.card.setCardBackgroundColor(colors.colorSurfaceContainer)
 				holder.card.alpha = 1.0f
 			}
 
 			if (isActive) {
-				holder.card.strokeColor = MaterialColors.getColor(
-					holder.itemView,
-					android.R.attr.colorPrimary
-				)
+				holder.card.strokeColor = colors.colorPrimary
 				holder.card.strokeWidth = (2 * context.resources.displayMetrics.density).toInt()
 			} else {
 				if (item.isAutoDetected) {
 					holder.card.strokeWidth = 0
 				} else {
-					holder.card.strokeColor = MaterialColors.getColor(
-						holder.itemView,
-						com.google.android.material.R.attr.colorOutlineVariant,
-					)
+					holder.card.strokeColor = colors.colorOutlineVariant
 					holder.card.strokeWidth = (1 * context.resources.displayMetrics.density).toInt()
 				}
 			}

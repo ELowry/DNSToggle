@@ -24,20 +24,8 @@
 			android:textAppearance="?attr/textAppearanceTitleMedium"
 			android:textStyle="bold"
 			app:layout_constraintBottom_toBottomOf="@id/switchPrivateDns"
-			app:layout_constraintEnd_toStartOf="@id/progressRootAction"
-			app:layout_constraintStart_toStartOf="parent"
-			app:layout_constraintTop_toTopOf="@id/switchPrivateDns" />
-
-		<com.google.android.material.progressindicator.CircularProgressIndicator
-			android:id="@+id/progressRootAction"
-			android:layout_width="24dp"
-			android:layout_height="24dp"
-			android:layout_marginEnd="8dp"
-			android:indeterminate="true"
-			android:visibility="gone"
-			app:indicatorSize="24dp"
-			app:layout_constraintBottom_toBottomOf="@id/switchPrivateDns"
 			app:layout_constraintEnd_toStartOf="@id/switchPrivateDns"
+			app:layout_constraintStart_toStartOf="parent"
 			app:layout_constraintTop_toTopOf="@id/switchPrivateDns" />
 
 		<com.google.android.material.materialswitch.MaterialSwitch

@@ -1,6 +1,5 @@
 <resources>
 	<!-- App Info -->
-	<string name="app_name">DNS Toggle</string>
 
 	<!-- Global Labels & Actions -->
 	<string name="ok">Tamam</string>
