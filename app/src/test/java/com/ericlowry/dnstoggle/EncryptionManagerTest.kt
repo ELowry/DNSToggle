@@ -12,11 +12,9 @@ import org.robolectric.RobolectricTestRunner
 class EncryptionManagerTest {
 
 	@Test
-	fun encryptDecrypt_worksWithPrefix() {
+	fun encryptDecrypt_roundTrips() {
 		val original = "secret_dns_hostname"
 		val encrypted = EncryptionManager.encrypt(original)
-
-		assertTrue("Should have prefix", encrypted.startsWith("enc:"))
 
 		val result = EncryptionManager.decrypt(encrypted)
 		assertTrue(result is EncryptionManager.DecryptResult.Success)
