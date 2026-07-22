@@ -13,9 +13,6 @@ class EncryptionManagerTest {
 
 	@Test
 	fun encryptDecrypt_roundTrips() {
-		// Robolectric has no real AndroidKeyStore, so encrypt() always takes its
-		// plaintext-fallback path here and the "enc:" prefix can't be asserted.
-		// The round-trip is the actual guaranteed contract; verify that instead.
 		val original = "secret_dns_hostname"
 		val encrypted = EncryptionManager.encrypt(original)
 

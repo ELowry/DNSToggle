@@ -12,6 +12,8 @@ android {
 		targetSdk = 37
 		versionCode = 18
 		versionName = "1.6.1"
+
+		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 	}
 
 	buildTypes {
@@ -47,6 +49,10 @@ android {
 			useLegacyPackaging = true
 		}
 	}
+
+	lint {
+		disable.add("MissingTranslation")
+	}
 }
 
 dependencies {
@@ -62,4 +68,6 @@ dependencies {
 	testImplementation(libs.robolectric)
 	testImplementation(libs.kotlinx.coroutines.test)
 	testImplementation(libs.androidx.test.core)
+	androidTestImplementation(libs.androidx.test.ext.junit)
+	androidTestImplementation(libs.androidx.test.runner)
 }
