@@ -12,6 +12,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.net.InetSocketAddress
 import java.net.Socket
+import kotlin.time.Duration.Companion.milliseconds
 
 fun String.stripSsidQuotes(): String {
 	return this.removePrefix("\"").removeSuffix("\"")
@@ -57,14 +58,11 @@ object NetworkUtils {
 
 	suspend fun isHostReachable(host: String, port: Int, timeoutMs: Int = 3000): Boolean =
 		withContext(Dispatchers.IO) {
-			// InetSocketAddress resolves the hostname eagerly, before connect()'s own
-			// timeout applies, so a stuck resolver (e.g. a broken private DNS server)
-			// can hang well past timeoutMs unless the whole thing is bounded here too.
-			withTimeoutOrNull(timeoutMs.toLong()) {
+			withTimeoutOrNull(timeoutMs.toLong().milliseconds) {
 				try {
 					Socket().use { it.connect(InetSocketAddress(host, port), timeoutMs) }
 					true
-				} catch (e: Exception) {
+				} catch (_: Exception) {
 					false
 				}
 			} ?: false
