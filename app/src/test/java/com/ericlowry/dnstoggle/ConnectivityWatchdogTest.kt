@@ -15,7 +15,7 @@ class ConnectivityWatchdogTest {
 		assertFalse(
 			ConnectivityWatchdog.isDnsSpecificFailure(
 				"dns.example.com",
-				probeTargetsStr = "1.1.1.1,8.8.8.8",
+				probeTargetsStr = "91.198.174.192,103.102.166.224,173.239.79.196",
 				isNetworkReachable = { false },
 				isDnsHostReachable = { false }
 			)
@@ -23,7 +23,7 @@ class ConnectivityWatchdogTest {
 		assertFalse(
 			ConnectivityWatchdog.isDnsSpecificFailure(
 				"dns.example.com",
-				probeTargetsStr = "1.1.1.1,8.8.8.8",
+				probeTargetsStr = "91.198.174.192,103.102.166.224,173.239.79.196",
 				isNetworkReachable = { false },
 				isDnsHostReachable = { true }
 			)
@@ -35,7 +35,7 @@ class ConnectivityWatchdogTest {
 		assertFalse(
 			ConnectivityWatchdog.isDnsSpecificFailure(
 				"dns.example.com",
-				probeTargetsStr = "1.1.1.1,8.8.8.8",
+				probeTargetsStr = "91.198.174.192,103.102.166.224,173.239.79.196",
 				isNetworkReachable = { true },
 				isDnsHostReachable = { true }
 			)
@@ -47,7 +47,7 @@ class ConnectivityWatchdogTest {
 		assertTrue(
 			ConnectivityWatchdog.isDnsSpecificFailure(
 				"dns.example.com",
-				probeTargetsStr = "1.1.1.1,8.8.8.8",
+				probeTargetsStr = "91.198.174.192,103.102.166.224,173.239.79.196",
 				isNetworkReachable = { true },
 				isDnsHostReachable = { false }
 			)
@@ -59,7 +59,7 @@ class ConnectivityWatchdogTest {
 		assertTrue(
 			ConnectivityWatchdog.isRecovered(
 				"dns.example.com",
-				probeTargetsStr = "1.1.1.1,8.8.8.8",
+				probeTargetsStr = "91.198.174.192,103.102.166.224,173.239.79.196",
 				isNetworkReachable = { true },
 				isDnsHostReachable = { true }
 			)
@@ -67,7 +67,7 @@ class ConnectivityWatchdogTest {
 		assertFalse(
 			ConnectivityWatchdog.isRecovered(
 				"dns.example.com",
-				probeTargetsStr = "1.1.1.1,8.8.8.8",
+				probeTargetsStr = "91.198.174.192,103.102.166.224,173.239.79.196",
 				isNetworkReachable = { false },
 				isDnsHostReachable = { true }
 			)
@@ -75,7 +75,7 @@ class ConnectivityWatchdogTest {
 		assertFalse(
 			ConnectivityWatchdog.isRecovered(
 				"dns.example.com",
-				probeTargetsStr = "1.1.1.1,8.8.8.8",
+				probeTargetsStr = "91.198.174.192,103.102.166.224,173.239.79.196",
 				isNetworkReachable = { true },
 				isDnsHostReachable = { false }
 			)
