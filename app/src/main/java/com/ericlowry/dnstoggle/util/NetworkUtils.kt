@@ -9,8 +9,10 @@ import android.os.Build
 import com.ericlowry.dnstoggle.DnsToggleApplication
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import java.net.InetSocketAddress
 import java.net.Socket
+import kotlin.time.Duration.Companion.milliseconds
 
 fun String.stripSsidQuotes(): String {
 	return this.removePrefix("\"").removeSuffix("\"")
@@ -56,12 +58,14 @@ object NetworkUtils {
 
 	suspend fun isHostReachable(host: String, port: Int, timeoutMs: Int = 3000): Boolean =
 		withContext(Dispatchers.IO) {
-			try {
-				Socket().use { it.connect(InetSocketAddress(host, port), timeoutMs) }
-				true
-			} catch (e: Exception) {
-				false
-			}
+			withTimeoutOrNull(timeoutMs.toLong().milliseconds) {
+				try {
+					Socket().use { it.connect(InetSocketAddress(host, port), timeoutMs) }
+					true
+				} catch (_: Exception) {
+					false
+				}
+			} ?: false
 		}
 
 	fun isValidDnsHostname(hostname: String): Boolean {
