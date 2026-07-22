@@ -9,6 +9,7 @@ import android.os.Build
 import com.ericlowry.dnstoggle.DnsToggleApplication
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import java.net.InetSocketAddress
 import java.net.Socket
 
@@ -56,12 +57,17 @@ object NetworkUtils {
 
 	suspend fun isHostReachable(host: String, port: Int, timeoutMs: Int = 3000): Boolean =
 		withContext(Dispatchers.IO) {
-			try {
-				Socket().use { it.connect(InetSocketAddress(host, port), timeoutMs) }
-				true
-			} catch (e: Exception) {
-				false
-			}
+			// InetSocketAddress resolves the hostname eagerly, before connect()'s own
+			// timeout applies, so a stuck resolver (e.g. a broken private DNS server)
+			// can hang well past timeoutMs unless the whole thing is bounded here too.
+			withTimeoutOrNull(timeoutMs.toLong()) {
+				try {
+					Socket().use { it.connect(InetSocketAddress(host, port), timeoutMs) }
+					true
+				} catch (e: Exception) {
+					false
+				}
+			} ?: false
 		}
 
 	fun isValidDnsHostname(hostname: String): Boolean {
