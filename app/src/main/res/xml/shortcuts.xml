@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+	<shortcut
+		android:enabled="true"
+		android:icon="@mipmap/ic_shortcut_toggle"
+		android:shortcutId="shortcut_toggle_dns"
+		android:shortcutLongLabel="@string/shortcut_toggle_long"
+		android:shortcutShortLabel="@string/shortcut_toggle_short">
+		<intent
+			android:action="com.ericlowry.dnstoggle.ACTION_TOGGLE"
+			android:targetClass="com.ericlowry.dnstoggle.ui.ToggleActivity"
+			android:targetPackage="com.ericlowry.dnstoggle" />
+	</shortcut>
+
+	<shortcut
+		android:enabled="true"
+		android:icon="@mipmap/ic_shortcut_select"
+		android:shortcutId="shortcut_select_dns"
+		android:shortcutLongLabel="@string/shortcut_select_long"
+		android:shortcutShortLabel="@string/shortcut_select_short">
+		<intent
+			android:action="com.ericlowry.dnstoggle.ACTION_SELECT_DNS"
+			android:targetClass="com.ericlowry.dnstoggle.ui.DnsSelectionActivity"
+			android:targetPackage="com.ericlowry.dnstoggle" />
+	</shortcut>
+</shortcuts>

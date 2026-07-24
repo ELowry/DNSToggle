@@ -3,6 +3,7 @@ package com.ericlowry.dnstoggle.ui.controller
 import android.content.ComponentName
 import android.net.Uri
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResultLauncher
@@ -171,6 +172,28 @@ class BackupController(
 			false
 		)
 		bottomSheet.setContentView(view)
+
+		bottomSheet.setOnShowListener { dialog ->
+			val d = dialog as BottomSheetDialog
+			val internalBottomSheet =
+				d.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet)
+			internalBottomSheet?.let { bs ->
+				val behavior = com.google.android.material.bottomsheet.BottomSheetBehavior.from(bs)
+				behavior.state =
+					com.google.android.material.bottomsheet.BottomSheetBehavior.STATE_EXPANDED
+				behavior.skipCollapsed = true
+
+				// Adjust width for landscape/TV screens
+				val displayMetrics = activity.resources.displayMetrics
+				val screenWidth = displayMetrics.widthPixels
+				val maxWidth = (600 * displayMetrics.density).toInt()
+				if (screenWidth > maxWidth) {
+					val params = bs.layoutParams
+					params.width = maxWidth
+					bs.layoutParams = params
+				}
+			}
+		}
 
 		ViewCompat.setOnApplyWindowInsetsListener(view) { v, insets ->
 			val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())

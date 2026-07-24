@@ -15,11 +15,12 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:orientation="vertical"
-		android:padding="16dp">
+		android:padding="12dp">
 
 		<RelativeLayout
 			android:layout_width="match_parent"
-			android:layout_height="wrap_content">
+			android:layout_height="wrap_content"
+			android:layout_marginHorizontal="4dp">
 
 			<TextView
 				android:id="@+id/tvSsidBlacklistTitle"
@@ -38,7 +39,9 @@
 				android:layout_centerVertical="true"
 				android:layout_toEndOf="@id/tvSsidBlacklistTitle"
 				android:background="?attr/selectableItemBackgroundBorderless"
+				android:clickable="true"
 				android:contentDescription="@string/info_content_description"
+				android:focusable="true"
 				android:src="@drawable/ic_info" />
 
 			<ImageButton
@@ -47,7 +50,9 @@
 				android:layout_height="48dp"
 				android:layout_alignParentEnd="true"
 				android:background="?attr/selectableItemBackgroundBorderless"
+				android:clickable="true"
 				android:contentDescription="@string/add_ssid"
+				android:focusable="true"
 				android:src="@drawable/ic_add" />
 		</RelativeLayout>
 
@@ -92,31 +97,49 @@
 			android:layout_marginTop="8dp" />
 
 		<LinearLayout
+			android:id="@+id/rowAutoBlacklist"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:layout_marginTop="8dp"
+			android:background="@drawable/bg_row_selectable"
+			android:clickable="true"
+			android:focusable="true"
+			android:focusableInTouchMode="false"
 			android:gravity="center_vertical"
-			android:orientation="horizontal">
+			android:orientation="horizontal"
+			android:padding="4dp">
 
 			<com.google.android.material.materialswitch.MaterialSwitch
 				android:id="@+id/switchAutoBlacklist"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
+				android:clickable="false"
+				android:duplicateParentState="true"
+				android:focusable="false"
 				android:text="@string/auto_blacklist_on_disable"
 				android:textAppearance="?attr/textAppearanceBodyLarge" />
 		</LinearLayout>
 
 		<LinearLayout
+			android:id="@+id/rowAutoWhitelist"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:layout_marginTop="4dp"
+			android:layout_marginTop="2dp"
+			android:background="@drawable/bg_row_selectable"
+			android:clickable="true"
+			android:focusable="true"
+			android:focusableInTouchMode="false"
 			android:gravity="center_vertical"
-			android:orientation="horizontal">
+			android:orientation="horizontal"
+			android:padding="4dp">
 
 			<com.google.android.material.materialswitch.MaterialSwitch
 				android:id="@+id/switchAutoWhitelist"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
+				android:clickable="false"
+				android:duplicateParentState="true"
+				android:focusable="false"
 				android:text="@string/auto_whitelist_on_enable"
 				android:textAppearance="?attr/textAppearanceBodyLarge" />
 		</LinearLayout>
@@ -125,9 +148,14 @@
 			android:id="@+id/rowConnectivityWatchdogToggle"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:layout_marginTop="8dp"
+			android:layout_marginTop="6dp"
+			android:background="@drawable/bg_row_selectable"
+			android:clickable="true"
+			android:focusable="true"
+			android:focusableInTouchMode="false"
 			android:gravity="center_vertical"
-			android:orientation="horizontal">
+			android:orientation="horizontal"
+			android:padding="4dp">
 
 			<LinearLayout
 				android:layout_width="0dp"
@@ -155,7 +183,10 @@
 			<com.google.android.material.materialswitch.MaterialSwitch
 				android:id="@+id/switchConnectivityWatchdog"
 				android:layout_width="wrap_content"
-				android:layout_height="wrap_content" />
+				android:layout_height="wrap_content"
+				android:clickable="false"
+				android:duplicateParentState="true"
+				android:focusable="false" />
 		</LinearLayout>
 
 		<!-- Sub-settings with hierarchy -->
@@ -183,13 +214,14 @@
 					android:id="@+id/rowConnectivityWatchdogDebounce"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:background="?attr/selectableItemBackground"
+					android:background="@drawable/bg_row_selectable"
 					android:clickable="true"
 					android:focusable="true"
+					android:focusableInTouchMode="false"
 					android:gravity="center_vertical"
 					android:minHeight="48dp"
 					android:orientation="horizontal"
-					android:paddingVertical="8dp">
+					android:padding="4dp">
 
 					<TextView
 						android:layout_width="0dp"
@@ -219,13 +251,14 @@
 					android:id="@+id/rowConnectivityWatchdogTargets"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:background="?attr/selectableItemBackground"
+					android:background="@drawable/bg_row_selectable"
 					android:clickable="true"
 					android:focusable="true"
+					android:focusableInTouchMode="false"
 					android:gravity="center_vertical"
 					android:minHeight="48dp"
 					android:orientation="horizontal"
-					android:paddingVertical="8dp">
+					android:padding="4dp">
 
 					<TextView
 						android:layout_width="0dp"

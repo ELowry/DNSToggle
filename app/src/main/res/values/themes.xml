@@ -45,4 +45,16 @@
 		<!-- Close on outside tap -->
 		<item name="android:windowCloseOnTouchOutside">true</item>
 	</style>
+
+	<!-- Fully Transparent Theme for headless toggle -->
+	<style name="Theme.Transparent" parent="Theme.Material3.DayNight.NoActionBar">
+		<item name="android:windowIsTranslucent">true</item>
+		<item name="android:windowBackground">@android:color/transparent</item>
+		<item name="android:windowContentOverlay">@null</item>
+		<item name="android:windowNoTitle">true</item>
+		<item name="android:windowIsFloating">true</item>
+		<item name="android:backgroundDimEnabled">false</item>
+		<item name="android:windowAnimationStyle">@null</item>
+		<item name="android:windowDisablePreview">true</item>
+	</style>
 </resources>

@@ -13,63 +13,90 @@
 	<androidx.constraintlayout.widget.ConstraintLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:padding="16dp">
+		android:padding="12dp">
 
-		<TextView
-			android:id="@+id/tvVpnOverrideTitle"
-			android:layout_width="wrap_content"
+		<LinearLayout
+			android:id="@+id/rowVpnOverrideToggle"
+			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:text="@string/vpn_override_title"
-			android:textAppearance="?attr/textAppearanceTitleMedium"
-			android:textStyle="bold"
-			app:layout_constraintBottom_toBottomOf="@id/btnVpnInfo"
-			app:layout_constraintStart_toStartOf="parent"
-			app:layout_constraintTop_toTopOf="@id/btnVpnInfo" />
+			android:background="@drawable/bg_row_selectable"
+			android:clickable="true"
+			android:focusable="true"
+			android:focusableInTouchMode="false"
+			android:gravity="center_vertical"
+			android:orientation="horizontal"
+			android:padding="4dp"
+			app:layout_constraintTop_toTopOf="parent">
 
-		<ImageButton
-			android:id="@+id/btnVpnInfo"
-			android:layout_width="48dp"
-			android:layout_height="48dp"
-			android:background="?attr/selectableItemBackgroundBorderless"
-			android:contentDescription="@string/info_content_description"
-			android:src="@drawable/ic_info"
-			app:layout_constraintHorizontal_bias="0.0"
-			app:layout_constraintStart_toEndOf="@id/tvVpnOverrideTitle"
-			app:layout_constraintTop_toTopOf="parent" />
+			<androidx.constraintlayout.widget.ConstraintLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:duplicateParentState="true">
 
-		<TextView
-			android:id="@+id/tvVpnOverrideSummary"
-			android:layout_width="0dp"
-			android:layout_height="wrap_content"
-			android:layout_marginTop="2dp"
-			android:text="@string/vpn_override_summary"
-			android:textAppearance="?attr/textAppearanceBodySmall"
-			android:textColor="?attr/colorOnSurfaceVariant"
-			app:layout_constraintEnd_toStartOf="@id/switchVpnOverride"
-			app:layout_constraintStart_toStartOf="parent"
-			app:layout_constraintTop_toBottomOf="@id/btnVpnInfo" />
+				<TextView
+					android:id="@+id/tvVpnOverrideTitle"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/vpn_override_title"
+					android:textAppearance="?attr/textAppearanceTitleMedium"
+					android:textStyle="bold"
+					app:layout_constraintBottom_toBottomOf="@id/btnVpnInfo"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toTopOf="@id/btnVpnInfo" />
 
-		<com.google.android.material.materialswitch.MaterialSwitch
-			android:id="@+id/switchVpnOverride"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			app:layout_constraintBottom_toBottomOf="@id/tvVpnOverrideSummary"
-			app:layout_constraintEnd_toEndOf="parent"
-			app:layout_constraintTop_toTopOf="@id/tvVpnOverrideTitle" />
+				<ImageButton
+					android:id="@+id/btnVpnInfo"
+					android:layout_width="48dp"
+					android:layout_height="48dp"
+					android:background="?attr/selectableItemBackgroundBorderless"
+					android:clickable="true"
+					android:contentDescription="@string/info_content_description"
+					android:focusable="true"
+					android:src="@drawable/ic_info"
+					app:layout_constraintHorizontal_bias="0.0"
+					app:layout_constraintStart_toEndOf="@id/tvVpnOverrideTitle"
+					app:layout_constraintTop_toTopOf="parent" />
+
+				<TextView
+					android:id="@+id/tvVpnOverrideSummary"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="2dp"
+					android:text="@string/vpn_override_summary"
+					android:textAppearance="?attr/textAppearanceBodySmall"
+					android:textColor="?attr/colorOnSurfaceVariant"
+					app:layout_constraintEnd_toStartOf="@id/switchVpnOverride"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toBottomOf="@id/btnVpnInfo" />
+
+				<com.google.android.material.materialswitch.MaterialSwitch
+					android:id="@+id/switchVpnOverride"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:clickable="false"
+					android:duplicateParentState="true"
+					android:focusable="false"
+					app:layout_constraintBottom_toBottomOf="@id/tvVpnOverrideSummary"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintTop_toTopOf="@id/tvVpnOverrideTitle" />
+
+			</androidx.constraintlayout.widget.ConstraintLayout>
+		</LinearLayout>
 
 		<LinearLayout
 			android:id="@+id/rowVpnDns"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:layout_marginTop="16dp"
-			android:background="?attr/selectableItemBackground"
+			android:layout_marginTop="8dp"
+			android:background="@drawable/bg_row_selectable"
 			android:clickable="true"
 			android:focusable="true"
+			android:focusableInTouchMode="false"
 			android:gravity="center_vertical"
 			android:minHeight="48dp"
 			android:orientation="horizontal"
-			android:paddingVertical="8dp"
-			app:layout_constraintTop_toBottomOf="@id/tvVpnOverrideSummary">
+			android:padding="4dp"
+			app:layout_constraintTop_toBottomOf="@id/rowVpnOverrideToggle">
 
 			<TextView
 				android:layout_width="0dp"

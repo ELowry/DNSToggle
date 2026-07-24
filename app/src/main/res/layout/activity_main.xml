@@ -12,7 +12,6 @@
 		android:id="@+id/appBarLayout"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:fitsSystemWindows="true"
 		app:liftOnScroll="true">
 
 		<com.google.android.material.appbar.MaterialToolbar
@@ -29,7 +28,9 @@
 				android:layout_height="48dp"
 				android:layout_gravity="end"
 				android:background="?attr/selectableItemBackgroundBorderless"
+				android:clickable="true"
 				android:contentDescription="@string/info_content_description"
+				android:focusable="true"
 				android:src="@drawable/ic_overflow"
 				app:tint="?attr/colorOnSurface" />
 
@@ -38,239 +39,287 @@
 	</com.google.android.material.appbar.AppBarLayout>
 
 	<androidx.core.widget.NestedScrollView
+		android:id="@+id/mainScrollView"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
+		android:fillViewport="true"
 		app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
 		<androidx.constraintlayout.widget.ConstraintLayout
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:padding="16dp">
+			android:padding="12dp">
 
-			<include
-				android:id="@+id/cardMainPermissionLayout"
-				layout="@layout/view_main_permission"
-				android:layout_width="match_parent"
+			<androidx.constraintlayout.widget.Guideline
+				android:id="@+id/guideStart"
+				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:visibility="gone"
+				android:orientation="vertical"
+				app:layout_constraintGuide_percent="0.5" />
+
+			<androidx.constraintlayout.widget.ConstraintLayout
+				android:id="@+id/contentWrapper"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
 				app:layout_constraintEnd_toEndOf="parent"
 				app:layout_constraintStart_toStartOf="parent"
-				app:layout_constraintTop_toTopOf="parent" />
+				app:layout_constraintTop_toTopOf="parent"
+				app:layout_constraintWidth_max="600dp">
 
-			<com.google.android.material.card.MaterialCardView
-				android:id="@+id/cardOverrideStatus"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="16dp"
-				android:visibility="gone"
-				app:cardBackgroundColor="?attr/colorPrimaryContainer"
-				app:cardElevation="0dp"
-				app:layout_constraintEnd_toEndOf="parent"
-				app:layout_constraintStart_toStartOf="parent"
-				app:layout_constraintTop_toBottomOf="@id/cardMainPermissionLayout"
-				app:strokeColor="?attr/colorPrimary"
-				app:strokeWidth="1.5dp">
-
-				<TextView
-					android:id="@+id/tvOverrideStatus"
+				<include
+					android:id="@+id/cardMainPermissionLayout"
+					layout="@layout/view_main_permission"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:drawablePadding="12dp"
-					android:gravity="center_vertical"
-					android:padding="12dp"
-					android:textAppearance="?attr/textAppearanceBodyMedium"
-					android:textColor="?attr/colorOnPrimaryContainer"
-					android:textStyle="bold"
-					app:drawableStartCompat="@drawable/ic_info"
-					app:drawableTint="?attr/colorPrimary"
-					tools:text="VPN Override Active" />
-			</com.google.android.material.card.MaterialCardView>
+					android:visibility="gone"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toTopOf="parent" />
 
-			<include
-				android:id="@+id/dnsSettings"
-				layout="@layout/card_dns_settings"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="24dp"
-				app:layout_constraintTop_toBottomOf="@id/cardOverrideStatus" />
-
-			<include
-				android:id="@+id/ssidBlacklist"
-				layout="@layout/card_ssid_blacklist"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="24dp"
-				app:layout_constraintTop_toBottomOf="@id/dnsSettings" />
-
-			<include
-				android:id="@+id/vpnSettings"
-				layout="@layout/card_vpn_settings"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="24dp"
-				app:layout_constraintTop_toBottomOf="@id/ssidBlacklist" />
-
-			<TextView
-				android:id="@+id/tvOptionsTitle"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="36dp"
-				android:text="@string/options_title"
-				android:textAppearance="?attr/textAppearanceTitleLarge"
-				android:textStyle="bold"
-				app:layout_constraintEnd_toEndOf="parent"
-				app:layout_constraintStart_toStartOf="parent"
-				app:layout_constraintTop_toBottomOf="@id/vpnSettings" />
-
-			<LinearLayout
-				android:id="@+id/rowShowToast"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="16dp"
-				android:gravity="center_vertical"
-				android:orientation="horizontal"
-				app:layout_constraintEnd_toEndOf="parent"
-				app:layout_constraintStart_toStartOf="parent"
-				app:layout_constraintTop_toBottomOf="@id/tvOptionsTitle">
-
-				<LinearLayout
-					android:layout_width="0dp"
+				<com.google.android.material.card.MaterialCardView
+					android:id="@+id/cardOverrideStatus"
+					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:layout_weight="1"
-					android:orientation="vertical">
+					android:layout_marginTop="16dp"
+					android:visibility="gone"
+					app:cardBackgroundColor="?attr/colorPrimaryContainer"
+					app:cardElevation="0dp"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toBottomOf="@id/cardMainPermissionLayout"
+					app:strokeColor="?attr/colorPrimary"
+					app:strokeWidth="1.5dp">
 
 					<TextView
-						android:layout_width="wrap_content"
+						android:id="@+id/tvOverrideStatus"
+						android:layout_width="match_parent"
 						android:layout_height="wrap_content"
-						android:text="@string/show_toast_notif"
-						android:textAppearance="?attr/textAppearanceBodyLarge" />
+						android:drawablePadding="12dp"
+						android:gravity="center_vertical"
+						android:padding="12dp"
+						android:textAppearance="?attr/textAppearanceBodyMedium"
+						android:textColor="?attr/colorOnPrimaryContainer"
+						android:textStyle="bold"
+						app:drawableStartCompat="@drawable/ic_info"
+						app:drawableTint="?attr/colorPrimary"
+						tools:text="VPN Override Active" />
+				</com.google.android.material.card.MaterialCardView>
 
-					<TextView
-						android:id="@+id/tvShowToastSummary"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:layout_marginTop="6dp"
-						android:text="@string/show_toast_notif_summary"
-						android:textAppearance="?attr/textAppearanceBodySmall"
-						android:textColor="?attr/colorOnSurfaceVariant" />
-				</LinearLayout>
-
-				<com.google.android.material.materialswitch.MaterialSwitch
-					android:id="@+id/switchShowToast"
-					android:layout_width="wrap_content"
+				<include
+					android:id="@+id/dnsSettings"
+					layout="@layout/card_dns_settings"
+					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:layout_marginStart="16dp" />
-			</LinearLayout>
+					android:layout_marginTop="24dp"
+					app:layout_constraintTop_toBottomOf="@id/cardOverrideStatus" />
 
-			<LinearLayout
-				android:id="@+id/rowHideLauncher"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="18dp"
-				android:gravity="center_vertical"
-				android:orientation="horizontal"
-				app:layout_constraintEnd_toEndOf="parent"
-				app:layout_constraintStart_toStartOf="parent"
-				app:layout_constraintTop_toBottomOf="@id/rowShowToast">
-
-				<LinearLayout
-					android:layout_width="0dp"
+				<include
+					android:id="@+id/ssidBlacklist"
+					layout="@layout/card_ssid_blacklist"
+					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:layout_weight="1"
-					android:orientation="vertical">
+					android:layout_marginTop="24dp"
+					app:layout_constraintTop_toBottomOf="@id/dnsSettings" />
 
-					<TextView
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:text="@string/hide_launcher_icon"
-						android:textAppearance="?attr/textAppearanceBodyLarge" />
-
-					<TextView
-						android:id="@+id/tvHideLauncherSummary"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:layout_marginTop="6dp"
-						android:text="@string/hide_launcher_icon_summary"
-						android:textAppearance="?attr/textAppearanceBodySmall"
-						android:textColor="?attr/colorOnSurfaceVariant" />
-				</LinearLayout>
-
-				<com.google.android.material.materialswitch.MaterialSwitch
-					android:id="@+id/switchHideLauncher"
-					android:layout_width="wrap_content"
+				<include
+					android:id="@+id/vpnSettings"
+					layout="@layout/card_vpn_settings"
+					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:layout_marginStart="16dp" />
-			</LinearLayout>
-
-			<include
-				android:id="@+id/rowUsbDebuggingTileLayout"
-				layout="@layout/view_usb_debugging_tile"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="18dp"
-				android:visibility="gone"
-				app:layout_constraintEnd_toEndOf="parent"
-				app:layout_constraintStart_toStartOf="parent"
-				app:layout_constraintTop_toBottomOf="@id/rowHideLauncher" />
-
-			<com.google.android.material.divider.MaterialDivider
-				android:id="@+id/dividerFooter"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="48dp"
-				app:layout_constraintTop_toBottomOf="@id/rowUsbDebuggingTileLayout" />
-
-			<LinearLayout
-				android:id="@+id/footerContainer"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="16dp"
-				android:layout_marginBottom="24dp"
-				android:gravity="center"
-				android:orientation="vertical"
-				app:layout_constraintEnd_toEndOf="parent"
-				app:layout_constraintStart_toStartOf="parent"
-				app:layout_constraintTop_toBottomOf="@id/dividerFooter">
-
-				<LinearLayout
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:orientation="horizontal">
-
-					<com.google.android.material.button.MaterialButton
-						android:id="@+id/btnGithub"
-						style="@style/Widget.Material3.Button.TextButton"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:text="@string/github"
-						android:textColor="?attr/colorPrimary"
-						app:icon="@drawable/ic_code"
-						app:iconPadding="8dp"
-						app:iconTint="?attr/colorPrimary" />
-
-					<com.google.android.material.button.MaterialButton
-						android:id="@+id/btnSupport"
-						style="@style/Widget.Material3.Button.TextButton"
-						android:layout_width="wrap_content"
-						android:layout_height="wrap_content"
-						android:text="@string/support"
-						android:textColor="?attr/colorPrimary"
-						app:icon="@drawable/ic_bug_report"
-						app:iconPadding="8dp"
-						app:iconTint="?attr/colorPrimary" />
-				</LinearLayout>
+					android:layout_marginTop="24dp"
+					app:layout_constraintTop_toBottomOf="@id/ssidBlacklist" />
 
 				<TextView
-					android:id="@+id/tvAppVersion"
-					android:layout_width="wrap_content"
+					android:id="@+id/tvOptionsTitle"
+					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
-					android:layout_marginTop="4dp"
-					android:textAppearance="?attr/textAppearanceBodySmall"
-					android:textColor="?attr/colorOutline"
-					tools:text="Version 1.0.0" />
-			</LinearLayout>
+					android:layout_marginStart="4dp"
+					android:layout_marginTop="36dp"
+					android:layout_marginEnd="4dp"
+					android:text="@string/options_title"
+					android:textAppearance="?attr/textAppearanceTitleLarge"
+					android:textStyle="bold"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toBottomOf="@id/vpnSettings" />
+
+				<LinearLayout
+					android:id="@+id/rowShowToast"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="16dp"
+					android:background="@drawable/bg_row_selectable"
+					android:clickable="true"
+					android:focusable="true"
+					android:focusableInTouchMode="false"
+					android:gravity="center_vertical"
+					android:orientation="horizontal"
+					android:padding="4dp"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toBottomOf="@id/tvOptionsTitle">
+
+					<LinearLayout
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:orientation="vertical">
+
+						<TextView
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:text="@string/show_toast_notif"
+							android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+						<TextView
+							android:id="@+id/tvShowToastSummary"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_marginTop="6dp"
+							android:text="@string/show_toast_notif_summary"
+							android:textAppearance="?attr/textAppearanceBodySmall"
+							android:textColor="?attr/colorOnSurfaceVariant" />
+					</LinearLayout>
+
+					<com.google.android.material.materialswitch.MaterialSwitch
+						android:id="@+id/switchShowToast"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_marginStart="16dp"
+						android:clickable="false"
+						android:duplicateParentState="true"
+						android:focusable="false" />
+				</LinearLayout>
+
+				<LinearLayout
+					android:id="@+id/rowHideLauncher"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="10dp"
+					android:background="@drawable/bg_row_selectable"
+					android:clickable="true"
+					android:focusable="true"
+					android:focusableInTouchMode="false"
+					android:gravity="center_vertical"
+					android:orientation="horizontal"
+					android:padding="4dp"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toBottomOf="@id/rowShowToast">
+
+					<LinearLayout
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:orientation="vertical">
+
+						<TextView
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:text="@string/hide_launcher_icon"
+							android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+						<TextView
+							android:id="@+id/tvHideLauncherSummary"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_marginTop="6dp"
+							android:text="@string/hide_launcher_icon_summary"
+							android:textAppearance="?attr/textAppearanceBodySmall"
+							android:textColor="?attr/colorOnSurfaceVariant" />
+					</LinearLayout>
+
+					<com.google.android.material.materialswitch.MaterialSwitch
+						android:id="@+id/switchHideLauncher"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_marginStart="16dp"
+						android:clickable="false"
+						android:duplicateParentState="true"
+						android:focusable="false" />
+				</LinearLayout>
+
+				<include
+					android:id="@+id/rowUsbDebuggingTileLayout"
+					layout="@layout/view_usb_debugging_tile"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="18dp"
+					android:visibility="gone"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toBottomOf="@id/rowHideLauncher" />
+
+				<com.google.android.material.divider.MaterialDivider
+					android:id="@+id/dividerFooter"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="48dp"
+					app:layout_constraintTop_toBottomOf="@id/rowUsbDebuggingTileLayout" />
+
+				<LinearLayout
+					android:id="@+id/footerContainer"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="16dp"
+					android:layout_marginBottom="24dp"
+					android:gravity="center"
+					android:orientation="vertical"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toBottomOf="@id/dividerFooter">
+
+					<LinearLayout
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:orientation="horizontal">
+
+						<com.google.android.material.button.MaterialButton
+							android:id="@+id/btnGithub"
+							style="@style/Widget.Material3.Button.TextButton"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:text="@string/github"
+							android:textColor="?attr/colorPrimary"
+							app:icon="@drawable/ic_code"
+							app:iconPadding="8dp"
+							app:iconTint="?attr/colorPrimary" />
+
+						<com.google.android.material.button.MaterialButton
+							android:id="@+id/btnSupport"
+							style="@style/Widget.Material3.Button.TextButton"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:text="@string/support"
+							android:textColor="?attr/colorPrimary"
+							app:icon="@drawable/ic_bug_report"
+							app:iconPadding="8dp"
+							app:iconTint="?attr/colorPrimary" />
+					</LinearLayout>
+
+					<TextView
+						android:id="@+id/tvAppVersion"
+						android:layout_width="wrap_content"
+						android:layout_height="wrap_content"
+						android:layout_marginTop="4dp"
+						android:focusable="false"
+						android:focusableInTouchMode="false"
+						android:textAppearance="?attr/textAppearanceBodySmall"
+						android:textColor="?attr/colorOutline"
+						tools:text="Version 1.0.0" />
+				</LinearLayout>
+
+			</androidx.constraintlayout.widget.ConstraintLayout>
 
 		</androidx.constraintlayout.widget.ConstraintLayout>
 	</androidx.core.widget.NestedScrollView>
+
+	<View
+		android:id="@+id/statusBarBackground"
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		android:background="?attr/colorSurface"
+		android:elevation="8dp"
+		android:visibility="gone" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

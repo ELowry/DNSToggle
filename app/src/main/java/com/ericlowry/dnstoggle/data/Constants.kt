@@ -28,7 +28,8 @@ object Constants {
 	const val PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS = "connectivity_watchdog_probe_targets"
 	const val PREF_SSID_AUTO_DETECTED_BLACKLIST = "ssid_auto_detected_blacklist"
 	const val CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS = 15
-	const val CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS = "91.198.174.192, 103.102.166.224, 173.239.79.196"
+	const val CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS =
+		"91.198.174.192, 103.102.166.224, 173.239.79.196"
 
 	// VPN Override Keys
 	const val PREF_VPN_OVERRIDE_ENABLED = "vpn_override_enabled"
