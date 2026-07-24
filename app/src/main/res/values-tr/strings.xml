@@ -1,34 +1,61 @@
 <resources>
 	<!-- App Info -->
+	<string name="app_name" translatable="false">DNS Toggle</string>
+	<string name="app_version_format">Uygulama sürümü: %s</string>
+	<string name="github">GitHub (kaynak kodu)</string>
+	<string name="support">Destek Al</string>
 
-	<!-- Global Labels & Actions -->
+	<!-- Global -->
 	<string name="ok">Tamam</string>
 	<string name="cancel">İptal</string>
 	<string name="close">Kapat</string>
+	<string name="settings">Ayarlar</string>
 	<string name="on_label">Açık</string>
 	<string name="off_label">Kapalı</string>
+	<string name="automatic_off">Otomatik (kapalı)</string>
 	<string name="info_content_description">Daha fazla bilgi</string>
 
 	<!-- Permissions & ADB Setup -->
 	<string name="permission_required">İzin Gerekli</string>
 	<string name="permission_message">Bu anahtarı kullanmak için, root üzerinden ayarlar izni vermelisin veya USB hata ayıklama etkinken bilgisayarında şu ADB komutunu çalıştırmalısın:</string>
+	<string name="adb_command_label">ADB Komutu</string>
+	<string name="adb_command_content_description">ADB komutu: %s</string>
 	<string name="copy_adb_command">Komutu Kopyala</string>
 	<string name="command_copied">Komut panoya kopyalandı</string>
+	<string name="grant_via_shizuku">Shizuku ile İzin Ver</string>
+	<string name="grant_via_root">Root ile İzin Ver</string>
+	<string name="grant_auto_fallback">İzin vermeyi dene</string>
+	<string name="toast_attempting_shizuku">Shizuku izni deneniyor…</string>
+	<string name="toast_attempting_root">Root izni deneniyor…</string>
+	<string name="toast_attempting_fallback">Otomatik izin deneniyor…</string>
+	<string name="grant_failed">Shizuku/Root izni başarısız oldu veya reddedildi</string>
+	<string name="permission_granted">İzin verildi</string>
 	<string name="main_permission_title">Sistem Ayarları İzni Gerekli</string>
 	<string name="main_permission_message">Uygulamanın Özel DNS ayarlarını değiştirmek için özel bir izne ihtiyacı var.</string>
 	<string name="btn_fix_permission">Düzelt</string>
+	<string name="open_settings">Ayarları Aç</string>
 
 	<!-- Main UI - DNS Management -->
 	<string name="private_dns">Özel DNS</string>
 	<string name="disable_dns_test">Bağlantı testini atla</string>
 	<string name="disable_dns_test_summary">Bunu sadece DNS\'in çalışıyor ancak uygulama ulaşılamıyor olarak gösteriyorsa etkinleştir.</string>
 	<string name="custom_dns_provider">Özel DNS Sağlayıcısı</string>
+	<string name="add_hostname">Sunucu Adı Ekle</string>
+	<string name="add_hostname_desc">Bu aktif sunucu adını kaydet</string>
+	<string name="edit_hostname">Sunucu Adını Düzenle</string>
+	<string name="dns_hostname_hint">DNS Sunucu Adı (örn. dns.nextdns.io)</string>
+	<string name="dns_label_hint">Etiket (isteğe bağlı)</string>
+	<string name="delete_hostname_confirm">Bu sunucu adı kaldırılsın mı?</string>
 	<string name="error_empty_dns_host">Sunucu adresi boşken Özel DNS etkinleştirilemez</string>
 	<string name="error_invalid_dns_host">Geçersiz DNS sunucu adresi biçimi</string>
 
 	<!-- Main UI - Status -->
 	<string name="status_testing_dns">Bağlantı test ediliyor…</string>
+	<string name="unsaved_active_label">Mevcut (kaydedilmedi)</string>
+	<string name="status_active_reachable">Aktif ve Ulaşılabilir</string>
 	<string name="warning_unreachable_dns">DNS sunucusuna 853 numaralı bağlantı noktasından (DoT) ulaşılamıyor. Android yine de başka yöntemlerle başarılı bir şekilde bağlanabilir.</string>
+	<string name="status_override_vpn">VPN Geçersiz Kılma Aktif</string>
+	<string name="status_override_ssid">SSID Kara Listesi Aktif (%s)</string>
 
 	<!-- Main UI - SSID Blacklist & Monitoring -->
 	<string name="ssid_blacklist_title">SSID Kara Listesi</string>
@@ -38,37 +65,94 @@
 	<string name="ignore_battery_optimizations">Pil kısıtlamalarını devre dışı bırak</string>
 	<string name="auto_blacklist_on_disable">Devre dışı bırakırken otomatik kara listeye al</string>
 	<string name="auto_whitelist_on_enable">Etkinleştirirken otomatik beyaz listeye al</string>
+	<string name="connectivity_watchdog_toggle">Bağlantı hatasında otomatik kara listeye al</string>
+	<string name="connectivity_watchdog_info_text">Özel DNS başarısız olduğunda ancak internet hala mevcut olduğunda, uygulama bağlantıyı geri yüklemek için mevcut ağı otomatik olarak kara listeye ekler.</string>
+	<string name="connectivity_watchdog_debounce_label">Devre dışı bırakmadan önce bekle</string>
+	<string name="connectivity_watchdog_targets_label">Bağlantı testi sunucuları</string>
+	<string name="connectivity_watchdog_targets_title">Bağlantı kontrolü hedef sunucuları</string>
+	<string name="connectivity_watchdog_targets_hint">Virgülle ayrılmış IP\'ler (örn. 9.9.9.9, 5.1.66.255)</string>
+	<string name="connectivity_watchdog_debounce_custom">Özel…</string>
+	<string name="connectivity_watchdog_debounce_invalid">5 ile 300 saniye arasında bir değer girin</string>
+	<string name="connectivity_watchdog_debounce_seconds_format">%d sn</string>
+	<string name="notif_connectivity_watchdog_disabled">Bağlantı sorunu nedeniyle Özel DNS devre dışı bırakıldı ve %s kara listeye alındı</string>
+	<string name="notif_connectivity_watchdog_restored">Bağlantı geri yüklendi. Özel DNS %s için yeniden etkinleştirildi</string>
 	<string name="grant_permission_notice">Wi-Fi SSID\'sini doğrulamak için Konum/Yakındaki cihazlar izni (arka plan dahil) gereklidir.</string>
 	<string name="grant_permission_button">İzinleri Ver</string>
+	<string name="permissions_permanently_denied">Konum ve Yakındaki cihazlar izinleri kalıcı olarak reddedildi. Bu özelliği kullanmak için lütfen bunları Uygulama Ayarları\'ndan etkinleştirin.</string>
 	<string name="notification_permission_explanation">Arka planda Özel DNS otomatik olarak değiştirildiğinde sana bildirim göndermek ve izlemenin aktif kalmasını sağlamak için lütfen bildirimlere izin ver.</string>
 	<string name="background_location_explanation">Uygulama kapalıyken Wi-Fi\'ı izlemek için, Android \"Her zaman izin ver\" konum erişimi gerektirir. DNS Toggle bunu yalnızca Wi-Fi adını görmek için kullanır ve fiziksel konumunu asla takip etmez veya GPS\'i kullanmaz.</string>
+	<string name="vpn_disclaimer_explanation">\n\nNot: Aktif VPN bağlantıları Wi-Fi ağ adınızı gizleyebilir ve otomatik kara liste/beyaz liste kurallarını geçici olarak devre dışı bırakabilir.</string>
 	<string name="add_ssid">SSID Ekle</string>
 	<string name="edit_ssid">SSID Düzenle</string>
 	<string name="ssid_hint">SSID (Wi-Fi Adı)</string>
+	<string name="ssid_saved">SSID kalıcı olarak kara listeye eklendi</string>
+	<string name="ssid_auto_added_label">Otomatik eklendi</string>
 	<string name="delete_ssid_confirm">Bu SSID kara listeden kaldırılsın mı?</string>
 
 	<!-- Main UI - VPN Override -->
+	<string name="vpn_override_title">VPN Geçersiz Kılma</string>
+	<string name="vpn_override_summary">Bir VPN bağlandığında Özel DNS\'i otomatik olarak değiştir.</string>
+	<string name="vpn_dns_label">VPN\'de DNS</string>
+	<string name="vpn_permission_notice">Arka plan otomasyonu için bildirim izni gereklidir.</string>
+	<string name="vpn_hostname_removed_warning">Daha önce VPN için kullanılan DNS sunucu adı kaldırıldı. VPN Geçersiz Kılma devre dışı bırakıldı.</string>
 
 	<!-- Main UI - General Options -->
+	<string name="options_title">Seçenekler</string>
+	<string name="show_toast_notif">Durum bildirim mesajlarını göster</string>
+	<string name="show_toast_notif_summary">Hızlı Ayarlar kutucuğu üzerinden Özel DNS değiştirildiğinde bir durum bildirimi göster.</string>
 	<string name="hide_launcher_icon">Uygulama simgesini gizle</string>
-	<string name="hide_launcher_icon_summary">Etkinleştirildiğinde, uygulama menünden gizlenir. Hızlı Ayarlar kutucuğuna uzun basarak ayarlara yine de erişebilirsin.</string>
+	<string name="hide_launcher_icon_summary">Etkinleştirildiğinde, uygulama menünden gizlenir. Hızlı Ayarlar kutucuğuna uzun basarak ayarlara yine de erişebilirsin. Not: Bazı başlatıcılarda bu seçenek simgeyi tamamen gizlemeyebilir.</string>
+	<string name="hide_launcher_icon_tv_summary">Bu özellik Android TV kısıtlamaları nedeniyle kullanılamıyor.</string>
 
 	<!-- Main UI - USB Debugging Tile -->
+	<string name="usb_debugging">USB Hata Ayıklama</string>
+	<string name="show_usb_debugging_tile">USB Hata Ayıklama kutucuğunu göster</string>
+	<string name="show_usb_debugging_tile_summary">USB Hata Ayıklamayı açıp kapatmak için ekstra bir Hızlı Ayarlar kutucuğu göster. Geliştirici seçeneklerini açmak için uzun bas.</string>
+	<string name="usb_debugging_tile_steps">USB hata ayıklama kutucuğunu etkinleştirmek için %1$d kez daha dokun.</string>
+	<string name="usb_debugging_tile_enabled">USB hata ayıklama Hızlı Ayarlar kutucuğu artık kullanılabilir!</string>
+	<string name="enabling">Etkinleştiriliyor…</string>
+	<string name="disabling">Devre dışı bırakılıyor…</string>
 
 	<!-- Menu Actions -->
 	<string name="rename_app">Uygulamayı Yeniden Adlandır</string>
 	<string name="rename_app_message">Sana mantıklı gelen bir isim seç. Bu isim, uygulama simgesinde ve Hızlı Ayarlar kutucuğunda gösterilecek.</string>
+	<string name="export_config">Yapılandırmayı Dışa Aktar</string>
+	<string name="import_config">Yapılandırmayı İçe Aktar</string>
 
 	<!-- Security -->
 	<string name="keystore_error_title">Güvenlik Sıfırlaması</string>
 	<string name="keystore_error_message">Cihazının güvenlik ayarlarındaki bir değişiklik nedeniyle (ekran kilidini değiştirmek gibi), verilerini korumak için Wi-Fi kara listen sıfırlandı. Kara listeye aldığın ağları yeniden eklemen gerekecek.</string>
 
 	<!-- Backup/Restore -->
+	<string name="export">Dışa Aktar</string>
+	<string name="export_password_description">Yedekleme dosyanı şifrelemek için bir parola gir. Bu yapılandırmayı daha sonra geri yüklemek için aynı parolaya ihtiyacın olacak.</string>
+	<string name="password">Parola</string>
+	<string name="import_action">İçe Aktar</string>
+	<string name="import_confirmation_message">Bu yapılandırmayı içe aktarmak mevcut ayarlarının, sunucu adlarının ve Wi-Fi kara listenin üzerine yazacak. Devam etmek istiyor musun?</string>
+	<string name="export_success">Yapılandırma başarıyla dışa aktarıldı</string>
+	<string name="export_failed">Yapılandırma dışa aktarılamadı</string>
+	<string name="import_success">Yapılandırma başarıyla içe aktarıldı</string>
+	<string name="import_failed">Dosya okunamadı</string>
+	<string name="import_failed_password">Şifre çözme başarısız oldu. Hatalı parola veya bozuk dosya.</string>
 
 	<!-- Feedback & Notifications -->
-	<string name="service_notif_title">Wi-Fi İzleniyor</string>
+	<string name="notif_channel_alerts_name">Otomasyon Uyarıları</string>
+	<string name="notif_channel_alerts_desc">Özel DNS otomatik olarak değiştirildiğinde veya ağlar kara listeye alındığında bildirimler.</string>
+	<string name="notif_channel_service_name">Arka Plan İzleme</string>
+	<string name="notif_channel_service_desc">Arka planda Wi-Fi ağlarını izlemek için Android tarafından istenen sessiz, kalıcı bir bildirim.</string>
+	<string name="service_notif_title">Ağ Durumu İzleniyor</string>
 	<string name="service_notif_text">Özel DNS modunu otomatikleştirmek için DNS Toggle aktif.</string>
 	<string name="notif_dns_disabled_auto">%s için Özel DNS otomatik olarak devre dışı bırakıldı</string>
+	<string name="notif_vpn_dns_applied">Özel DNS, VPN için ayarlandı</string>
+	<string name="notif_vpn_dns_restored">VPN sonrasında Özel DNS geri yüklendi</string>
 	<string name="notif_ssid_added">%s kara listeye eklendi</string>
 	<string name="notif_ssid_removed">%s kara listeden kaldırıldı</string>
+	<string name="toast_dns_changed">Özel DNS %s olarak değiştirildi</string>
+	<string name="hostname_saved">Sunucu adı kaydedildi</string>
+
+	<!-- App Shortcuts -->
+	<string name="shortcut_toggle_short">DNS Değiştir</string>
+	<string name="shortcut_toggle_long">Özel DNS Modunu Değiştir</string>
+	<string name="shortcut_select_short">DNS Seç</string>
+	<string name="shortcut_select_long">Özel DNS Sunucu Adını Seç</string>
 </resources>
