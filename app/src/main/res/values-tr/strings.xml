@@ -1,6 +1,5 @@
 <resources>
 	<!-- App Info -->
-	<string name="app_name" translatable="false">DNS Toggle</string>
 	<string name="app_version_format">Uygulama sürümü: %s</string>
 	<string name="github">GitHub (kaynak kodu)</string>
 	<string name="support">Destek Al</string>
