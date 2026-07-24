@@ -20,6 +20,7 @@ class VpnSectionController(
 	private val onShowWifiMonitoringInfoDialog: () -> Unit
 ) {
 	private lateinit var btnVpnInfo: ImageButton
+	private lateinit var rowVpnOverrideToggle: View
 	private lateinit var switchVpnOverride: MaterialSwitch
 	private lateinit var rowVpnDns: View
 	private lateinit var tvVpnDnsValue: TextView
@@ -28,6 +29,7 @@ class VpnSectionController(
 
 	fun initialize(
 		btnVpnInfo: ImageButton,
+		rowVpnOverrideToggle: View,
 		switchVpnOverride: MaterialSwitch,
 		rowVpnDns: View,
 		tvVpnDnsValue: TextView,
@@ -35,6 +37,7 @@ class VpnSectionController(
 		btnGrantVpnPermission: Button
 	) {
 		this.btnVpnInfo = btnVpnInfo
+		this.rowVpnOverrideToggle = rowVpnOverrideToggle
 		this.switchVpnOverride = switchVpnOverride
 		this.rowVpnDns = rowVpnDns
 		this.tvVpnDnsValue = tvVpnDnsValue
@@ -74,6 +77,7 @@ class VpnSectionController(
 	}
 
 	private fun setupVpnSettings() {
+		rowVpnOverrideToggle.setOnClickListener { switchVpnOverride.toggle() }
 		switchVpnOverride.setOnCheckedChangeListener { _, isChecked ->
 			viewModel.setVpnOverrideEnabled(isChecked)
 		}

@@ -102,6 +102,7 @@
 	<string name="show_toast_notif_summary">Show a status notification when Private DNS is toggled via the Quick Settings tile.</string>
 	<string name="hide_launcher_icon">Hide app icon</string>
 	<string name="hide_launcher_icon_summary">When enabled, the app will be hidden from your app drawer. You can still access settings by long-pressing the Quick Settings tile. Note: on some launchers this option may not fully hide the icon.</string>
+	<string name="hide_launcher_icon_tv_summary">This feature is unavailable due to Android TV limitations.</string>
 
 	<!-- Main UI - USB Debugging Tile -->
 	<string name="usb_debugging">USB Debugging</string>
@@ -148,4 +149,10 @@
 	<string name="notif_ssid_removed">Removed %s from blacklist</string>
 	<string name="toast_dns_changed">Private DNS changed to %s</string>
 	<string name="hostname_saved">Hostname saved</string>
+
+	<!-- App Shortcuts -->
+	<string name="shortcut_toggle_short">Toggle DNS</string>
+	<string name="shortcut_toggle_long">Toggle Private DNS Mode</string>
+	<string name="shortcut_select_short">Select DNS</string>
+	<string name="shortcut_select_long">Choose Private DNS Hostname</string>
 </resources>

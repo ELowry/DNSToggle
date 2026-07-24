@@ -6,8 +6,9 @@
 	android:layout_height="wrap_content"
 	android:layout_marginHorizontal="2dp"
 	android:layout_marginVertical="4dp"
+	android:addStatesFromChildren="true"
 	android:clickable="true"
-	android:focusable="true"
+	android:focusable="false"
 	android:foreground="?attr/selectableItemBackground"
 	android:stateListAnimator="@animator/m3_card_bounce"
 	app:cardBackgroundColor="?attr/colorSurfaceContainer"
@@ -56,7 +57,10 @@
 			android:layout_width="48dp"
 			android:layout_height="48dp"
 			android:background="?attr/selectableItemBackgroundBorderless"
+			android:clickable="true"
 			android:contentDescription="@string/add_ssid"
+			android:focusable="true"
+			android:focusableInTouchMode="false"
 			android:src="@drawable/ic_check"
 			android:visibility="gone"
 			app:tint="?attr/colorPrimary" />
@@ -66,7 +70,10 @@
 			android:layout_width="48dp"
 			android:layout_height="48dp"
 			android:background="?attr/selectableItemBackgroundBorderless"
+			android:clickable="true"
 			android:contentDescription="@string/edit_ssid"
+			android:focusable="true"
+			android:focusableInTouchMode="false"
 			android:src="@drawable/ic_edit"
 			app:tint="?attr/colorOnSurfaceVariant" />
 
@@ -75,7 +82,10 @@
 			android:layout_width="48dp"
 			android:layout_height="48dp"
 			android:background="?attr/selectableItemBackgroundBorderless"
+			android:clickable="true"
 			android:contentDescription="@string/delete_ssid_confirm"
+			android:focusable="true"
+			android:focusableInTouchMode="false"
 			android:src="@drawable/ic_delete"
 			app:tint="?attr/colorOnSurfaceVariant" />
 

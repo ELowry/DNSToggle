@@ -1,5 +1,6 @@
 package com.ericlowry.dnstoggle.ui.controller
 
+import android.view.View
 import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -28,6 +29,7 @@ class DnsSectionController(
 	private lateinit var dnsToggleSwitch: MaterialSwitch
 	private lateinit var addHostnameButton: ImageButton
 	private lateinit var dnsHostnameListContainer: RecyclerView
+	private lateinit var rowDisableDnsTest: View
 	private lateinit var switchDisableDnsTest: MaterialSwitch
 	private lateinit var hostnamesAdapter: HostnamesAdapter
 
@@ -35,11 +37,13 @@ class DnsSectionController(
 		dnsToggleSwitch: MaterialSwitch,
 		addHostnameButton: ImageButton,
 		dnsHostnameListContainer: RecyclerView,
+		rowDisableDnsTest: View,
 		switchDisableDnsTest: MaterialSwitch
 	) {
 		this.dnsToggleSwitch = dnsToggleSwitch
 		this.addHostnameButton = addHostnameButton
 		this.dnsHostnameListContainer = dnsHostnameListContainer
+		this.rowDisableDnsTest = rowDisableDnsTest
 		this.switchDisableDnsTest = switchDisableDnsTest
 
 		setupDnsToggle()
@@ -140,6 +144,7 @@ class DnsSectionController(
 	}
 
 	private fun setupDisableDnsTest() {
+		rowDisableDnsTest.setOnClickListener { switchDisableDnsTest.toggle() }
 		switchDisableDnsTest.setOnCheckedChangeListener { _, isChecked ->
 			viewModel.setDisableDnsTest(isChecked)
 		}

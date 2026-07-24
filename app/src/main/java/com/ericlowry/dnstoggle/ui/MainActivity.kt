@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Intent
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
@@ -20,6 +21,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -41,12 +43,14 @@ import com.ericlowry.dnstoggle.util.PermissionHelper
 import com.ericlowry.dnstoggle.util.RootUtils
 import com.ericlowry.dnstoggle.util.ShizukuUtils
 import com.ericlowry.dnstoggle.util.attemptSecureSettingsGrant
+import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.color.MaterialColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
+import com.google.android.material.R as MaterialR
 
 class MainActivity : AppCompatActivity() {
 
@@ -100,6 +104,7 @@ class MainActivity : AppCompatActivity() {
 		observeViewModel()
 
 		setupGlobalInteractions()
+		setupStatusBarColorSync()
 		updateMainPermissionUiState()
 		ssidController.updateUiState(PermissionHelper.hasSsidPermissions(this))
 
@@ -179,9 +184,40 @@ class MainActivity : AppCompatActivity() {
 
 	private fun setupWindowInsets() {
 		val mainView = findViewById<View>(R.id.main)
-		ViewCompat.setOnApplyWindowInsetsListener(mainView) { view, insets ->
+		val statusBarBackground = findViewById<View>(R.id.statusBarBackground)
+		val appBarLayout = findViewById<AppBarLayout>(R.id.appBarLayout)
+		val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
+		val contentWrapper = findViewById<View>(R.id.contentWrapper)
+		val scrollInnerContainer = (contentWrapper.parent as View)
+
+		val density = resources.displayMetrics.density
+		val defaultPadding = (12 * density).toInt()
+
+		ViewCompat.setOnApplyWindowInsetsListener(mainView) { _, insets ->
 			val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-			view.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom)
+			val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+
+			val left = systemBars.left.coerceAtLeast(displayCutout.left)
+			val right = systemBars.right.coerceAtLeast(displayCutout.right)
+
+
+			val statusParams = statusBarBackground.layoutParams
+			statusParams.height = systemBars.top
+			statusBarBackground.layoutParams = statusParams
+
+			appBarLayout.setPadding(0, systemBars.top, 0, 0)
+			toolbar.setPadding(left, 0, right, 0)
+
+			contentWrapper.setPadding(left, 0, right, 0)
+
+			// 3. Spacing (Scroll Inner)
+			scrollInnerContainer.setPadding(
+				defaultPadding,
+				defaultPadding,
+				defaultPadding,
+				systemBars.bottom + defaultPadding
+			)
+
 			insets
 		}
 	}
@@ -192,6 +228,16 @@ class MainActivity : AppCompatActivity() {
 
 		val accentColor = MaterialColors.getColor(toolbar, android.R.attr.colorPrimary)
 		toolbar.logo?.setTint(accentColor)
+
+		// Hide toolbar on scroll for height-constrained device
+		val isHeightConstrained = resources.configuration.screenHeightDp < 600
+		if (isHeightConstrained) {
+			val params = toolbar.layoutParams as AppBarLayout.LayoutParams
+			params.scrollFlags = AppBarLayout.LayoutParams.SCROLL_FLAG_SCROLL or
+					AppBarLayout.LayoutParams.SCROLL_FLAG_ENTER_ALWAYS or
+					AppBarLayout.LayoutParams.SCROLL_FLAG_SNAP
+			toolbar.layoutParams = params
+		}
 	}
 
 	private fun initializeViews() {
@@ -205,6 +251,7 @@ class MainActivity : AppCompatActivity() {
 			dnsToggleSwitch = findViewById(R.id.switchPrivateDns),
 			addHostnameButton = findViewById(R.id.btnAddHostname),
 			dnsHostnameListContainer = findViewById(R.id.dnsHostnameListContainer),
+			rowDisableDnsTest = findViewById(R.id.rowDisableDnsTest),
 			switchDisableDnsTest = findViewById(R.id.switchDisableDnsTest)
 		)
 
@@ -216,7 +263,9 @@ class MainActivity : AppCompatActivity() {
 			dividerSsidList = findViewById(R.id.dividerSsidList),
 			ssidListContainer = findViewById(R.id.ssidListContainer),
 			dividerSsidSettings = findViewById(R.id.dividerSsidSettings),
+			rowAutoBlacklist = findViewById(R.id.rowAutoBlacklist),
 			switchAutoBlacklist = findViewById(R.id.switchAutoBlacklist),
+			rowAutoWhitelist = findViewById(R.id.rowAutoWhitelist),
 			switchAutoWhitelist = findViewById(R.id.switchAutoWhitelist),
 			rowConnectivityWatchdogToggle = findViewById(R.id.rowConnectivityWatchdogToggle),
 			switchConnectivityWatchdog = findViewById(R.id.switchConnectivityWatchdog),
@@ -228,6 +277,7 @@ class MainActivity : AppCompatActivity() {
 
 		vpnController.initialize(
 			btnVpnInfo = findViewById(R.id.btnVpnInfo),
+			rowVpnOverrideToggle = findViewById(R.id.rowVpnOverrideToggle),
 			switchVpnOverride = findViewById(R.id.switchVpnOverride),
 			rowVpnDns = findViewById(R.id.rowVpnDns),
 			tvVpnDnsValue = findViewById(R.id.tvVpnDnsValue),
@@ -237,7 +287,9 @@ class MainActivity : AppCompatActivity() {
 
 		miscController.initialize(
 			switchShowToast = findViewById(R.id.switchShowToast),
+			rowShowToast = findViewById(R.id.rowShowToast),
 			switchHideLauncher = findViewById(R.id.switchHideLauncher),
+			rowHideLauncher = findViewById(R.id.rowHideLauncher),
 			rowUsbDebuggingTile = findViewById(R.id.rowUsbDebuggingTileLayout),
 			switchUsbDebuggingTile = findViewById(R.id.switchUsbDebuggingTile),
 			tvUsbDebuggingTileSummary = findViewById(R.id.tvUsbDebuggingTileSummary)
@@ -280,6 +332,45 @@ class MainActivity : AppCompatActivity() {
 		btnFixMainPermission.setOnClickListener {
 			showInitialPermissionDialog()
 		}
+	}
+
+	private fun setupStatusBarColorSync() {
+		val statusBarBackground = findViewById<View>(R.id.statusBarBackground)
+		val mainScrollView = findViewById<NestedScrollView>(R.id.mainScrollView)
+
+		val isHeightConstrained = resources.configuration.screenHeightDp < 600
+		if (!isHeightConstrained) {
+			statusBarBackground.visibility = View.GONE
+			return
+		}
+
+		statusBarBackground.visibility = View.VISIBLE
+
+		val baseColor = MaterialColors.getColor(this, MaterialR.attr.colorSurface, Color.BLACK)
+		val liftedColor =
+			MaterialColors.getColor(this, MaterialR.attr.colorSurfaceContainer, Color.BLACK)
+
+		statusBarBackground.setBackgroundColor(baseColor)
+
+		var animator: android.animation.ValueAnimator? = null
+
+		mainScrollView.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { _, _, scrollY, _, _ ->
+			val isLifted = scrollY > 0
+			val target = if (isLifted) liftedColor else baseColor
+
+			if (statusBarBackground.tag != target) {
+				statusBarBackground.tag = target
+				animator?.cancel()
+
+				val startColor = if (isLifted) baseColor else liftedColor
+
+				animator = android.animation.ValueAnimator.ofArgb(startColor, target).apply {
+					duration = 150
+					addUpdateListener { statusBarBackground.setBackgroundColor(it.animatedValue as Int) }
+					start()
+				}
+			}
+		})
 	}
 
 	private fun updateOverrideStatusUi() {

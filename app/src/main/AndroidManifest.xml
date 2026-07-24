@@ -20,9 +20,26 @@
 	<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
 	<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
+	<uses-feature
+		android:name="android.hardware.type.television"
+		android:required="false" />
+	<uses-feature
+		android:name="android.software.leanback"
+		android:required="false" />
+	<uses-feature
+		android:name="android.hardware.touchscreen"
+		android:required="false" />
+	<uses-feature
+		android:name="android.hardware.wifi"
+		android:required="false" />
+	<uses-feature
+		android:name="android.hardware.location.gps"
+		android:required="false" />
+
 	<application
 		android:name=".DnsToggleApplication"
 		android:allowBackup="true"
+		android:banner="@drawable/tv_banner"
 		android:dataExtractionRules="@xml/data_extraction_rules"
 		android:fullBackupContent="@xml/backup_rules"
 		android:icon="@mipmap/ic_launcher"
@@ -61,11 +78,50 @@
 			android:taskAffinity=""
 			android:theme="@style/Theme.DNSToggle.Dialog">
 			<intent-filter>
+				<action android:name="com.ericlowry.dnstoggle.ACTION_SELECT_DNS" />
+				<category android:name="android.intent.category.DEFAULT" />
+			</intent-filter>
+			<intent-filter>
 				<action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES" />
 			</intent-filter>
+
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+
+				<data
+					android:host="select"
+					android:scheme="dnstoggle" />
+			</intent-filter>
+
 			<meta-data
 				android:name="android.service.quicksettings.tile_service"
 				android:value="com.ericlowry.dnstoggle.service.DnsToggleService" />
+		</activity>
+
+		<activity
+			android:name=".ui.ToggleActivity"
+			android:excludeFromRecents="true"
+			android:exported="true"
+			android:taskAffinity=""
+			android:theme="@style/Theme.Transparent">
+			<intent-filter>
+				<action android:name="com.ericlowry.dnstoggle.ACTION_TOGGLE" />
+				<category android:name="android.intent.category.DEFAULT" />
+			</intent-filter>
+
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW" />
+
+				<category android:name="android.intent.category.DEFAULT" />
+				<category android:name="android.intent.category.BROWSABLE" />
+
+				<data
+					android:host="toggle"
+					android:scheme="dnstoggle" />
+			</intent-filter>
 		</activity>
 
 		<activity
@@ -84,8 +140,14 @@
 			android:targetActivity=".ui.MainActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
+
 				<category android:name="android.intent.category.LAUNCHER" />
+				<category android:name="android.intent.category.LEANBACK_LAUNCHER" />
 			</intent-filter>
+
+			<meta-data
+				android:name="android.app.shortcuts"
+				android:resource="@xml/shortcuts" />
 		</activity-alias>
 
 		<service
@@ -120,6 +182,9 @@
 				<action android:name="android.service.quicksettings.action.QS_TILE" />
 			</intent-filter>
 
+			<meta-data
+				android:name="android.service.quicksettings.TILE_CATEGORY"
+				android:value="android.service.quicksettings.CATEGORY_UTILITIES" />
 			<meta-data
 				android:name="android.service.quicksettings.TOGGLEABLE_TILE"
 				android:value="true" />

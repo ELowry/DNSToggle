@@ -37,7 +37,9 @@ class SsidSectionController(
 	private lateinit var dividerSsidList: View
 	private lateinit var ssidListContainer: RecyclerView
 	private lateinit var dividerSsidSettings: View
+	private lateinit var rowAutoBlacklist: View
 	private lateinit var switchAutoBlacklist: MaterialSwitch
+	private lateinit var rowAutoWhitelist: View
 	private lateinit var switchAutoWhitelist: MaterialSwitch
 	private lateinit var rowConnectivityWatchdogToggle: View
 	private lateinit var switchConnectivityWatchdog: MaterialSwitch
@@ -55,7 +57,9 @@ class SsidSectionController(
 		dividerSsidList: View,
 		ssidListContainer: RecyclerView,
 		dividerSsidSettings: View,
+		rowAutoBlacklist: View,
 		switchAutoBlacklist: MaterialSwitch,
+		rowAutoWhitelist: View,
 		switchAutoWhitelist: MaterialSwitch,
 		rowConnectivityWatchdogToggle: View,
 		switchConnectivityWatchdog: MaterialSwitch,
@@ -71,7 +75,9 @@ class SsidSectionController(
 		this.dividerSsidList = dividerSsidList
 		this.ssidListContainer = ssidListContainer
 		this.dividerSsidSettings = dividerSsidSettings
+		this.rowAutoBlacklist = rowAutoBlacklist
 		this.switchAutoBlacklist = switchAutoBlacklist
+		this.rowAutoWhitelist = rowAutoWhitelist
 		this.switchAutoWhitelist = switchAutoWhitelist
 		this.rowConnectivityWatchdogToggle = rowConnectivityWatchdogToggle
 		this.switchConnectivityWatchdog = switchConnectivityWatchdog
@@ -158,6 +164,7 @@ class SsidSectionController(
 	}
 
 	private fun setupAutoSettings() {
+		rowAutoBlacklist.setOnClickListener { switchAutoBlacklist.toggle() }
 		switchAutoBlacklist.setOnCheckedChangeListener { _, isChecked ->
 			viewModel.setAutoBlacklist(isChecked)
 			if (isChecked) {
@@ -165,6 +172,7 @@ class SsidSectionController(
 			}
 		}
 
+		rowAutoWhitelist.setOnClickListener { switchAutoWhitelist.toggle() }
 		switchAutoWhitelist.setOnCheckedChangeListener { _, isChecked ->
 			viewModel.setAutoWhitelist(isChecked)
 			if (isChecked) {
@@ -174,6 +182,7 @@ class SsidSectionController(
 	}
 
 	private fun setupWatchdog() {
+		rowConnectivityWatchdogToggle.setOnClickListener { switchConnectivityWatchdog.toggle() }
 		switchConnectivityWatchdog.setOnCheckedChangeListener { _, isChecked ->
 			viewModel.setConnectivityWatchdogEnabled(isChecked)
 			if (isChecked) {

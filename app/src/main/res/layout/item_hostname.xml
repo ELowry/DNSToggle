@@ -5,8 +5,9 @@
 	android:layout_height="wrap_content"
 	android:layout_marginHorizontal="2dp"
 	android:layout_marginVertical="4dp"
+	android:addStatesFromChildren="true"
 	android:clickable="true"
-	android:focusable="true"
+	android:focusable="false"
 	android:foreground="?attr/selectableItemBackground"
 	android:stateListAnimator="@animator/m3_card_bounce"
 	app:cardBackgroundColor="?attr/colorSurfaceContainer"
@@ -21,15 +22,23 @@
 		android:animateLayoutChanges="true"
 		android:gravity="center_vertical"
 		android:orientation="horizontal"
-		android:paddingVertical="4dp"
-		android:paddingStart="12dp"
+		android:paddingVertical="2dp"
+		android:paddingStart="4dp"
 		android:paddingEnd="4dp">
 
 		<LinearLayout
+			android:id="@+id/hostnameInfoContainer"
 			android:layout_width="0dp"
 			android:layout_height="wrap_content"
 			android:layout_weight="1"
-			android:orientation="vertical">
+			android:background="@drawable/bg_hostname_info"
+			android:clickable="false"
+			android:focusable="true"
+			android:focusableInTouchMode="false"
+			android:orientation="vertical"
+			android:paddingVertical="2dp"
+			android:paddingStart="8dp"
+			android:paddingEnd="6dp">
 
 			<TextView
 				android:id="@+id/tvHostname"
@@ -60,7 +69,9 @@
 			android:layout_width="48dp"
 			android:layout_height="48dp"
 			android:background="?attr/selectableItemBackgroundBorderless"
+			android:clickable="true"
 			android:contentDescription="@string/edit_hostname"
+			android:focusable="true"
 			android:src="@drawable/ic_edit"
 			app:tint="?attr/colorOnSurfaceVariant" />
 
@@ -69,7 +80,9 @@
 			android:layout_width="48dp"
 			android:layout_height="48dp"
 			android:background="?attr/selectableItemBackgroundBorderless"
+			android:clickable="true"
 			android:contentDescription="@string/delete_hostname_confirm"
+			android:focusable="true"
 			android:src="@drawable/ic_delete"
 			app:tint="?attr/colorOnSurfaceVariant" />
 
@@ -78,7 +91,9 @@
 			android:layout_width="48dp"
 			android:layout_height="48dp"
 			android:background="?attr/selectableItemBackgroundBorderless"
+			android:clickable="true"
 			android:contentDescription="@string/add_hostname_desc"
+			android:focusable="true"
 			android:src="@drawable/ic_save"
 			android:visibility="gone"
 			app:tint="?attr/colorPrimary" />

@@ -1,7 +1,10 @@
 package com.ericlowry.dnstoggle.ui.controller
 
+import android.app.UiModeManager
 import android.content.ComponentName
+import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.provider.Settings
 import android.view.View
 import android.widget.Button
@@ -21,7 +24,10 @@ class MiscSettingsController(
 	private val onOpenUrl: (String) -> Unit
 ) {
 	private lateinit var switchShowToast: MaterialSwitch
+	private lateinit var rowShowToast: View
 	private lateinit var switchHideLauncher: MaterialSwitch
+	private lateinit var rowHideLauncher: View
+	private lateinit var tvHideLauncherSummary: TextView
 	private lateinit var rowUsbDebuggingTile: View
 	private lateinit var switchUsbDebuggingTile: MaterialSwitch
 	private lateinit var tvUsbDebuggingTileSummary: TextView
@@ -30,15 +36,25 @@ class MiscSettingsController(
 	private var lastDevHitTime: Long = 0
 	private var devToast: Toast? = null
 
+	private val isTvDevice by lazy {
+		val uiModeManager = activity.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+		uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
+	}
+
 	fun initialize(
 		switchShowToast: MaterialSwitch,
+		rowShowToast: View,
 		switchHideLauncher: MaterialSwitch,
+		rowHideLauncher: View,
 		rowUsbDebuggingTile: View,
 		switchUsbDebuggingTile: MaterialSwitch,
 		tvUsbDebuggingTileSummary: TextView
 	) {
 		this.switchShowToast = switchShowToast
+		this.rowShowToast = rowShowToast
 		this.switchHideLauncher = switchHideLauncher
+		this.rowHideLauncher = rowHideLauncher
+		this.tvHideLauncherSummary = activity.findViewById(R.id.tvHideLauncherSummary)
 		this.rowUsbDebuggingTile = rowUsbDebuggingTile
 		this.switchUsbDebuggingTile = switchUsbDebuggingTile
 		this.tvUsbDebuggingTileSummary = tvUsbDebuggingTileSummary
@@ -52,6 +68,16 @@ class MiscSettingsController(
 		if (prefs.getBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, false)) {
 			rowUsbDebuggingTile.visibility = View.VISIBLE
 		}
+
+		if (isTvDevice) {
+			rowHideLauncher.isEnabled = false
+			rowHideLauncher.alpha = 0.5f
+			switchHideLauncher.isEnabled = false
+			tvHideLauncherSummary.text = activity.getString(R.string.hide_launcher_icon_tv_summary)
+
+			updateLauncherComponentState(isHidden = false)
+			viewModel.setHideLauncherIcon(false)
+		}
 	}
 
 	fun observeViewModel() {
@@ -60,16 +86,22 @@ class MiscSettingsController(
 		}
 
 		viewModel.hideLauncherIcon.observe(activity) { isHidden ->
-			switchHideLauncher.isChecked = isHidden
-			updateLauncherComponentState(isHidden)
+			if (!isTvDevice) {
+				switchHideLauncher.isChecked = isHidden
+				updateLauncherComponentState(isHidden)
+			} else {
+				switchHideLauncher.isChecked = false
+			}
 		}
 	}
 
 	private fun setupOtherSettings() {
+		rowShowToast.setOnClickListener { switchShowToast.toggle() }
 		switchShowToast.setOnCheckedChangeListener { _, isChecked ->
 			viewModel.setShowToast(isChecked)
 		}
 
+		rowHideLauncher.setOnClickListener { switchHideLauncher.toggle() }
 		switchHideLauncher.setOnCheckedChangeListener { _, isChecked ->
 			viewModel.setHideLauncherIcon(isChecked)
 		}

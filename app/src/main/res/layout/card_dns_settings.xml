@@ -14,12 +14,13 @@
 	<androidx.constraintlayout.widget.ConstraintLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:padding="16dp">
+		android:padding="12dp">
 
 		<TextView
 			android:id="@+id/tvToggleLabel"
 			android:layout_width="0dp"
 			android:layout_height="wrap_content"
+			android:layout_marginStart="4dp"
 			android:text="@string/private_dns"
 			android:textAppearance="?attr/textAppearanceTitleMedium"
 			android:textStyle="bold"
@@ -32,6 +33,7 @@
 			android:id="@+id/switchPrivateDns"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
+			android:layout_marginEnd="4dp"
 			android:contentDescription="@string/private_dns"
 			app:layout_constraintEnd_toEndOf="parent"
 			app:layout_constraintTop_toTopOf="parent" />
@@ -40,7 +42,9 @@
 			android:id="@+id/dnsHostnamesHeader"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
+			android:layout_marginStart="4dp"
 			android:layout_marginTop="16dp"
+			android:layout_marginEnd="4dp"
 			android:gravity="center_vertical"
 			android:orientation="horizontal"
 			app:layout_constraintTop_toBottomOf="@id/switchPrivateDns">
@@ -58,7 +62,9 @@
 				android:layout_width="48dp"
 				android:layout_height="48dp"
 				android:background="?attr/selectableItemBackgroundBorderless"
+				android:clickable="true"
 				android:contentDescription="@string/add_hostname"
+				android:focusable="true"
 				android:src="@drawable/ic_add" />
 		</LinearLayout>
 
@@ -86,9 +92,14 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:layout_marginTop="12dp"
+			android:background="@drawable/bg_row_selectable"
+			android:clickable="true"
+			android:focusable="true"
+			android:focusableInTouchMode="false"
 			android:gravity="center_vertical"
 			android:minHeight="48dp"
 			android:orientation="horizontal"
+			android:padding="4dp"
 			app:layout_constraintEnd_toEndOf="parent"
 			app:layout_constraintStart_toStartOf="parent"
 			app:layout_constraintTop_toBottomOf="@id/dividerDnsSettings">
@@ -118,7 +129,10 @@
 				android:id="@+id/switchDisableDnsTest"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:layout_marginStart="16dp" />
+				android:layout_marginStart="16dp"
+				android:clickable="false"
+				android:duplicateParentState="true"
+				android:focusable="false" />
 		</LinearLayout>
 	</androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

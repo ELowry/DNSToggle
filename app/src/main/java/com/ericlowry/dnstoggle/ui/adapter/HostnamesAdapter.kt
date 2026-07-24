@@ -1,6 +1,7 @@
 package com.ericlowry.dnstoggle.ui.adapter
 
 import android.animation.ValueAnimator
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -56,6 +57,7 @@ class HostnamesAdapter(
 
 	class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 		val card: MaterialCardView = view as MaterialCardView
+		val hostnameInfoContainer: View = view.findViewById(R.id.hostnameInfoContainer)
 		val tvHostname: TextView = view.findViewById(R.id.tvHostname)
 		val tvSecondaryHostname: TextView = view.findViewById(R.id.tvSecondaryHostname)
 		val tvStatus: TextView = view.findViewById(R.id.tvStatus)
@@ -170,8 +172,21 @@ class HostnamesAdapter(
 			holder.btnEdit.setOnClickListener { editCallback(hostname) }
 			holder.btnDelete.setOnClickListener { deleteCallback(hostname) }
 			holder.btnAdd.setOnClickListener { addInPlaceCallback(hostname) }
-			holder.itemView.setOnClickListener {
+
+			val mainClickListener = View.OnClickListener {
 				if (!isActive) clickCallback(hostname)
+			}
+			holder.itemView.setOnClickListener(mainClickListener)
+
+			holder.hostnameInfoContainer.setOnKeyListener { v, keyCode, event ->
+				if (event.action == KeyEvent.ACTION_UP &&
+					(keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER)
+				) {
+					mainClickListener.onClick(v)
+					true
+				} else {
+					false
+				}
 			}
 		}
 	}
