@@ -1,0 +1,4 @@
+- Disponibile sur Android TV
+- Optimisation de l'interface pour les grands écrans
+- Ajout de raccourcis d'application pour changer le mode DNS privé
+- Amélioration de la navigation avec croix directionnelle
