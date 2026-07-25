@@ -3,10 +3,12 @@ package com.ericlowry.dnstoggle
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.UiModeManager
 import android.content.ComponentName
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.database.ContentObserver
 import android.os.Handler
 import android.os.Looper
@@ -22,6 +24,7 @@ import com.ericlowry.dnstoggle.service.UsbDebuggingTileService
 import com.ericlowry.dnstoggle.service.WifiMonitoringService
 import com.ericlowry.dnstoggle.util.EncryptionManager
 import com.google.android.material.color.DynamicColors
+import com.google.android.material.color.DynamicColorsOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -99,7 +102,10 @@ class DnsToggleApplication : Application() {
 
 	override fun onCreate() {
 		super.onCreate()
-		DynamicColors.applyToActivitiesIfAvailable(this)
+		val dynamicOptions = DynamicColorsOptions.Builder()
+			.setPrecondition { _, _ -> shouldApplyDynamicColors() }
+			.build()
+		DynamicColors.applyToActivitiesIfAvailable(this, dynamicOptions)
 		DnsSettingsRepository.initialize(this)
 		initializeNotificationChannels()
 		initializePreferredDnsMode()
@@ -147,6 +153,12 @@ class DnsToggleApplication : Application() {
 
 	fun getEncryptedPrefs(): SharedPreferences {
 		return getSharedPreferences("encrypted_prefs", MODE_PRIVATE)
+	}
+
+	private fun shouldApplyDynamicColors(): Boolean {
+		// Skip for Android TV because of limited support
+		val uiModeManager = getSystemService(UI_MODE_SERVICE) as UiModeManager
+		return uiModeManager.currentModeType != Configuration.UI_MODE_TYPE_TELEVISION
 	}
 
 	private fun initializeNotificationChannels() {

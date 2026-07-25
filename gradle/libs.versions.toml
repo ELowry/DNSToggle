@@ -13,6 +13,7 @@ androidx-test-core = "1.7.0"
 androidx-test-ext-junit = "1.3.0"
 androidx-test-runner = "1.7.0"
 shizuku = "13.1.5"
+dynamicanimation = "1.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -29,6 +30,7 @@ androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidx-test-runner" }
 shizuku-api = { group = "dev.rikka.shizuku", name = "api", version.ref = "shizuku" }
 shizuku-provider = { group = "dev.rikka.shizuku", name = "provider", version.ref = "shizuku" }
+androidx-dynamicanimation = { group = "androidx.dynamicanimation", name = "dynamicanimation", version.ref = "dynamicanimation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

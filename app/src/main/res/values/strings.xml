@@ -2,6 +2,8 @@
 	<!-- App Info -->
 	<string name="app_name" translatable="false">DNS Toggle</string>
 	<string name="app_version_format">App version: %s</string>
+	<string name="whats_new">What’s New</string>
+	<string name="whats_new_version_format">New in v%s</string>
 	<string name="github">GitHub (source code)</string>
 	<string name="support">Get Support</string>
 
@@ -13,7 +15,7 @@
 	<string name="on_label">On</string>
 	<string name="off_label">Off</string>
 	<string name="automatic_off">Automatic (off)</string>
-	<string name="info_content_description">More information</string>
+	<string name="menu_content_description">More options</string>
 
 	<!-- Permissions & ADB Setup -->
 	<string name="permission_required">Permission Required</string>

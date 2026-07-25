@@ -27,7 +27,8 @@ object DnsManager {
 		context: Context,
 		enabled: Boolean,
 		targetHostname: String? = null,
-		isInteractiveMainUi: Boolean = false
+		isInteractiveMainUi: Boolean = false,
+		forceFeedback: Boolean = false
 	): ToggleResult {
 		val resolver = context.contentResolver
 		val app = context.applicationContext as DnsToggleApplication
@@ -85,7 +86,11 @@ object DnsManager {
 		if (currentSsid != null) {
 			if (!enabled && sharedPreferences.getBoolean(Constants.PREF_AUTO_BLACKLIST, false)) {
 				DnsSettingsRepository.addToBlacklist(currentSsid)
-				if (sharedPreferences.getBoolean(Constants.PREF_SHOW_TOAST, true)) {
+				if (forceFeedback || sharedPreferences.getBoolean(
+						Constants.PREF_SHOW_TOAST,
+						true
+					)
+				) {
 					NotificationUtils.showStatusNotification(
 						context,
 						context.getString(R.string.notif_ssid_added, currentSsid)
@@ -98,7 +103,11 @@ object DnsManager {
 				)
 			) {
 				DnsSettingsRepository.removeFromBlacklist(currentSsid)
-				if (sharedPreferences.getBoolean(Constants.PREF_SHOW_TOAST, true)) {
+				if (forceFeedback || sharedPreferences.getBoolean(
+						Constants.PREF_SHOW_TOAST,
+						true
+					)
+				) {
 					NotificationUtils.showStatusNotification(
 						context,
 						context.getString(R.string.notif_ssid_removed, currentSsid)
@@ -139,10 +148,10 @@ object DnsManager {
 			if (!handledByAuto) {
 				sharedPreferences.edit { putString(Constants.PREF_PREFERRED_DNS_MODE, newMode) }
 			}
-			if (!isInteractiveMainUi && sharedPreferences.getBoolean(
+			if (!isInteractiveMainUi && (forceFeedback || sharedPreferences.getBoolean(
 					Constants.PREF_SHOW_TOAST,
 					true
-				) && !handledByAuto
+				)) && !handledByAuto
 			) {
 				Handler(Looper.getMainLooper()).post {
 					if (enabled) {

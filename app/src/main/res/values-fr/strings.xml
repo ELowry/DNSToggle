@@ -2,6 +2,8 @@
 <resources>
     <!-- App Info -->
 	<string name="app_version_format">Version de l\'application: %s</string>
+    <string name="whats_new">Nouveautés</string>
+    <string name="whats_new_version_format">Nouveau dans la v%s</string>
     <string name="github">GitHub (code source)</string>
     <string name="support">Obtenir de l\'aide</string>
     <!-- Global -->
@@ -12,7 +14,6 @@
     <string name="on_label">Activé</string>
     <string name="off_label">Désactivé</string>
     <string name="automatic_off">Automatique (désactivé)</string>
-    <string name="info_content_description">Plus d\'informations</string>
     <!-- Permissions & ADB Setup -->
 	<string name="permission_required">Autorisation requise</string>
     <string name="permission_message">Pour utiliser cette application, vous devez accorder des autorisations d\'accès aux paramètres via root, Shizuku, ou exécuter cette commande ADB sur votre ordinateur avec le débogage USB activé:</string>
@@ -141,4 +142,5 @@
     <string name="shortcut_toggle_long">Activer/désactiver le DNS Privé</string>
     <string name="shortcut_select_short">Options DNS</string>
     <string name="shortcut_select_long">Ouvrir le choix de DNS privé</string>
+    <string name="menu_content_description">Plus d\'options</string>
 </resources>

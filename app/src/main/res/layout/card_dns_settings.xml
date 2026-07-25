@@ -95,7 +95,7 @@
 			android:background="@drawable/bg_row_selectable"
 			android:clickable="true"
 			android:focusable="true"
-			android:focusableInTouchMode="false"
+			android:focusableInTouchMode="true"
 			android:gravity="center_vertical"
 			android:minHeight="48dp"
 			android:orientation="horizontal"

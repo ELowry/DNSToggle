@@ -1,0 +1,4 @@
+- Amélioration de l'interface et du défilement sur Android TV
+- Ajout d'une section "Nouveautés" pour afficher les changements récents
+- Meilleure gestion des couleurs sur les appareils plus anciens et Android TV
+- Traduction turque (merci Kyo様)

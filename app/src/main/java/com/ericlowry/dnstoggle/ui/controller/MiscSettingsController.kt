@@ -8,6 +8,7 @@ import android.content.res.Configuration
 import android.provider.Settings
 import android.view.View
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -31,6 +32,7 @@ class MiscSettingsController(
 	private lateinit var rowUsbDebuggingTile: View
 	private lateinit var switchUsbDebuggingTile: MaterialSwitch
 	private lateinit var tvUsbDebuggingTileSummary: TextView
+	private lateinit var btnWhatsNew: Button
 
 	private var devHitCount = 0
 	private var lastDevHitTime: Long = 0
@@ -58,11 +60,13 @@ class MiscSettingsController(
 		this.rowUsbDebuggingTile = rowUsbDebuggingTile
 		this.switchUsbDebuggingTile = switchUsbDebuggingTile
 		this.tvUsbDebuggingTileSummary = tvUsbDebuggingTileSummary
+		this.btnWhatsNew = activity.findViewById(R.id.btnWhatsNew)
 
 		setupOtherSettings()
 		setupFooter()
 		setupUsbDebuggingTile()
 		setupVersionClick()
+		setupWhatsNew()
 
 		val prefs = (activity.application as DnsToggleApplication).getPrefs()
 		if (prefs.getBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, false)) {
@@ -178,6 +182,76 @@ class MiscSettingsController(
 				(activity.application as DnsToggleApplication).updateUsbDebuggingTileAvailability()
 			}
 		}
+	}
+
+	private fun setupWhatsNew() {
+		val pInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
+		val versionCode = pInfo.longVersionCode
+
+		val changelogPath = findChangelogPath(versionCode)
+		if (changelogPath != null) {
+			btnWhatsNew.visibility = View.VISIBLE
+			btnWhatsNew.setOnClickListener {
+				showChangelogDialog(changelogPath)
+			}
+		} else {
+			btnWhatsNew.visibility = View.GONE
+		}
+	}
+
+	private fun findChangelogPath(versionCode: Long): String? {
+		val locale = activity.resources.configuration.locales[0]
+		val language = locale.language
+		val country = locale.country
+
+		val fullLocale = if (country.isNotEmpty()) "$language-$country" else language
+		val fullPath = "$fullLocale/changelogs/$versionCode.txt"
+
+		if (assetExists(fullPath)) return fullPath
+
+		val langPath = "$language/changelogs/$versionCode.txt"
+		if (assetExists(langPath)) return langPath
+
+		val defaultPath = "en-US/changelogs/$versionCode.txt"
+		if (assetExists(defaultPath)) return defaultPath
+
+		return null
+	}
+
+	private fun assetExists(path: String): Boolean {
+		return try {
+			activity.assets.open(path).use { true }
+		} catch (_: Exception) {
+			false
+		}
+	}
+
+	private fun showChangelogDialog(path: String) {
+		val rawContent = activity.assets.open(path).bufferedReader().use { it.readText() }
+		val points = rawContent.lines()
+			.map { it.trim() }
+			.filter { it.isNotEmpty() }
+			.map { it.removePrefix("-").removePrefix("*").trim() }
+
+		val dialogView = activity.layoutInflater.inflate(R.layout.dialog_whats_new, null)
+		val container = dialogView.findViewById<LinearLayout>(R.id.changelogPointsContainer)
+
+		val pInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
+		val versionName = pInfo.versionName
+		dialogView.findViewById<TextView>(R.id.tvChangelogTitle).text =
+			activity.getString(R.string.whats_new_version_format, versionName)
+
+		points.forEach { pointText ->
+			val pointView =
+				activity.layoutInflater.inflate(R.layout.item_changelog_point, container, false)
+			pointView.findViewById<TextView>(R.id.tvPointText).text = pointText
+			container.addView(pointView)
+		}
+
+		com.google.android.material.dialog.MaterialAlertDialogBuilder(activity)
+			.setView(dialogView)
+			.setPositiveButton(R.string.close, null)
+			.show()
 	}
 
 	private fun setupFooter() {

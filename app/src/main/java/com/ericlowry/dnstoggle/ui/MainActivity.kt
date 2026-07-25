@@ -5,12 +5,14 @@ import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.view.View
+import android.view.ViewTreeObserver
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
@@ -22,6 +24,9 @@ import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.NestedScrollView
+import androidx.dynamicanimation.animation.DynamicAnimation
+import androidx.dynamicanimation.animation.SpringAnimation
+import androidx.dynamicanimation.animation.SpringForce
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
@@ -76,6 +81,13 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var tvOverrideStatus: TextView
 
 	private var permissionDialog: AlertDialog? = null
+	private var scrollSpring: SpringAnimation? = null
+
+	private val focusChangeListener = ViewTreeObserver.OnGlobalFocusChangeListener { _, newFocus ->
+		if (newFocus != null && !findViewById<View>(R.id.mainScrollView).isInTouchMode) {
+			smoothScrollToCenter(newFocus)
+		}
+	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		enableEdgeToEdge()
@@ -114,6 +126,23 @@ class MainActivity : AppCompatActivity() {
 
 		startPermissionPolling()
 		handleIntentExtras(intent)
+
+		val mainScrollView = findViewById<NestedScrollView>(R.id.mainScrollView)
+		mainScrollView.viewTreeObserver.addOnGlobalFocusChangeListener(focusChangeListener)
+
+		scrollSpring = SpringAnimation(mainScrollView, DynamicAnimation.SCROLL_Y).apply {
+			spring = SpringForce().apply {
+				stiffness = SpringForce.STIFFNESS_MEDIUM
+				dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
+			}
+		}
+	}
+
+	override fun onDestroy() {
+		findViewById<View>(R.id.mainScrollView).viewTreeObserver.removeOnGlobalFocusChangeListener(
+			focusChangeListener
+		)
+		super.onDestroy()
 	}
 
 	private fun initControllers() {
@@ -564,5 +593,37 @@ class MainActivity : AppCompatActivity() {
 		} catch (e: Exception) {
 			Log.e(TAG, "Failed to open URL", e)
 		}
+	}
+
+	private fun smoothScrollToCenter(view: View) {
+		val scrollView = findViewById<NestedScrollView>(R.id.mainScrollView)
+
+		var isDescendant = false
+		var parent = view.parent
+		while (parent != null) {
+			if (parent == scrollView) {
+				isDescendant = true
+				break
+			}
+			parent = parent.parent
+		}
+
+		if (!isDescendant) return
+
+		val rect = Rect()
+		view.getDrawingRect(rect)
+		scrollView.offsetDescendantRectToMyCoords(view, rect)
+
+		val scrollViewHeight = scrollView.height
+		val viewHeight = view.height
+		val viewTop = rect.top
+
+		val targetScrollY = viewTop - (scrollViewHeight / 2) + (viewHeight / 2)
+
+		val contentHeight = scrollView.getChildAt(0)?.height ?: 0
+		val maxScroll = contentHeight - scrollViewHeight
+		val clampedTargetY = targetScrollY.coerceIn(0, maxScroll.coerceAtLeast(0))
+
+		scrollSpring?.animateToFinalPosition(clampedTargetY.toFloat())
 	}
 }
