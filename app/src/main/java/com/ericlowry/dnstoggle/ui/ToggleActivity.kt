@@ -14,7 +14,7 @@ class ToggleActivity : AppCompatActivity() {
 			Settings.Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
 		val shouldEnable = currentMode != Constants.DNS_MODE_HOSTNAME
 
-		DnsManager.togglePrivateDns(this, shouldEnable)
+		DnsManager.togglePrivateDns(this, shouldEnable, forceFeedback = true)
 
 		finish()
 	}

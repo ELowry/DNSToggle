@@ -2,6 +2,32 @@ plugins {
 	alias(libs.plugins.android.application)
 }
 
+abstract class CopyChangelogsTask @Inject constructor(
+	private val fileSystemOperations: FileSystemOperations
+) : DefaultTask() {
+
+	@get:Input
+	abstract val versionCode: Property<Int>
+
+	@get:InputDirectory
+	@get:PathSensitive(PathSensitivity.RELATIVE)
+	abstract val metadataDir: DirectoryProperty
+
+	@get:OutputDirectory
+	abstract val destinationDirectory: DirectoryProperty
+
+	@TaskAction
+	fun action() {
+		val vc = versionCode.get()
+		fileSystemOperations.sync {
+			from(metadataDir) {
+				include("**/changelogs/$vc.txt")
+			}
+			into(destinationDirectory)
+		}
+	}
+}
+
 android {
 	namespace = "com.ericlowry.dnstoggle"
 	compileSdk = 37
@@ -10,8 +36,8 @@ android {
 		applicationId = "com.ericlowry.dnstoggle"
 		minSdk = 28
 		targetSdk = 37
-		versionCode = 20
-		versionName = "1.7.0"
+		versionCode = 21
+		versionName = "1.7.1"
 
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 	}
@@ -55,6 +81,22 @@ android {
 	}
 }
 
+val copyChangelogs = tasks.register<CopyChangelogsTask>("copyChangelogs") {
+	description =
+		"Copies the current version's changelog files from fastlane metadata to generated assets"
+	versionCode.set(android.defaultConfig.versionCode ?: 0)
+	metadataDir.set(layout.projectDirectory.dir("../fastlane/metadata/android"))
+}
+
+androidComponents {
+	onVariants { variant ->
+		variant.sources.assets?.addGeneratedSourceDirectory(
+			copyChangelogs,
+			CopyChangelogsTask::destinationDirectory
+		)
+	}
+}
+
 dependencies {
 	implementation(libs.androidx.core.ktx)
 	implementation(libs.androidx.appcompat)
@@ -64,6 +106,7 @@ dependencies {
 	implementation(libs.androidx.lifecycle.viewmodel.ktx)
 	implementation(libs.shizuku.api)
 	implementation(libs.shizuku.provider)
+	implementation(libs.androidx.dynamicanimation)
 	testImplementation(libs.junit)
 	testImplementation(libs.robolectric)
 	testImplementation(libs.kotlinx.coroutines.test)

@@ -18,7 +18,6 @@ import com.google.android.material.listitem.ListItemCardView
 import com.google.android.material.listitem.ListItemLayout
 import com.google.android.material.radiobutton.MaterialRadioButton
 import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 
 object DnsDialogHelper {
 
@@ -34,15 +33,8 @@ object DnsDialogHelper {
 				activity.findViewById(android.R.id.content),
 				false
 			)
-		val textInputLayoutHostname =
-			dialogView.findViewById<TextInputLayout>(R.id.textInputLayoutHostname)
 		val etHostname = dialogView.findViewById<TextInputEditText>(R.id.etHostname)
-		val textInputLayoutLabel =
-			dialogView.findViewById<TextInputLayout>(R.id.textInputLayoutLabel)
 		val etLabel = dialogView.findViewById<TextInputEditText>(R.id.etLabel)
-
-		textInputLayoutHostname.hint = activity.getString(R.string.dns_hostname_hint)
-		textInputLayoutLabel.hint = activity.getString(R.string.dns_label_hint)
 
 		if (existingHostname != null) {
 			etHostname.setText(existingHostname)

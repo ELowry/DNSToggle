@@ -6,12 +6,16 @@
 	<color name="dark_background">#0f0d0f</color>
 	<color name="dark_text">#d1c6c1</color>
 	<color name="dark_accent">#e29186</color>
-	<color name="dark_border">#3d383b</color>
+	<color name="dark_neutral">#272527</color>
+	<color name="dark_text_variant">#a19592</color>
+	<color name="dark_outline">#7b7270</color>
 
 	<color name="light_background">#ddd8d6</color>
 	<color name="light_text">#221a1f</color>
 	<color name="light_accent">#6d0a1f</color>
-	<color name="light_border">#b19f9e</color>
+	<color name="light_neutral">#cbc7c5</color>
+	<color name="light_text_variant">#4a3f3e</color>
+	<color name="light_outline">#8b7d7b</color>
 
 	<color name="warning_color">#a35b12</color>
 </resources>

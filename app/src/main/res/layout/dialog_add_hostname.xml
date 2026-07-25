@@ -18,7 +18,8 @@
 			style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:layout_marginBottom="16dp">
+			android:layout_marginBottom="16dp"
+			android:hint="@string/dns_hostname_hint">
 
 			<com.google.android.material.textfield.TextInputEditText
 				android:id="@+id/etHostname"
@@ -35,7 +36,8 @@
 			android:id="@+id/textInputLayoutLabel"
 			style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
 			android:layout_width="match_parent"
-			android:layout_height="wrap_content">
+			android:layout_height="wrap_content"
+			android:hint="@string/dns_label_hint">
 
 			<com.google.android.material.textfield.TextInputEditText
 				android:id="@+id/etLabel"

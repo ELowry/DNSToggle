@@ -1,6 +1,8 @@
 <resources>
 	<!-- App Info -->
 	<string name="app_version_format">Uygulama sürümü: %s</string>
+	<string name="whats_new">Yenilikler</string>
+	<string name="whats_new_version_format">v%s sürümündeki yenilikler</string>
 	<string name="github">GitHub (kaynak kodu)</string>
 	<string name="support">Destek Al</string>
 
@@ -12,7 +14,7 @@
 	<string name="on_label">Açık</string>
 	<string name="off_label">Kapalı</string>
 	<string name="automatic_off">Otomatik (kapalı)</string>
-	<string name="info_content_description">Daha fazla bilgi</string>
+	<string name="menu_content_description">Daha fazla seçenek</string>
 
 	<!-- Permissions & ADB Setup -->
 	<string name="permission_required">İzin Gerekli</string>
