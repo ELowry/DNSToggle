@@ -1,0 +1,3 @@
+- Se corrigió el flujo de la experiencia de usuario para la solicitud de permisos de root.
+- Se agregó un banner de requisitos de permisos.
+- Se agregó información contextual para la configuración de cambio de nombre de la etiqueta de la aplicación.

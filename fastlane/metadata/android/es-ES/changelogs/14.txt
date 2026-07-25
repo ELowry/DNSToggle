@@ -1,0 +1,7 @@
+- Soporte para múltiples hostnames DNS con cambio rápido (manteniendo presionado el mosaico de Ajustes Rápidos).
+- El mosaico muestra la etiqueta del DNS activo.
+- Opción para usar DNS privado con VPN activa.
+- Interruptor para desactivar notificaciones emergentes.
+- Información de la app y enlaces en la pantalla principal.
+- Rediseño de la interfaz a Material 3.
+- Optimizaciones generales de código.

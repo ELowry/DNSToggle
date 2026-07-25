@@ -1,0 +1,2 @@
+- Se redujo el tamaño del APK mediante la minificación con R8 y la compresión DEX tradicional.
+- Se realizaron mejoras en el mantenimiento de la compilación y en la seguridad.

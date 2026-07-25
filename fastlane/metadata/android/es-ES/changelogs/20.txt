@@ -1,0 +1,5 @@
+- Se agregó compatibilidad con Android TV
+- Se optimizó la interfaz para pantallas grandes
+- Se introdujeron accesos directos a aplicaciones para activarlas y seleccionarlas rápidamente desde la pantalla de inicio
+- Se mejoró la navegación con el D-Pad
+- Traducción al alemán en proceso (gracias, Menuel)

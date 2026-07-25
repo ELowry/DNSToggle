@@ -1,0 +1,6 @@
+- Se agregó el estado actual a la descripción del mosaico de Ajustes rápidos.
+- Se agregó una lista de bloqueo de Wi-Fi para la activación automática del DNS privado.
+- Se agregó la opción de actualización automática de la lista de bloqueo a través de Ajustes rápidos.
+- Se agregaron notificaciones de estado para los ajustes automáticos de DNS.
+- Se agregó un monitoreo en segundo plano que ahorra batería.
+- Se habilitó la copia de seguridad automática de la configuración y las listas de bloqueo.

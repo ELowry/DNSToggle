@@ -1,0 +1,2 @@
+- Se movió la carpeta «fastlane» a la raíz del proyecto
+- Se actualizó la explicación sobre el acceso a la ubicación (opcional) «en todo momento».

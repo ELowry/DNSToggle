@@ -1,0 +1,4 @@
+- Correcciones en la interfaz de usuario y mejora del desplazamiento en Android TV
+- Se agregó la sección «Novedades» para mostrar los cambios más recientes
+- Se corrigió la visualización de los colores en dispositivos y televisores más antiguos
+- Traducción al turco en proceso (gracias, Kyo-sama)

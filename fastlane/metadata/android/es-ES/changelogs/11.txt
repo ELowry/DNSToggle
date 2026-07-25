@@ -1,0 +1,6 @@
+- Se agregó el permiso INTERNET para realizar pruebas de ping y verificar la accesibilidad de DNS personalizadas.
+- Se agregó un botón de activación/desactivación para proveedores de DNS estrictos.
+- Se actualizaron los servicios en segundo plano para que sean compatibles con A14.
+- Se evitó perdida de ajustes de la lista de bloqueo al cambiar los ajustes del dispositivo.
+- Se corrigió el exceso de notificaciones al desconectarse y volver a conectarse con frecuencia a una red Wi-Fi.
+-Más...
