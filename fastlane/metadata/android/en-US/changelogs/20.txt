@@ -2,3 +2,4 @@
 - Optimized the interface for large screens
 - Introduced App Shortcuts for toggling and quick selection from the home screen
 - Improved D-Pad navigation
+- German translation WIP (thanks Menuel)
