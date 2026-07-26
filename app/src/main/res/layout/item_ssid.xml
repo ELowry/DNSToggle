@@ -28,9 +28,14 @@
 		android:paddingEnd="4dp">
 
 		<LinearLayout
+			android:id="@+id/ssidInfoContainer"
 			android:layout_width="0dp"
 			android:layout_height="wrap_content"
 			android:layout_weight="1"
+			android:background="@drawable/bg_row_selectable"
+			android:clickable="false"
+			android:focusable="true"
+			android:focusableInTouchMode="false"
 			android:orientation="vertical">
 
 			<TextView
@@ -47,9 +52,7 @@
 				android:layout_height="wrap_content"
 				android:textAppearance="?attr/textAppearanceBodySmall"
 				android:textColor="?attr/colorOnSurfaceVariant"
-				android:visibility="gone"
-				tools:text="Auto-added"
-				tools:visibility="visible" />
+				tools:text="Default" />
 		</LinearLayout>
 
 		<ImageButton

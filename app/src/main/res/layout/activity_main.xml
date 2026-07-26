@@ -100,9 +100,9 @@
 						android:textAppearance="?attr/textAppearanceBodyMedium"
 						android:textColor="?attr/colorOnPrimaryContainer"
 						android:textStyle="bold"
-						app:drawableStartCompat="@drawable/ic_info"
+						app:drawableStartCompat="@drawable/ic_info_i"
 						app:drawableTint="?attr/colorPrimary"
-						tools:text="VPN Override Active" />
+						tools:text="@string/status_override_vpn" />
 				</com.google.android.material.card.MaterialCardView>
 
 				<include
@@ -114,8 +114,8 @@
 					app:layout_constraintTop_toBottomOf="@id/cardOverrideStatus" />
 
 				<include
-					android:id="@+id/ssidBlacklist"
-					layout="@layout/card_ssid_blacklist"
+					android:id="@+id/wifiProfiles"
+					layout="@layout/card_wifi_profiles"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
 					android:layout_marginTop="24dp"
@@ -127,7 +127,7 @@
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
 					android:layout_marginTop="24dp"
-					app:layout_constraintTop_toBottomOf="@id/ssidBlacklist" />
+					app:layout_constraintTop_toBottomOf="@id/wifiProfiles" />
 
 				<TextView
 					android:id="@+id/tvOptionsTitle"
@@ -151,7 +151,7 @@
 					android:background="@drawable/bg_row_selectable"
 					android:clickable="true"
 					android:focusable="true"
-					android:focusableInTouchMode="true"
+					android:focusableInTouchMode="false"
 					android:gravity="center_vertical"
 					android:orientation="horizontal"
 					android:padding="4dp"
@@ -199,7 +199,7 @@
 					android:background="@drawable/bg_row_selectable"
 					android:clickable="true"
 					android:focusable="true"
-					android:focusableInTouchMode="true"
+					android:focusableInTouchMode="false"
 					android:gravity="center_vertical"
 					android:orientation="horizontal"
 					android:padding="4dp"

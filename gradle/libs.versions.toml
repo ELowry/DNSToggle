@@ -14,6 +14,7 @@ androidx-test-ext-junit = "1.3.0"
 androidx-test-runner = "1.7.0"
 shizuku = "13.1.5"
 dynamicanimation = "1.1.0"
+kotlinx-serialization = "1.11.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -31,6 +32,8 @@ androidx-test-runner = { group = "androidx.test", name = "runner", version.ref =
 shizuku-api = { group = "dev.rikka.shizuku", name = "api", version.ref = "shizuku" }
 shizuku-provider = { group = "dev.rikka.shizuku", name = "provider", version.ref = "shizuku" }
 androidx-dynamicanimation = { group = "androidx.dynamicanimation", name = "dynamicanimation", version.ref = "dynamicanimation" }
+kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+kotlinx-serialization-plugin = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.4.10" }

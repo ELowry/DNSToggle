@@ -7,13 +7,28 @@ import android.content.Intent
 import android.os.Build
 import android.service.quicksettings.TileService
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.time.Duration.Companion.milliseconds
 
 object TileServiceCompat {
+	private val debounceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+	private val debounceJobs = ConcurrentHashMap<ComponentName, Job>()
+
 	fun requestListeningState(context: Context, componentName: ComponentName) {
-		try {
-			TileService.requestListeningState(context, componentName)
-		} catch (e: Exception) {
-			Log.w("TileServiceCompat", "Failed to request tile listening state", e)
+		debounceJobs[componentName]?.cancel()
+		debounceJobs[componentName] = debounceScope.launch {
+			delay(500.milliseconds)
+			try {
+				TileService.requestListeningState(context.applicationContext, componentName)
+			} catch (e: Exception) {
+				Log.w("TileServiceCompat", "Failed to request tile listening state", e)
+			}
 		}
 	}
 

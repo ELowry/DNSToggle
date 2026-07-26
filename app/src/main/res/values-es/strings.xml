@@ -54,8 +54,6 @@
     <string name="wifi_monitoring_info_text">Para permitir el cambio automático, la aplicación supervisa los cambios en la red. El impacto en el consumo de batería debería ser mínimo, pero es posible que el sistema siga reportando actividad en segundo plano.</string>
     <string name="battery_optimization_explanation">Algunos dispositivos desactivan el monitoreo en segundo plano para ahorrar batería. Si la automatización deja de funcionar, desactiva las restricciones para esta app.</string>
     <string name="ignore_battery_optimizations">Desactivar las restricciones de la batería</string>
-    <string name="auto_blacklist_on_disable">Incluir automáticamente en la lista negra al desactivar el DNS privado</string>
-    <string name="auto_whitelist_on_enable">Incluir automáticamente en la lista blanca al habilitar el DNS privado</string>
     <string name="connectivity_watchdog_toggle">Inclusión automática en la lista negra en caso de falla de conectividad</string>
     <string name="connectivity_watchdog_info_text">Cuando el DNS privado falla, pero sigue habiendo conexión a Internet, la aplicación agregará automáticamente la red actual a la lista negra para restablecer la conectividad.</string>
     <string name="connectivity_watchdog_debounce_label">Espera antes de desactivarlo</string>
@@ -77,7 +75,6 @@
     <string name="edit_ssid">Editar SSID</string>
     <string name="ssid_hint">SSID (nombre de la red Wi-Fi)</string>
     <string name="ssid_saved">SSID incluido de forma permanente en la lista negra</string>
-    <string name="ssid_auto_added_label">Agregado automáticamente</string>
     <string name="delete_ssid_confirm">¿Quitar este SSID de la lista negra?</string>
     <string name="vpn_override_title">Anulación de VPN</string>
     <string name="vpn_override_summary">Cambiar automáticamente el DNS privado cuando se conecte una VPN.</string>
@@ -95,8 +92,6 @@
     <string name="show_usb_debugging_tile_summary">Muestra un mosaico adicional en Ajustes rápidos para activar o desactivar la depuración USB. Mantén presionado para abrir las opciones de desarrollador.</string>
     <string name="usb_debugging_tile_steps">Toca %1$d veces más para habilitar un mosaico de depuración USB.</string>
     <string name="usb_debugging_tile_enabled">¡Ya está disponible el mosaico de Ajustes rápidos para la depuración USB!</string>
-    <string name="enabling">Activando…</string>
-    <string name="disabling">Desactivando…</string>
     <string name="rename_app">Cambiar el nombre de la aplicación</string>
     <string name="rename_app_message">Elige un nombre que tenga sentido para ti. Este aparecerá en el ícono de la app y en el mosaico de Ajustes rápidos.</string>
     <string name="export_config">Configuración de exportación</string>

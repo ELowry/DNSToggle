@@ -32,24 +32,28 @@ Adds a Quick Settings tile to toggle your Private DNS on and off with a single t
 By long-pressing the Quick Settings tile, you can access the configuration menu to:
 
 - **Custom DNS Provider**:  
-  Set and label one or more custom Private DNS hostnames you can easily toggle between (e.g., `dns.adguard.com`).
+  Set and label one or more custom Private DNS hostnames you can easily toggle between (e.g., `dns.quad9.net`).
     - Optional automatic DNS hostname reachability check.
     - Automatically detects your active system DNS so you can easily save it to your list.
-- **Wi-Fi Blacklist**:  
-  Automatically disable Private DNS when connected to specific Wi-Fi networks.
-    - Optional automated addition/removal of the current Wi-Fi SSID from the blacklist when manually toggling the Quick Settings tile.
-    - Optional connectivity watchdog that automatically blacklists the current Wi-Fi SSID when Private DNS causes connectivity issues.
-- **VPN toggling**:  
-  Automatically set a DNS hostname or toggle Private DNS when a VPN is in use on the device.
+- **Wi-Fi Profiles**:  
+  Automatically set or disable Private DNS when connected to specific Wi-Fi networks, including options to:
+    - Auto-save changes to a Wi-Fi network profile when you manually toggle DNS or switch hostnames.
+    - Automatically disable Private DNS for the current network if it causes connectivity issues, ensuring you never lose internet access.
+- **VPN Override**:  
+  Automatically set a specific DNS hostname or switch to "Opportunistic" (Off) mode when a VPN connection is detected.
+- **Material You UI**:  
+  Modern, dynamic interface that adapts to your system theme and accent colors (Android 12+).
 - **Backup & Restore**:  
   Export and import your configuration via password-encrypted `.dnstoggle` files.
-    > _Note: For security, your encrypted hostnames and blacklists are excluded from cloud backups and must be transferred manually._
+    > _Note: For security, your encrypted hostnames and Wi-Fi profiles are excluded from cloud backups and must be transferred manually._
 - **Dynamic Tile Labeling**:  
   Rename the Quick Settings tile.
 - **Hide App Icon**:  
   Optionally hide the app from your launcher drawer to keep your home screen clean.
 - **USB Debugging Tile**:  
   (_Requires Developer Mode_) Tap the app version number at the bottom of the settings menu 5 times in quick succession to add a USB Debugging Quick Settings tile.
+- **App Shortcuts**:  
+  Includes app shortcuts to toggle Private DNS or open the quick-sepect/settings menu.
 
 ## Usage
 
@@ -76,9 +80,11 @@ If you encounter issues not covered here, please [open a support ticket](https:/
 - **Tile is Grayed Out**:  
   This usually means the permission was not granted correctly. See the warning above.
 - **Custom DNS is marked as "Unreachable"**:  
-  Some strict DNS providers block automatic connection tests. If you are certain the address is correct, you can toggle on the `Disable DNS Test` just option below.
-- **Automation stops working**:  
-  Some Android devices aggressively kill background apps to save battery. If the Wi-Fi Blocklist or VPN Override features stop working while the app is closed, you may need to manually disable `Battery Optimizations` or enable `Autostart` for DNS Toggle in your device's settings.
+  Some strict DNS providers block automatic connection tests. If you are certain the address is correct, you can enable the `Skip connection test` option.
+- **"Unknown SSID" or Automation fails**:  
+  - Ensure **Location Permissions** are set to "Allow all the time". Android requires this to identify Wi-Fi networks in the background.
+  - Active **VPNs** or "Private DNS" settings on some devices can mask the SSID.
+  - Some devices aggressively kill background apps. If automation stops working, you may need to disable `Battery Optimizations` or enable `Autostart` for DNS Toggle in your system settings.
 
 ## Permissions
 
@@ -87,7 +93,7 @@ If you encounter issues not covered here, please [open a support ticket](https:/
 - **INTERNET** _(optional)_:  
   Used to verify that your Custom DNS Provider is online and reachable before applying it.
 - **Location & Nearby Devices** _(optional)_:  
-  Required only for **Wi-Fi Blocklist** automation. Used to identify the Wi-Fi network name (SSID) locally.
+  Required only for **Wi-Fi Profiles** automation. Used to identify the Wi-Fi network name (SSID) locally.
 - **Notifications** _(optional)_:  
   Used for status alerts when Private DNS is automatically adjusted.
 

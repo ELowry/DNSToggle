@@ -26,6 +26,7 @@ class DnsSectionController(
 	private val onShowInitialPermissionDialog: () -> Unit,
 	private val onRequestTileUpdate: () -> Unit
 ) {
+	private lateinit var rowPrivateDns: View
 	private lateinit var dnsToggleSwitch: MaterialSwitch
 	private lateinit var addHostnameButton: ImageButton
 	private lateinit var dnsHostnameListContainer: RecyclerView
@@ -34,12 +35,14 @@ class DnsSectionController(
 	private lateinit var hostnamesAdapter: HostnamesAdapter
 
 	fun initialize(
+		rowPrivateDns: View,
 		dnsToggleSwitch: MaterialSwitch,
 		addHostnameButton: ImageButton,
 		dnsHostnameListContainer: RecyclerView,
 		rowDisableDnsTest: View,
 		switchDisableDnsTest: MaterialSwitch
 	) {
+		this.rowPrivateDns = rowPrivateDns
 		this.dnsToggleSwitch = dnsToggleSwitch
 		this.addHostnameButton = addHostnameButton
 		this.dnsHostnameListContainer = dnsHostnameListContainer
@@ -71,14 +74,16 @@ class DnsSectionController(
 		val specifier = viewModel.privateDnsSpecifier.value
 		val reachability = viewModel.dnsReachability.value
 		val isEnabled = (mode == Constants.DNS_MODE_HOSTNAME)
+		val globalDefault = viewModel.getGlobalPreferredHostname()
 
 		dnsToggleSwitch.isChecked = isEnabled
-		hostnamesAdapter.updateMetadata(reachability, specifier, isEnabled)
+		hostnamesAdapter.updateMetadata(reachability, specifier, isEnabled, globalDefault)
 	}
 
 	private fun setupDnsToggle() {
-		dnsToggleSwitch.setOnClickListener {
-			val isChecked = dnsToggleSwitch.isChecked
+		rowPrivateDns.setOnClickListener {
+			val isChecked = !dnsToggleSwitch.isChecked
+			dnsToggleSwitch.isChecked = isChecked
 
 			if (PermissionHelper.hasSecureSettingsPermission(activity)) {
 				viewModel.togglePrivateDns(isChecked)

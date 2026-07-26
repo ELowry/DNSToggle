@@ -17,7 +17,11 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import com.ericlowry.dnstoggle.data.Constants
-import com.ericlowry.dnstoggle.data.DnsSettingsRepository
+import com.ericlowry.dnstoggle.data.repository.DnsSettingsRepository
+import com.ericlowry.dnstoggle.data.repository.HostnameRepository
+import com.ericlowry.dnstoggle.data.repository.NetworkProfileRepository
+import com.ericlowry.dnstoggle.data.repository.SecurityRepository
+import com.ericlowry.dnstoggle.data.repository.VpnRepository
 import com.ericlowry.dnstoggle.service.DnsToggleService
 import com.ericlowry.dnstoggle.service.TileServiceCompat
 import com.ericlowry.dnstoggle.service.UsbDebuggingTileService
@@ -34,11 +38,12 @@ class DnsToggleApplication : Application() {
 
 	var detectedSsid: String? = null
 	private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+	private var isAdbObserverRegistered = false
 
 	private val preferenceChangeListener =
 		SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-			if (key == Constants.PREF_AUTO_BLACKLIST ||
-				key == Constants.PREF_AUTO_WHITELIST ||
+			if (key == Constants.PREF_AUTO_SAVE_STATE ||
+				key == Constants.PREF_AUTO_SAVE_HOST ||
 				key == Constants.PREF_VPN_OVERRIDE_ENABLED ||
 				key == Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED
 			) {
@@ -106,6 +111,10 @@ class DnsToggleApplication : Application() {
 			.setPrecondition { _, _ -> shouldApplyDynamicColors() }
 			.build()
 		DynamicColors.applyToActivitiesIfAvailable(this, dynamicOptions)
+		SecurityRepository.initialize(this)
+		VpnRepository.initialize(this)
+		NetworkProfileRepository.initialize(this)
+		HostnameRepository.initialize(this)
 		DnsSettingsRepository.initialize(this)
 		initializeNotificationChannels()
 		initializePreferredDnsMode()
@@ -139,8 +148,8 @@ class DnsToggleApplication : Application() {
 		)
 
 		applicationScope.launch {
-			DnsSettingsRepository.blacklist.collect { blacklist ->
-				if (blacklist != null) {
+			NetworkProfileRepository.networkProfiles.collect { profiles ->
+				if (profiles != null) {
 					updateWifiMonitoringRegistration()
 				}
 			}
@@ -223,22 +232,26 @@ class DnsToggleApplication : Application() {
 	private fun isWifiMonitoringRequired(): Boolean {
 		val sharedPreferences = getPrefs()
 		val vpnEnabled = sharedPreferences.getBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, false)
-		val autoEnabled = sharedPreferences.getBoolean(Constants.PREF_AUTO_BLACKLIST, false) ||
-				sharedPreferences.getBoolean(Constants.PREF_AUTO_WHITELIST, false) ||
+		val autoEnabled = sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_STATE, false) ||
+				sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_HOST, false) ||
 				sharedPreferences.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false)
 
-		val blacklist = DnsSettingsRepository.blacklist.value
-		val hasActiveBlacklist = !blacklist.isNullOrEmpty()
+		val profiles = NetworkProfileRepository.networkProfiles.value
+		val hasNetworkProfiles = !profiles.isNullOrEmpty()
 
-		return vpnEnabled || autoEnabled || hasActiveBlacklist
+		return vpnEnabled || autoEnabled || hasNetworkProfiles
 	}
 
 	fun updateUsbDebuggingTileAvailability() {
-		val isDevMode = Settings.Global.getInt(
-			contentResolver,
-			Settings.Global.DEVELOPMENT_SETTINGS_ENABLED,
-			0
-		) != 0
+		val isDevMode = try {
+			Settings.Global.getInt(
+				contentResolver,
+				Settings.Global.DEVELOPMENT_SETTINGS_ENABLED,
+				0
+			) != 0
+		} catch (_: SecurityException) {
+			false
+		}
 
 		val isAppUnlocked = getPrefs().getBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, false)
 
@@ -258,25 +271,35 @@ class DnsToggleApplication : Application() {
 			)
 
 			if (newState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+				registerAdbObserver()
+				TileServiceCompat.requestListeningState(this, componentName)
+			} else {
+				unregisterAdbObserver()
+			}
+		} else if (newState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
+			registerAdbObserver()
+		}
+	}
+
+	private fun registerAdbObserver() {
+		if (!isAdbObserverRegistered) {
+			try {
 				contentResolver.registerContentObserver(
 					Settings.Global.getUriFor(Settings.Global.ADB_ENABLED),
 					false,
 					adbObserver
 				)
-				TileServiceCompat.requestListeningState(
-					this,
-					componentName
-				)
-			} else {
-				contentResolver.unregisterContentObserver(adbObserver)
+				isAdbObserverRegistered = true
+			} catch (e: Exception) {
+				Log.w("DnsToggleApplication", "Failed to register ADB observer: ${e.message}")
 			}
-		} else if (newState == PackageManager.COMPONENT_ENABLED_STATE_ENABLED) {
-			// Ensure observer is registered if it's already enabled (e.g. on app restart)
-			contentResolver.registerContentObserver(
-				Settings.Global.getUriFor(Settings.Global.ADB_ENABLED),
-				false,
-				adbObserver
-			)
+		}
+	}
+
+	private fun unregisterAdbObserver() {
+		if (isAdbObserverRegistered) {
+			contentResolver.unregisterContentObserver(adbObserver)
+			isAdbObserverRegistered = false
 		}
 	}
 }

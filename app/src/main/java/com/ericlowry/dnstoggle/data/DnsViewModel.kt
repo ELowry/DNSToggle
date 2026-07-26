@@ -16,6 +16,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.ericlowry.dnstoggle.DnsToggleApplication
 import com.ericlowry.dnstoggle.R
+import com.ericlowry.dnstoggle.data.repository.HostnameRepository
+import com.ericlowry.dnstoggle.data.repository.NetworkProfileRepository
+import com.ericlowry.dnstoggle.data.repository.SecurityRepository
+import com.ericlowry.dnstoggle.data.repository.VpnRepository
 import com.ericlowry.dnstoggle.service.DnsToggleService
 import com.ericlowry.dnstoggle.service.TileServiceCompat
 import com.ericlowry.dnstoggle.util.NetworkUtils
@@ -25,6 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.util.concurrent.ConcurrentHashMap
 
 class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -48,22 +53,19 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	private val _hasPermissionError = MutableLiveData(false)
 	val hasPermissionError: LiveData<Boolean> = _hasPermissionError
 
-	private val reachabilityJobs = mutableMapOf<String, Job>()
+	private val reachabilityJobs = ConcurrentHashMap<String, Job>()
 
-	private val _ssidBlacklist = MutableLiveData<Set<String>>()
-	val ssidBlacklist: LiveData<Set<String>> = _ssidBlacklist
-
-	private val _autoDetectedBlacklist = MutableLiveData<Set<String>>()
-	val autoDetectedBlacklist: LiveData<Set<String>> = _autoDetectedBlacklist
+	private val _networkProfiles = MutableLiveData<List<NetworkProfile>>()
+	val networkProfiles: LiveData<List<NetworkProfile>> = _networkProfiles
 
 	private val _dnsHostnames = MutableLiveData<List<DnsHostname>>()
 	val dnsHostnames: LiveData<List<DnsHostname>> = _dnsHostnames
 
-	private val _autoBlacklistEnabled = MutableLiveData<Boolean>()
-	val autoBlacklistEnabled: LiveData<Boolean> = _autoBlacklistEnabled
+	private val _autoSaveStateEnabled = MutableLiveData<Boolean>()
+	val autoSaveStateEnabled: LiveData<Boolean> = _autoSaveStateEnabled
 
-	private val _autoWhitelistEnabled = MutableLiveData<Boolean>()
-	val autoWhitelistEnabled: LiveData<Boolean> = _autoWhitelistEnabled
+	private val _autoSaveHostEnabled = MutableLiveData<Boolean>()
+	val autoSaveHostEnabled: LiveData<Boolean> = _autoSaveHostEnabled
 
 	private val _connectivityWatchdogEnabled = MutableLiveData<Boolean>()
 	val connectivityWatchdogEnabled: LiveData<Boolean> = _connectivityWatchdogEnabled
@@ -117,12 +119,12 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	private val preferenceChangeListener =
 		SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
 			when (key) {
-				Constants.PREF_AUTO_BLACKLIST -> {
-					_autoBlacklistEnabled.value = prefs.getBoolean(key, false)
+				Constants.PREF_AUTO_SAVE_STATE -> {
+					_autoSaveStateEnabled.value = prefs.getBoolean(key, false)
 				}
 
-				Constants.PREF_AUTO_WHITELIST -> {
-					_autoWhitelistEnabled.value = prefs.getBoolean(key, false)
+				Constants.PREF_AUTO_SAVE_HOST -> {
+					_autoSaveHostEnabled.value = prefs.getBoolean(key, false)
 				}
 
 				Constants.PREF_HIDE_LAUNCHER_ICON -> {
@@ -169,22 +171,17 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	init {
 		loadSettings()
 		viewModelScope.launch {
-			DnsSettingsRepository.blacklist.collect { list ->
-				list?.let { _ssidBlacklist.postValue(it) }
+			NetworkProfileRepository.networkProfiles.collect { list ->
+				list?.let { _networkProfiles.postValue(it) }
 			}
 		}
 		viewModelScope.launch {
-			DnsSettingsRepository.autoDetectedBlacklist.collect { list ->
-				list?.let { _autoDetectedBlacklist.postValue(it) }
-			}
-		}
-		viewModelScope.launch {
-			DnsSettingsRepository.dnsHostnames.collect {
+			HostnameRepository.dnsHostnames.collect {
 				refreshDisplayList()
 			}
 		}
 		viewModelScope.launch {
-			DnsSettingsRepository.isKeyInvalidated.collect { invalidated ->
+			SecurityRepository.isKeyInvalidated.collect { invalidated ->
 				if (invalidated) {
 					_isKeyInvalidated.postValue(true)
 				}
@@ -213,8 +210,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 			val specifier =
 				Settings.Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
 
-			val autoBlacklist = sharedPreferences.getBoolean(Constants.PREF_AUTO_BLACKLIST, false)
-			val autoWhitelist = sharedPreferences.getBoolean(Constants.PREF_AUTO_WHITELIST, false)
+			val autoSaveState = sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_STATE, false)
+			val autoSaveHost = sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_HOST, false)
 			val connectivityWatchdog =
 				sharedPreferences.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false)
 			val watchdogDebounce = sharedPreferences.getInt(
@@ -230,8 +227,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 			val disableDnsTest =
 				sharedPreferences.getBoolean(Constants.PREF_DISABLE_DNS_TEST, false)
 			val showToast = sharedPreferences.getBoolean(Constants.PREF_SHOW_TOAST, true)
-			val vpnOverride = DnsSettingsRepository.vpnOverrideEnabled.value
-			val vpnDns = DnsSettingsRepository.vpnDnsHostname.value
+			val vpnOverride = VpnRepository.vpnOverrideEnabled.value
+			val vpnDns = VpnRepository.vpnDnsHostname.value
 			val vpnRemovedWarning =
 				sharedPreferences.getBoolean(Constants.PREF_VPN_HOSTNAME_REMOVED_WARNING, false)
 			val isInVpn = sharedPreferences.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)
@@ -241,8 +238,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 			withContext(Dispatchers.Main) {
 				_privateDnsMode.value = mode
 				_privateDnsSpecifier.value = specifier
-				_autoBlacklistEnabled.value = autoBlacklist
-				_autoWhitelistEnabled.value = autoWhitelist
+				_autoSaveStateEnabled.value = autoSaveState
+				_autoSaveHostEnabled.value = autoSaveHost
 				_connectivityWatchdogEnabled.value = connectivityWatchdog
 				_connectivityWatchdogDebounceSeconds.value = watchdogDebounce
 				_connectivityWatchdogProbeTargets.value = watchdogTargets
@@ -260,24 +257,54 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		}
 
 		viewModelScope.launch {
-			DnsSettingsRepository.vpnOverrideEnabled.collect {
+			VpnRepository.vpnOverrideEnabled.collect {
 				_vpnOverrideEnabled.postValue(it)
 			}
 		}
 
 		viewModelScope.launch {
-			DnsSettingsRepository.vpnDnsHostname.collect {
+			VpnRepository.vpnDnsHostname.collect {
 				_vpnDnsHostname.postValue(it)
 			}
 		}
 	}
 
-	fun addToBlacklist(ssid: String) {
-		DnsSettingsRepository.addToBlacklist(ssid)
+	fun upsertNetworkProfile(
+		ssid: String,
+		isEnabled: Boolean,
+		targetHostname: String? = null,
+		isAutoDetected: Boolean = false,
+		isUnsaved: Boolean = false,
+		preserveExistingHostname: Boolean = false
+	) {
+		NetworkProfileRepository.upsertNetworkProfile(
+			ssid,
+			isEnabled,
+			targetHostname,
+			isAutoDetected,
+			isUnsaved,
+			preserveExistingHostname
+		)
+	}
+
+	fun saveNetworkProfile(
+		oldSsid: String?,
+		newSsid: String,
+		isEnabled: Boolean,
+		targetHostname: String?
+	) {
+		if (oldSsid != null && oldSsid != newSsid) {
+			NetworkProfileRepository.removeNetworkProfile(oldSsid)
+		}
+		NetworkProfileRepository.upsertNetworkProfile(
+			ssid = newSsid,
+			isEnabled = isEnabled,
+			targetHostname = targetHostname
+		)
 	}
 
 	private fun refreshDisplayList() {
-		val savedHostnames = DnsSettingsRepository.dnsHostnames.value ?: emptyList()
+		val savedHostnames = HostnameRepository.dnsHostnames.value ?: emptyList()
 		val currentSpecifier = _privateDnsSpecifier.value
 		val currentMode = _privateDnsMode.value
 
@@ -307,41 +334,41 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		}
 	}
 
-	fun removeFromBlacklist(ssid: String) {
-		DnsSettingsRepository.removeFromBlacklist(ssid)
+	fun removeNetworkProfile(ssid: String) {
+		NetworkProfileRepository.removeNetworkProfile(ssid)
 	}
 
 	fun promoteSsidToPermanent(ssid: String) {
-		DnsSettingsRepository.promoteAutoDetectedSsid(ssid)
-	}
-
-	fun updateSsidInBlacklist(oldSsid: String, newSsid: String) {
-		DnsSettingsRepository.updateSsidInBlacklist(oldSsid, newSsid)
+		NetworkProfileRepository.promoteUnsavedProfile(ssid)
 	}
 
 	fun addHostname(hostname: String, label: String? = null) {
-		DnsSettingsRepository.addHostname(hostname, label)
+		HostnameRepository.addHostname(hostname, label)
 		if (NetworkUtils.isValidDnsHostname(hostname)) {
 			testReachability(hostname)
 		}
 	}
 
 	fun removeHostname(hostname: String) {
-		DnsSettingsRepository.removeHostname(hostname)
+		HostnameRepository.removeHostname(hostname)
 		reachabilityJobs[hostname]?.cancel()
 		reachabilityJobs.remove(hostname)
-		val currentMap = _dnsReachability.value?.toMutableMap() ?: mutableMapOf()
-		currentMap.remove(hostname)
-		_dnsReachability.postValue(currentMap)
+		viewModelScope.launch {
+			val currentMap = _dnsReachability.value?.toMutableMap() ?: mutableMapOf()
+			currentMap.remove(hostname)
+			_dnsReachability.value = currentMap
+		}
 	}
 
 	fun updateHostname(oldHostname: String, newHostname: String, newLabel: String? = null) {
-		DnsSettingsRepository.updateHostname(oldHostname, newHostname, newLabel)
+		HostnameRepository.updateHostname(oldHostname, newHostname, newLabel)
 		reachabilityJobs[oldHostname]?.cancel()
 		reachabilityJobs.remove(oldHostname)
-		val currentMap = _dnsReachability.value?.toMutableMap() ?: mutableMapOf()
-		currentMap.remove(oldHostname)
-		_dnsReachability.postValue(currentMap)
+		viewModelScope.launch {
+			val currentMap = _dnsReachability.value?.toMutableMap() ?: mutableMapOf()
+			currentMap.remove(oldHostname)
+			_dnsReachability.value = currentMap
+		}
 
 		if (NetworkUtils.isValidDnsHostname(newHostname)) {
 			testReachability(newHostname)
@@ -377,21 +404,25 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	private fun testReachability(hostname: String) {
 		reachabilityJobs[hostname]?.cancel()
 
-		if (hostname.isEmpty() || sharedPreferences.getBoolean(
-				Constants.PREF_DISABLE_DNS_TEST,
-				false
-			)
-		) {
-			val currentMap = _dnsReachability.value?.toMutableMap() ?: mutableMapOf()
-			currentMap[hostname] = ReachabilityState.IDLE
-			_dnsReachability.postValue(currentMap)
-			return
-		}
-
 		val job = viewModelScope.launch(Dispatchers.IO) {
-			val startMap = _dnsReachability.value?.toMutableMap() ?: mutableMapOf()
-			startMap[hostname] = ReachabilityState.TESTING
-			_dnsReachability.postValue(startMap)
+			if (hostname.isEmpty() || sharedPreferences.getBoolean(
+					Constants.PREF_DISABLE_DNS_TEST,
+					false
+				)
+			) {
+				withContext(Dispatchers.Main) {
+					val currentMap = _dnsReachability.value?.toMutableMap() ?: mutableMapOf()
+					currentMap[hostname] = ReachabilityState.IDLE
+					_dnsReachability.value = currentMap
+				}
+				return@launch
+			}
+
+			withContext(Dispatchers.Main) {
+				val startMap = _dnsReachability.value?.toMutableMap() ?: mutableMapOf()
+				startMap[hostname] = ReachabilityState.TESTING
+				_dnsReachability.value = startMap
+			}
 
 			val isReachable = try {
 				val socket = Socket()
@@ -403,22 +434,24 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 				false
 			}
 
-			val endMap = _dnsReachability.value?.toMutableMap() ?: mutableMapOf()
-			endMap[hostname] =
-				if (isReachable) ReachabilityState.REACHABLE else ReachabilityState.UNREACHABLE
-			_dnsReachability.postValue(endMap)
+			withContext(Dispatchers.Main) {
+				val endMap = _dnsReachability.value?.toMutableMap() ?: mutableMapOf()
+				endMap[hostname] =
+					if (isReachable) ReachabilityState.REACHABLE else ReachabilityState.UNREACHABLE
+				_dnsReachability.value = endMap
+			}
 		}
 		reachabilityJobs[hostname] = job
 	}
 
-	fun setAutoBlacklist(enabled: Boolean) {
-		sharedPreferences.edit { putBoolean(Constants.PREF_AUTO_BLACKLIST, enabled) }
-		_autoBlacklistEnabled.value = enabled
+	fun setAutoSaveState(enabled: Boolean) {
+		sharedPreferences.edit { putBoolean(Constants.PREF_AUTO_SAVE_STATE, enabled) }
+		_autoSaveStateEnabled.value = enabled
 	}
 
-	fun setAutoWhitelist(enabled: Boolean) {
-		sharedPreferences.edit { putBoolean(Constants.PREF_AUTO_WHITELIST, enabled) }
-		_autoWhitelistEnabled.value = enabled
+	fun setAutoSaveHost(enabled: Boolean) {
+		sharedPreferences.edit { putBoolean(Constants.PREF_AUTO_SAVE_HOST, enabled) }
+		_autoSaveHostEnabled.value = enabled
 	}
 
 	fun setConnectivityWatchdogEnabled(enabled: Boolean) {
@@ -465,15 +498,19 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	}
 
 	fun setVpnOverrideEnabled(enabled: Boolean) {
-		DnsSettingsRepository.updateVpnOverrideEnabled(enabled)
+		VpnRepository.updateVpnOverrideEnabled(enabled)
 	}
 
 	fun setVpnDnsHostname(hostname: String?) {
-		DnsSettingsRepository.updateVpnDnsHostname(hostname)
+		VpnRepository.updateVpnDnsHostname(hostname)
 	}
 
 	fun updateHostnameOrder(newList: List<DnsHostname>) {
-		DnsSettingsRepository.updateHostnamesOrder(newList.filter { !it.isUnsaved })
+		HostnameRepository.updateHostnamesOrder(newList.filter { !it.isUnsaved })
+	}
+
+	fun updateNetworkProfileOrder(newList: List<NetworkProfile>) {
+		NetworkProfileRepository.updateNetworkProfilesOrder(newList.filter { !it.isAutoDetected })
 	}
 
 	fun dismissVpnHostnameWarning() {
@@ -483,11 +520,29 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
 	fun dismissKeyInvalidatedAlert() {
 		_isKeyInvalidated.value = false
-		DnsSettingsRepository.resetKeyInvalidated()
+		SecurityRepository.resetKeyInvalidated()
 	}
 
 	fun refreshCurrentSsid() {
 		_currentSsid.postValue(NetworkUtils.getCurrentWifiSsid(getApplication()))
+	}
+
+	fun getGlobalPreferredHostname(): String? {
+		val app = getApplication<DnsToggleApplication>()
+		val encryptedPrefs = app.getEncryptedPrefs()
+		val encryptedHostname = encryptedPrefs.getString(Constants.PREF_LAST_USED_HOSTNAME, null)
+		val lastUsed = encryptedHostname?.let {
+			when (val result = com.ericlowry.dnstoggle.util.EncryptionManager.decrypt(it)) {
+				is com.ericlowry.dnstoggle.util.EncryptionManager.DecryptResult.Success -> result.data
+				else -> null
+			}
+		}
+		if (!lastUsed.isNullOrEmpty()) return lastUsed
+
+		return Settings.Global.getString(
+			app.contentResolver,
+			Constants.SETTINGS_PRIVATE_DNS_SPECIFIER
+		)
 	}
 
 	override fun onCleared() {

@@ -97,7 +97,7 @@ object DnsDialogHelper {
 
 		hostnames.forEachIndexed { index, dnsEntry ->
 			val hostname = dnsEntry.hostname
-			val isActive = (hostname == currentVpnDns && currentVpnDns != "off")
+			val isActive = (hostname == currentVpnDns)
 			val itemView = createDnsListItem(
 				activity,
 				listContainer,
@@ -113,7 +113,7 @@ object DnsDialogHelper {
 			listContainer.addView(itemView)
 		}
 
-		val isAutoActive = (currentVpnDns == null || currentVpnDns == "off")
+		val isAutoActive = (currentVpnDns == null)
 		val autoItemView = createDnsListItem(
 			activity,
 			listContainer,
@@ -123,7 +123,7 @@ object DnsDialogHelper {
 			totalItems - 1,
 			totalItems
 		) {
-			onDnsSelected("off")
+			onDnsSelected(null)
 			dialog.dismiss()
 		}
 		listContainer.addView(autoItemView)

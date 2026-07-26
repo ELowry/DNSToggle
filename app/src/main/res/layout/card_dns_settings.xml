@@ -16,27 +16,39 @@
 		android:layout_height="wrap_content"
 		android:padding="12dp">
 
-		<TextView
-			android:id="@+id/tvToggleLabel"
-			android:layout_width="0dp"
+		<LinearLayout
+			android:id="@+id/rowPrivateDns"
+			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:layout_marginStart="4dp"
-			android:text="@string/private_dns"
-			android:textAppearance="?attr/textAppearanceTitleMedium"
-			android:textStyle="bold"
-			app:layout_constraintBottom_toBottomOf="@id/switchPrivateDns"
-			app:layout_constraintEnd_toStartOf="@id/switchPrivateDns"
-			app:layout_constraintStart_toStartOf="parent"
-			app:layout_constraintTop_toTopOf="@id/switchPrivateDns" />
+			android:background="@drawable/bg_row_selectable"
+			android:clickable="true"
+			android:focusable="true"
+			android:focusableInTouchMode="false"
+			android:gravity="center_vertical"
+			android:orientation="horizontal"
+			android:padding="4dp"
+			app:layout_constraintTop_toTopOf="parent">
 
-		<com.google.android.material.materialswitch.MaterialSwitch
-			android:id="@+id/switchPrivateDns"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_marginEnd="4dp"
-			android:contentDescription="@string/private_dns"
-			app:layout_constraintEnd_toEndOf="parent"
-			app:layout_constraintTop_toTopOf="parent" />
+			<TextView
+				android:id="@+id/tvToggleLabel"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_marginStart="4dp"
+				android:layout_weight="1"
+				android:text="@string/private_dns"
+				android:textAppearance="?attr/textAppearanceTitleMedium"
+				android:textStyle="bold" />
+
+			<com.google.android.material.materialswitch.MaterialSwitch
+				android:id="@+id/switchPrivateDns"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_marginEnd="4dp"
+				android:clickable="false"
+				android:contentDescription="@string/private_dns"
+				android:duplicateParentState="true"
+				android:focusable="false" />
+		</LinearLayout>
 
 		<LinearLayout
 			android:id="@+id/dnsHostnamesHeader"
@@ -47,7 +59,7 @@
 			android:layout_marginEnd="4dp"
 			android:gravity="center_vertical"
 			android:orientation="horizontal"
-			app:layout_constraintTop_toBottomOf="@id/switchPrivateDns">
+			app:layout_constraintTop_toBottomOf="@id/rowPrivateDns">
 
 			<TextView
 				android:layout_width="0dp"
@@ -95,7 +107,7 @@
 			android:background="@drawable/bg_row_selectable"
 			android:clickable="true"
 			android:focusable="true"
-			android:focusableInTouchMode="true"
+			android:focusableInTouchMode="false"
 			android:gravity="center_vertical"
 			android:minHeight="48dp"
 			android:orientation="horizontal"

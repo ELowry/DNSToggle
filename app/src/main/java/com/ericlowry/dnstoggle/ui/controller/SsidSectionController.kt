@@ -8,13 +8,15 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsViewModel
-import com.ericlowry.dnstoggle.data.SsidItem
+import com.ericlowry.dnstoggle.data.NetworkProfile
 import com.ericlowry.dnstoggle.ui.MainPermissionHandler
 import com.ericlowry.dnstoggle.ui.adapter.SsidColors
+import com.ericlowry.dnstoggle.ui.adapter.SsidTouchHelperCallback
 import com.ericlowry.dnstoggle.ui.adapter.SsidsAdapter
 import com.ericlowry.dnstoggle.ui.dialog.CommonDialogHelper
 import com.ericlowry.dnstoggle.ui.dialog.SsidDialogHelper
@@ -32,15 +34,16 @@ class SsidSectionController(
 ) {
 	private lateinit var btnSsidInfo: ImageButton
 	private lateinit var addSsidButton: ImageButton
+	private lateinit var tvWifiProfilesTitle: TextView
 	private lateinit var permissionNoticeText: TextView
 	private lateinit var btnGrantPermission: Button
 	private lateinit var dividerSsidList: View
 	private lateinit var ssidListContainer: RecyclerView
 	private lateinit var dividerSsidSettings: View
-	private lateinit var rowAutoBlacklist: View
-	private lateinit var switchAutoBlacklist: MaterialSwitch
-	private lateinit var rowAutoWhitelist: View
-	private lateinit var switchAutoWhitelist: MaterialSwitch
+	private lateinit var rowAutoSaveState: View
+	private lateinit var switchAutoSaveState: MaterialSwitch
+	private lateinit var rowAutoSaveHost: View
+	private lateinit var switchAutoSaveHost: MaterialSwitch
 	private lateinit var rowConnectivityWatchdogToggle: View
 	private lateinit var switchConnectivityWatchdog: MaterialSwitch
 	private lateinit var rowConnectivityWatchdogDebounce: View
@@ -52,15 +55,16 @@ class SsidSectionController(
 	fun initialize(
 		btnSsidInfo: ImageButton,
 		addSsidButton: ImageButton,
+		tvWifiProfilesTitle: TextView,
 		permissionNoticeText: TextView,
 		btnGrantPermission: Button,
 		dividerSsidList: View,
 		ssidListContainer: RecyclerView,
 		dividerSsidSettings: View,
-		rowAutoBlacklist: View,
-		switchAutoBlacklist: MaterialSwitch,
-		rowAutoWhitelist: View,
-		switchAutoWhitelist: MaterialSwitch,
+		rowAutoSaveState: View,
+		switchAutoSaveState: MaterialSwitch,
+		rowAutoSaveHost: View,
+		switchAutoSaveHost: MaterialSwitch,
 		rowConnectivityWatchdogToggle: View,
 		switchConnectivityWatchdog: MaterialSwitch,
 		rowConnectivityWatchdogDebounce: View,
@@ -70,15 +74,16 @@ class SsidSectionController(
 	) {
 		this.btnSsidInfo = btnSsidInfo
 		this.addSsidButton = addSsidButton
+		this.tvWifiProfilesTitle = tvWifiProfilesTitle
 		this.permissionNoticeText = permissionNoticeText
 		this.btnGrantPermission = btnGrantPermission
 		this.dividerSsidList = dividerSsidList
 		this.ssidListContainer = ssidListContainer
 		this.dividerSsidSettings = dividerSsidSettings
-		this.rowAutoBlacklist = rowAutoBlacklist
-		this.switchAutoBlacklist = switchAutoBlacklist
-		this.rowAutoWhitelist = rowAutoWhitelist
-		this.switchAutoWhitelist = switchAutoWhitelist
+		this.rowAutoSaveState = rowAutoSaveState
+		this.switchAutoSaveState = switchAutoSaveState
+		this.rowAutoSaveHost = rowAutoSaveHost
+		this.switchAutoSaveHost = switchAutoSaveHost
 		this.rowConnectivityWatchdogToggle = rowConnectivityWatchdogToggle
 		this.switchConnectivityWatchdog = switchConnectivityWatchdog
 		this.rowConnectivityWatchdogDebounce = rowConnectivityWatchdogDebounce
@@ -93,24 +98,24 @@ class SsidSectionController(
 	}
 
 	fun observeViewModel() {
-		viewModel.ssidBlacklist.observe(activity) { blacklist ->
-			refreshSsidListView(blacklist)
+		viewModel.networkProfiles.observe(activity) { profiles ->
+			refreshSsidListView(profiles)
 		}
 
-		viewModel.autoDetectedBlacklist.observe(activity) {
-			refreshSsidListView(viewModel.ssidBlacklist.value ?: emptySet())
+		viewModel.dnsHostnames.observe(activity) { hostnames ->
+			ssidsAdapter.updateHostnames(hostnames)
 		}
 
 		viewModel.currentSsid.observe(activity) { ssid ->
 			ssidsAdapter.updateActiveSsid(ssid)
 		}
 
-		viewModel.autoBlacklistEnabled.observe(activity) { enabled ->
-			switchAutoBlacklist.isChecked = enabled
+		viewModel.autoSaveStateEnabled.observe(activity) { enabled ->
+			switchAutoSaveState.isChecked = enabled
 		}
 
-		viewModel.autoWhitelistEnabled.observe(activity) { enabled ->
-			switchAutoWhitelist.isChecked = enabled
+		viewModel.autoSaveHostEnabled.observe(activity) { enabled ->
+			switchAutoSaveHost.isChecked = enabled
 		}
 
 		viewModel.connectivityWatchdogEnabled.observe(activity) { enabled ->
@@ -152,29 +157,40 @@ class SsidSectionController(
 		)
 
 		ssidsAdapter = SsidsAdapter(
-			onEditClick = { ssid -> showAddSsidDialog(ssid) },
-			onDeleteClick = { ssid -> showDeleteConfirmDialog(ssid) },
-			onConfirmClick = { ssid ->
-				viewModel.promoteSsidToPermanent(ssid)
+			onToggleClick = { profile ->
+				viewModel.upsertNetworkProfile(
+					ssid = profile.ssid,
+					isEnabled = !profile.isEnabled,
+					targetHostname = profile.targetHostname,
+					isAutoDetected = profile.isAutoDetected
+				)
+			},
+			onEditClick = { profile -> showAddSsidDialog(profile) },
+			onDeleteClick = { profile -> showDeleteConfirmDialog(profile.ssid) },
+			onConfirmClick = { profile ->
+				viewModel.promoteSsidToPermanent(profile.ssid)
 				Toast.makeText(activity, R.string.ssid_saved, Toast.LENGTH_SHORT).show()
 			},
 			colors = colors
 		)
 		ssidListContainer.adapter = ssidsAdapter
+
+		val itemTouchHelper = ItemTouchHelper(SsidTouchHelperCallback(ssidsAdapter, viewModel))
+		itemTouchHelper.attachToRecyclerView(ssidListContainer)
 	}
 
 	private fun setupAutoSettings() {
-		rowAutoBlacklist.setOnClickListener { switchAutoBlacklist.toggle() }
-		switchAutoBlacklist.setOnCheckedChangeListener { _, isChecked ->
-			viewModel.setAutoBlacklist(isChecked)
+		rowAutoSaveState.setOnClickListener { switchAutoSaveState.toggle() }
+		switchAutoSaveState.setOnCheckedChangeListener { _, isChecked ->
+			viewModel.setAutoSaveState(isChecked)
 			if (isChecked) {
 				permissionHandler.checkSsidPermissions(requestIfNotGranted = true)
 			}
 		}
 
-		rowAutoWhitelist.setOnClickListener { switchAutoWhitelist.toggle() }
-		switchAutoWhitelist.setOnCheckedChangeListener { _, isChecked ->
-			viewModel.setAutoWhitelist(isChecked)
+		rowAutoSaveHost.setOnClickListener { switchAutoSaveHost.toggle() }
+		switchAutoSaveHost.setOnCheckedChangeListener { _, isChecked ->
+			viewModel.setAutoSaveHost(isChecked)
 			if (isChecked) {
 				permissionHandler.checkSsidPermissions(requestIfNotGranted = true)
 			}
@@ -226,8 +242,8 @@ class SsidSectionController(
 		btnSsidInfo.setOnClickListener { showWifiMonitoringInfoDialog() }
 	}
 
-	private fun refreshSsidListView(blacklist: Set<String>) {
-		if (blacklist.isEmpty()) {
+	private fun refreshSsidListView(profiles: List<NetworkProfile>?) {
+		if (profiles.isNullOrEmpty()) {
 			dividerSsidList.visibility = View.GONE
 			dividerSsidSettings.visibility = View.GONE
 			ssidsAdapter.submitList(emptyList())
@@ -237,33 +253,27 @@ class SsidSectionController(
 		dividerSsidList.visibility = View.VISIBLE
 		dividerSsidSettings.visibility = View.VISIBLE
 
-		val autoDetected = viewModel.autoDetectedBlacklist.value ?: emptySet()
-		val items = blacklist.map { ssid ->
-			SsidItem(ssid, isAutoDetected = autoDetected.contains(ssid))
-		}.sortedWith { a, b ->
-			when {
-				a.isAutoDetected != b.isAutoDetected -> if (a.isAutoDetected) -1 else 1
-				else -> a.ssid.lowercase().compareTo(b.ssid.lowercase())
-			}
-		}
+		val items = profiles.sortedByDescending { it.isAutoDetected }
 		ssidsAdapter.submitList(items)
 	}
 
-	fun showAddSsidDialog(existingSsid: String? = null) {
+	fun showAddSsidDialog(existingProfile: NetworkProfile? = null) {
 		val suggestedSsid =
-			if (existingSsid == null) NetworkUtils.getCurrentWifiSsid(activity) else null
-		SsidDialogHelper.showAddSsidDialog(activity, existingSsid, suggestedSsid) { newSsidName ->
-			if (existingSsid != null) {
-				viewModel.updateSsidInBlacklist(existingSsid, newSsidName)
-			} else {
-				viewModel.addToBlacklist(newSsidName)
-			}
+			if (existingProfile == null) NetworkUtils.getCurrentWifiSsid(activity) else null
+		SsidDialogHelper.showAddSsidDialog(
+			activity = activity,
+			existingProfile = existingProfile,
+			suggestedSsid = suggestedSsid,
+			globalDefaultHostname = viewModel.getGlobalPreferredHostname(),
+			hostnames = viewModel.dnsHostnames.value ?: emptyList()
+		) { ssid, isEnabled, targetHostname ->
+			viewModel.saveNetworkProfile(existingProfile?.ssid, ssid, isEnabled, targetHostname)
 		}
 	}
 
 	private fun showDeleteConfirmDialog(ssidToDelete: String) {
 		CommonDialogHelper.showDeleteConfirmation(activity, R.string.delete_ssid_confirm) {
-			viewModel.removeFromBlacklist(ssidToDelete)
+			viewModel.removeNetworkProfile(ssidToDelete)
 		}
 	}
 
@@ -280,13 +290,22 @@ class SsidSectionController(
 			permissionNoticeText.visibility = View.GONE
 			btnGrantPermission.visibility = View.GONE
 			addSsidButton.isEnabled = true
-			switchAutoBlacklist.isEnabled = true
-			switchAutoWhitelist.isEnabled = true
+
+			rowAutoSaveState.isEnabled = true
+			rowAutoSaveState.alpha = 1.0f
+			switchAutoSaveState.isEnabled = true
+
+			rowAutoSaveHost.isEnabled = true
+			rowAutoSaveHost.alpha = 1.0f
+			switchAutoSaveHost.isEnabled = true
+
 			ssidListContainer.alpha = 1.0f
 
 			val watchdogEnabled = viewModel.connectivityWatchdogEnabled.value ?: false
-			switchConnectivityWatchdog.isEnabled = true
+			rowConnectivityWatchdogToggle.isEnabled = true
 			rowConnectivityWatchdogToggle.alpha = 1.0f
+			switchConnectivityWatchdog.isEnabled = true
+
 			rowConnectivityWatchdogDebounce.isEnabled = watchdogEnabled
 			rowConnectivityWatchdogDebounce.alpha = if (watchdogEnabled) 1.0f else 0.5f
 			rowConnectivityWatchdogTargets.isEnabled = watchdogEnabled
@@ -295,12 +314,21 @@ class SsidSectionController(
 			permissionNoticeText.visibility = View.VISIBLE
 			btnGrantPermission.visibility = View.VISIBLE
 			addSsidButton.isEnabled = false
-			switchAutoBlacklist.isEnabled = false
-			switchAutoWhitelist.isEnabled = false
+
+			rowAutoSaveState.isEnabled = false
+			rowAutoSaveState.alpha = 0.5f
+			switchAutoSaveState.isEnabled = false
+
+			rowAutoSaveHost.isEnabled = false
+			rowAutoSaveHost.alpha = 0.5f
+			switchAutoSaveHost.isEnabled = false
+
 			ssidListContainer.alpha = 0.5f
 
-			switchConnectivityWatchdog.isEnabled = false
+			rowConnectivityWatchdogToggle.isEnabled = false
 			rowConnectivityWatchdogToggle.alpha = 0.5f
+			switchConnectivityWatchdog.isEnabled = false
+
 			rowConnectivityWatchdogDebounce.isEnabled = false
 			rowConnectivityWatchdogDebounce.alpha = 0.5f
 			rowConnectivityWatchdogTargets.isEnabled = false

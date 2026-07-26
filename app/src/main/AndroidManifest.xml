@@ -199,7 +199,7 @@
 			android:foregroundServiceType="specialUse">
 			<property
 				android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-				android:value="Monitoring Wi-Fi network connectivity to automate Private DNS mode toggling based on user-defined SSID blacklist." />
+				android:value="Monitoring Wi-Fi network connectivity to automate Private DNS mode toggling based on user-defined Wi-Fi profiles." />
 		</service>
 
 		<provider

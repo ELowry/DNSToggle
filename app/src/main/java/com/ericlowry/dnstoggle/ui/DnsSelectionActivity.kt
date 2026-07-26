@@ -22,8 +22,11 @@ import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsHostname
 import com.ericlowry.dnstoggle.data.DnsManager
-import com.ericlowry.dnstoggle.data.DnsSettingsRepository
+import com.ericlowry.dnstoggle.data.repository.HostnameRepository
+import com.ericlowry.dnstoggle.data.repository.NetworkProfileRepository
 import com.ericlowry.dnstoggle.service.UsbDebuggingTileService
+import com.ericlowry.dnstoggle.util.EncryptionManager
+import com.ericlowry.dnstoggle.util.NetworkUtils
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.listitem.ListItemCardView
 import com.google.android.material.listitem.ListItemLayout
@@ -49,7 +52,7 @@ class DnsSelectionActivity : AppCompatActivity() {
 		}
 
 		lifecycleScope.launch {
-			val hostnames = DnsSettingsRepository.dnsHostnames.first { it != null } ?: emptyList()
+			val hostnames = HostnameRepository.dnsHostnames.first { it != null } ?: emptyList()
 			if (hostnames.size <= 1) {
 				startActivity(Intent(this@DnsSelectionActivity, MainActivity::class.java).apply {
 					flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -74,17 +77,48 @@ class DnsSelectionActivity : AppCompatActivity() {
 		}
 
 		val tvPopupTitle = dialogView.findViewById<TextView>(R.id.tvPopupTitle)
+		val tvSsidContext = dialogView.findViewById<TextView>(R.id.tvSsidContext)
 		val prefs = (application as DnsToggleApplication).getPrefs()
+
+		val currentSsid = NetworkUtils.getCurrentWifiSsid(this)
+		val autoSaveState = prefs.getBoolean(Constants.PREF_AUTO_SAVE_STATE, false)
+		val autoSaveHost = prefs.getBoolean(Constants.PREF_AUTO_SAVE_HOST, false)
+		val profiles = NetworkProfileRepository.networkProfiles.value ?: emptyList()
+		val activeProfile = profiles.find { it.ssid == currentSsid }
+
+		val isOverrideHostContext = currentSsid != null && autoSaveHost
+		val isOverrideStateContext = currentSsid != null && autoSaveState
+		val isShadowedContext =
+			currentSsid != null && !autoSaveHost && !autoSaveState && activeProfile != null
+
+		val currentProfile =
+			if (isOverrideHostContext || isOverrideStateContext) activeProfile else null
+
 		tvPopupTitle.text =
 			prefs.getString(Constants.PREF_DYNAMIC_APP_NAME, getString(R.string.app_name))
+
+		when {
+			isOverrideHostContext -> {
+				tvSsidContext.text = getString(R.string.qs_hostname_context, currentSsid)
+				tvSsidContext.visibility = View.VISIBLE
+			}
+
+			isShadowedContext -> {
+				tvSsidContext.text = getString(R.string.qs_shadowed_warning, currentSsid)
+				tvSsidContext.visibility = View.VISIBLE
+			}
+
+			else -> tvSsidContext.visibility = View.GONE
+		}
 
 		val listContainer = dialogView.findViewById<LinearLayout>(R.id.dnsListContainer)
 		val btnSettings = dialogView.findViewById<MaterialButton>(R.id.btnSettings)
 
-		val currentSpecifier =
-			Settings.Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
-		val currentMode =
+		val systemMode =
 			Settings.Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
+
+		val globalMode = prefs.getString(Constants.PREF_PREFERRED_DNS_MODE, systemMode)
+		val globalSpecifier = getGlobalFallbackHostname()
 
 		fun selectOption(selectedIndex: Int, onSelected: () -> Unit) {
 			listContainer.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
@@ -97,44 +131,154 @@ class DnsSelectionActivity : AppCompatActivity() {
 			}, 250)
 		}
 
-		val totalItems = hostnames.size + 1
+		val globalFallbackHostname = getGlobalFallbackHostname()
+		val totalItems = hostnames.size + (if (isOverrideHostContext) 2 else 1)
 		var currentPosition = 0
+
+		if (isOverrideHostContext) {
+			val defaultLabel = if (globalFallbackHostname != null) {
+				getString(R.string.default_dns_with_host_format, globalFallbackHostname)
+			} else {
+				getString(R.string.default_dns_label)
+			}
+
+			val isOverrideMatch =
+				currentProfile?.isEnabled == true && currentProfile.targetHostname == null
+
+			val isSubduedRadio = false
+			val showOverrideBadge = false
+
+			val index = currentPosition++
+
+			val itemView = createListItem(
+				parent = listContainer,
+				text = defaultLabel,
+				secondaryText = null,
+				subtitleText = null,
+				isCardChecked = isOverrideMatch,
+				isRadioChecked = isOverrideMatch,
+				isSubduedRadio = isSubduedRadio,
+				showOverrideBadge = showOverrideBadge,
+				position = index,
+				totalItems = totalItems
+			) {
+				selectOption(index) {
+					DnsManager.togglePrivateDns(
+						context = this@DnsSelectionActivity,
+						enabled = true,
+						targetHostname = null,
+						isFromTile = true
+					)
+				}
+			}
+			listContainer.addView(itemView)
+		}
 
 		hostnames.forEach { dnsEntry ->
 			val hostname = dnsEntry.hostname
-			val isActive =
-				(hostname == currentSpecifier && currentMode == Constants.DNS_MODE_HOSTNAME)
-			val index = currentPosition
+
+			val isGlobalMatch =
+				(hostname == globalSpecifier && globalMode == Constants.DNS_MODE_HOSTNAME)
+			val isOverrideMatch =
+				(activeProfile?.isEnabled == true && activeProfile.targetHostname == hostname)
+
+			val isCardChecked: Boolean
+			val isRadioChecked: Boolean
+			val isSubduedRadio: Boolean
+			val showOverrideBadge: Boolean
+
+			if (isShadowedContext) {
+				isCardChecked = isGlobalMatch
+				isRadioChecked = isGlobalMatch || isOverrideMatch
+				isSubduedRadio = isGlobalMatch
+				showOverrideBadge = isOverrideMatch
+			} else if (isOverrideHostContext) {
+				isCardChecked = isOverrideMatch
+				isRadioChecked = isOverrideMatch
+				isSubduedRadio = false
+				showOverrideBadge = false
+			} else {
+				isCardChecked = isGlobalMatch
+				isRadioChecked = isGlobalMatch
+				isSubduedRadio = false
+				showOverrideBadge = false
+			}
+
+			val index = currentPosition++
 
 			val itemView = createListItem(
 				parent = listContainer,
 				text = dnsEntry.getDisplayName(),
 				secondaryText = dnsEntry.label?.let { hostname },
-				isActive = isActive,
-				position = currentPosition,
+				subtitleText = null,
+				isCardChecked = isCardChecked,
+				isRadioChecked = isRadioChecked,
+				isSubduedRadio = isSubduedRadio,
+				showOverrideBadge = showOverrideBadge,
+				position = index,
 				totalItems = totalItems
 			) {
 				selectOption(index) {
-					DnsManager.togglePrivateDns(this@DnsSelectionActivity, true, hostname)
+					DnsManager.togglePrivateDns(
+						context = this@DnsSelectionActivity,
+						enabled = true,
+						targetHostname = hostname,
+						isFromTile = true
+					)
 				}
 			}
 			listContainer.addView(itemView)
-			currentPosition++
 		}
 
-		val isAutomaticActive = (currentMode != Constants.DNS_MODE_HOSTNAME)
+		val isGlobalOffMatch = (globalMode != Constants.DNS_MODE_HOSTNAME)
+		val isOverrideOffMatch = (activeProfile?.isEnabled == false)
+
+		val isOffCardChecked: Boolean
+		val isOffRadioChecked: Boolean
+		val isOffSubduedRadio: Boolean
+		val showOffOverrideBadge: Boolean
+
+		if (isShadowedContext) {
+			isOffCardChecked = isGlobalOffMatch
+			isOffRadioChecked = isGlobalOffMatch || isOverrideOffMatch
+			isOffSubduedRadio = isGlobalOffMatch
+			showOffOverrideBadge = isOverrideOffMatch
+		} else if (isOverrideStateContext) {
+			isOffCardChecked = isOverrideOffMatch
+			isOffRadioChecked = isOverrideOffMatch
+			isOffSubduedRadio = false
+			showOffOverrideBadge = false
+		} else {
+			isOffCardChecked = isGlobalOffMatch
+			isOffRadioChecked = isGlobalOffMatch
+			isOffSubduedRadio = false
+			showOffOverrideBadge = false
+		}
+
+		val offSubtitle = if (isOverrideStateContext) {
+			getString(R.string.qs_ssid_context, currentSsid)
+		} else null
+
 		val autoIndex = currentPosition
 
 		val autoItemView = createListItem(
 			parent = listContainer,
 			text = getString(R.string.automatic_off),
 			secondaryText = null,
-			isActive = isAutomaticActive,
-			position = currentPosition,
+			subtitleText = offSubtitle,
+			isCardChecked = isOffCardChecked,
+			isRadioChecked = isOffRadioChecked,
+			isSubduedRadio = isOffSubduedRadio,
+			showOverrideBadge = showOffOverrideBadge,
+			position = autoIndex,
 			totalItems = totalItems
 		) {
 			selectOption(autoIndex) {
-				DnsManager.togglePrivateDns(this@DnsSelectionActivity, false)
+				DnsManager.togglePrivateDns(
+					context = this@DnsSelectionActivity,
+					enabled = false,
+					isFromTile = true
+				)
 			}
 		}
 		listContainer.addView(autoItemView)
@@ -161,7 +305,11 @@ class DnsSelectionActivity : AppCompatActivity() {
 		parent: ViewGroup,
 		text: String,
 		secondaryText: String?,
-		isActive: Boolean,
+		subtitleText: String?,
+		isCardChecked: Boolean,
+		isRadioChecked: Boolean,
+		isSubduedRadio: Boolean,
+		showOverrideBadge: Boolean,
 		position: Int,
 		totalItems: Int,
 		onClick: () -> Unit
@@ -171,22 +319,56 @@ class DnsSelectionActivity : AppCompatActivity() {
 		val cardView = itemView.findViewById<ListItemCardView>(R.id.listItemCard)
 		val textView = itemView.findViewById<TextView>(R.id.tvHostname)
 		val secondaryTextView = itemView.findViewById<TextView>(R.id.tvSecondaryHostname)
+		val overrideBadge = itemView.findViewById<TextView>(R.id.tvOverrideBadge)
 		val radioButton = itemView.findViewById<MaterialRadioButton>(R.id.radioDns)
 
 		textView.text = text
-		if (secondaryText != null) {
+		if (subtitleText != null) {
+			secondaryTextView.text = subtitleText
+			secondaryTextView.visibility = View.VISIBLE
+		} else if (secondaryText != null) {
 			secondaryTextView.text = secondaryText
 			secondaryTextView.visibility = View.VISIBLE
 		} else {
 			secondaryTextView.visibility = View.GONE
 		}
-		cardView.isChecked = isActive
-		radioButton.isChecked = isActive
+
+		overrideBadge.visibility = if (showOverrideBadge) View.VISIBLE else View.GONE
+
+		cardView.isChecked = isCardChecked
+		radioButton.isChecked = isRadioChecked
+
+		val radioColorAttr = when {
+			showOverrideBadge -> com.google.android.material.R.attr.colorTertiary
+			isSubduedRadio -> com.google.android.material.R.attr.colorOutline
+			else -> android.R.attr.colorPrimary
+		}
+		val resolvedColor =
+			com.google.android.material.color.MaterialColors.getColor(itemView, radioColorAttr)
+		radioButton.buttonTintList = android.content.res.ColorStateList.valueOf(resolvedColor)
 
 		listItemLayout.updateAppearance(position, totalItems)
 		cardView.setOnClickListener { onClick() }
 
 		return itemView
+	}
+
+	private fun getGlobalFallbackHostname(): String? {
+		val app = application as DnsToggleApplication
+		val encryptedPrefs = app.getEncryptedPrefs()
+		val encryptedHostname = encryptedPrefs.getString(Constants.PREF_LAST_USED_HOSTNAME, null)
+		val lastUsed = encryptedHostname?.let {
+			when (val result = EncryptionManager.decrypt(it)) {
+				is EncryptionManager.DecryptResult.Success -> result.data
+				else -> null
+			}
+		}
+		if (!lastUsed.isNullOrEmpty()) return lastUsed
+
+		return Settings.Global.getString(
+			contentResolver,
+			Constants.SETTINGS_PRIVATE_DNS_SPECIFIER
+		)
 	}
 
 	private var isFinishingAnimated = false
@@ -205,7 +387,6 @@ class DnsSelectionActivity : AppCompatActivity() {
 
 		val popupView = findViewById<View>(R.id.dialogRootCard)
 
-		// Skip the animation if the view is not ready.
 		if (popupView == null || popupView.height == 0) {
 			isFinishingAnimated = true
 			finish()

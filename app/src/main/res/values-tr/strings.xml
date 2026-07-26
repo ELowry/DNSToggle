@@ -13,7 +13,7 @@
 	<string name="settings">Ayarlar</string>
 	<string name="on_label">Açık</string>
 	<string name="off_label">Kapalı</string>
-	<string name="automatic_off">Otomatik (kapalı)</string>
+	<string name="automatic_off">Kapalı (otomatik)</string>
 	<string name="menu_content_description">Daha fazla seçenek</string>
 
 	<!-- Permissions & ADB Setup -->
@@ -59,13 +59,12 @@
 	<string name="status_override_ssid">SSID Kara Listesi Aktif (%s)</string>
 
 	<!-- Main UI - SSID Blacklist & Monitoring -->
-	<string name="ssid_blacklist_title">SSID Kara Listesi</string>
+	<string name="ssid_blacklist_title">Wi-Fi Profilleri</string>
+	<string name="wifi_profiles_summary">Ayrı Wi-Fi ağları için özel Özel DNS kuralları veya istisnaları ayarlayın.</string>
 	<string name="wifi_monitoring_info_title">Wi-Fi İzleme Bilgisi</string>
 	<string name="wifi_monitoring_info_text">Otomatik geçişi desteklemek için uygulama ağ değişikliklerini izler. Pil tüketimi üzerindeki etkisi minimum düzeyde olacaktır ancak sistem yine de arka plan etkinliği raporlayabilir.</string>
 	<string name="battery_optimization_explanation">Bazı cihazlar pil tasarrufu sağlamak için arka plan izlemeyi kapatır. Otomasyon çalışmayı durdurursa, bu uygulama için kısıtlamaları devre dışı bırak.</string>
 	<string name="ignore_battery_optimizations">Pil kısıtlamalarını devre dışı bırak</string>
-	<string name="auto_blacklist_on_disable">Devre dışı bırakırken otomatik kara listeye al</string>
-	<string name="auto_whitelist_on_enable">Etkinleştirirken otomatik beyaz listeye al</string>
 	<string name="connectivity_watchdog_toggle">Bağlantı hatasında otomatik kara listeye al</string>
 	<string name="connectivity_watchdog_info_text">Özel DNS başarısız olduğunda ancak internet hala mevcut olduğunda, uygulama bağlantıyı geri yüklemek için mevcut ağı otomatik olarak kara listeye ekler.</string>
 	<string name="connectivity_watchdog_debounce_label">Devre dışı bırakmadan önce bekle</string>
@@ -82,12 +81,11 @@
 	<string name="permissions_permanently_denied">Konum ve Yakındaki cihazlar izinleri kalıcı olarak reddedildi. Bu özelliği kullanmak için lütfen bunları Uygulama Ayarları\'ndan etkinleştirin.</string>
 	<string name="notification_permission_explanation">Arka planda Özel DNS otomatik olarak değiştirildiğinde sana bildirim göndermek ve izlemenin aktif kalmasını sağlamak için lütfen bildirimlere izin ver.</string>
 	<string name="background_location_explanation">Uygulama kapalıyken Wi-Fi\'ı izlemek için, Android \"Her zaman izin ver\" konum erişimi gerektirir. DNS Toggle bunu yalnızca Wi-Fi adını görmek için kullanır ve fiziksel konumunu asla takip etmez veya GPS\'i kullanmaz.</string>
-	<string name="vpn_disclaimer_explanation">\n\nNot: Aktif VPN bağlantıları Wi-Fi ağ adınızı gizleyebilir ve otomatik kara liste/beyaz liste kurallarını geçici olarak devre dışı bırakabilir.</string>
+	<string name="vpn_disclaimer_explanation">\n\nNot: Aktif VPN bağlantıları Wi-Fi ağ adınızı gizleyebilir ve Wi-Fi Profili otomasyonunu geçici olarak devre dışı bırakabilir.</string>
 	<string name="add_ssid">SSID Ekle</string>
 	<string name="edit_ssid">SSID Düzenle</string>
 	<string name="ssid_hint">SSID (Wi-Fi Adı)</string>
 	<string name="ssid_saved">SSID kalıcı olarak kara listeye eklendi</string>
-	<string name="ssid_auto_added_label">Otomatik eklendi</string>
 	<string name="delete_ssid_confirm">Bu SSID kara listeden kaldırılsın mı?</string>
 
 	<!-- Main UI - VPN Override -->
@@ -111,8 +109,6 @@
 	<string name="show_usb_debugging_tile_summary">USB Hata Ayıklamayı açıp kapatmak için ekstra bir Hızlı Ayarlar kutucuğu göster. Geliştirici seçeneklerini açmak için uzun bas.</string>
 	<string name="usb_debugging_tile_steps">USB hata ayıklama kutucuğunu etkinleştirmek için %1$d kez daha dokun.</string>
 	<string name="usb_debugging_tile_enabled">USB hata ayıklama Hızlı Ayarlar kutucuğu artık kullanılabilir!</string>
-	<string name="enabling">Etkinleştiriliyor…</string>
-	<string name="disabling">Devre dışı bırakılıyor…</string>
 
 	<!-- Menu Actions -->
 	<string name="rename_app">Uygulamayı Yeniden Adlandır</string>

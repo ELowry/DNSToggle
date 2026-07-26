@@ -14,7 +14,7 @@
 	<string name="settings">Settings</string>
 	<string name="on_label">On</string>
 	<string name="off_label">Off</string>
-	<string name="automatic_off">Automatic (off)</string>
+	<string name="automatic_off">Off (automatic)</string>
 	<string name="menu_content_description">More options</string>
 
 	<!-- Permissions & ADB Setup -->
@@ -54,21 +54,32 @@
 	<!-- Main UI - Status -->
 	<string name="status_testing_dns">Testing connection…</string>
 	<string name="unsaved_active_label">Current (unsaved)</string>
-	<string name="status_active_reachable">Active &amp; Reachable</string>
+	<string name="status_active_reachable">Active &amp; Reachable</string>
+	<string name="default_dns_label">Default</string>
+	<string name="default_badge">DEFAULT</string>
+	<string name="auto_blocked_prefix">Auto-blocked:</string>
 	<string name="warning_unreachable_dns">DNS server unreachable on port 853 (DoT). Android may still successfully connect via other methods.</string>
 	<string name="status_override_vpn">VPN Override Active</string>
-	<string name="status_override_ssid">SSID Blacklist Active (%s)</string>
+	<string name="status_override_ssid">Wi-Fi Profile Active (%s)</string>
+	<string name="status_override_ssid_profile">SSID Override Active: %1$s is set to %2$s</string>
+	<string name="off_profile_format">Off (%s)</string>
+	<string name="enable_private_dns">Enable Private DNS</string>
 
-	<!-- Main UI - SSID Blacklist & Monitoring -->
-	<string name="ssid_blacklist_title">SSID Blacklist</string>
+	<!-- Main UI - Wi-Fi Profiles & Monitoring -->
+	<string name="wifi_profiles_title">Wi-Fi Profiles</string>
+	<string name="wifi_profiles_summary">Set specific Private DNS rules or bypasses for individual Wi-Fi networks.</string>
 	<string name="wifi_monitoring_info_title">Wi-Fi Monitoring Info</string>
 	<string name="wifi_monitoring_info_text">To support automatic toggling, the app monitors network changes. The impact on battery consumption should be minimal, but the system may still report background activity.</string>
 	<string name="battery_optimization_explanation">Some devices kill background monitoring to save battery. If automation stops working, disable restrictions for this app.</string>
 	<string name="ignore_battery_optimizations">Disable battery restrictions</string>
-	<string name="auto_blacklist_on_disable">Auto-blacklist when disabling Private DNS</string>
-	<string name="auto_whitelist_on_enable">Auto-whitelist when enabling Private DNS</string>
-	<string name="connectivity_watchdog_toggle">Auto-blacklist on connectivity failure</string>
-	<string name="connectivity_watchdog_info_text">When Private DNS fails but internet is still available, the app will automatically add the current network to the blacklist to restore connectivity.</string>
+	<string name="auto_save_state_title">Auto-save Private DNS states (on/off)</string>
+	<string name="auto_save_state_summary">Remember when you manually enable or disable Private DNS on specific Wi-Fi networks.</string>
+	<string name="auto_save_host_title">Auto-save DNS hostnames</string>
+	<string name="auto_save_host_summary">Remember when you switch to a specific custom DNS provider while connected to a Wi-Fi network.</string>
+	<string name="profile_dns_section_header">Private DNS Provider</string>
+	<string name="default_dns_with_host_format">Default (%s)</string>
+	<string name="connectivity_watchdog_toggle">Block private DNS on incompatible networks</string>
+	<string name="connectivity_watchdog_info_text">When Private DNS fails but internet is still available, the app will automatically disable Private DNS for the current network to restore connectivity.</string>
 	<string name="connectivity_watchdog_debounce_label">Wait before disabling</string>
 	<string name="connectivity_watchdog_targets_label">Connection test servers</string>
 	<string name="connectivity_watchdog_targets_title">Connectivity check target servers</string>
@@ -76,20 +87,19 @@
 	<string name="connectivity_watchdog_debounce_custom">Custom…</string>
 	<string name="connectivity_watchdog_debounce_invalid">Enter a value between 5 and 300 seconds</string>
 	<string name="connectivity_watchdog_debounce_seconds_format">%ds</string>
-	<string name="notif_connectivity_watchdog_disabled">Private DNS disabled and %s blacklisted due to a connectivity issue</string>
+	<string name="notif_connectivity_watchdog_disabled">Private DNS disabled and Wi-Fi profile added for %s due to a connectivity issue</string>
 	<string name="notif_connectivity_watchdog_restored">Connectivity restored. Private DNS re-enabled for %s</string>
 	<string name="grant_permission_notice">Location/Nearby permission (including background) required to verify the Wi-Fi SSID.</string>
 	<string name="grant_permission_button">Grant Permissions</string>
 	<string name="permissions_permanently_denied">Location and Nearby devices permissions have been permanently denied. Please enable them in App Settings to use this feature.</string>
 	<string name="notification_permission_explanation">To notify you when Private DNS is automatically toggled in the background, and ensure monitoring remains active, please allow notifications.</string>
 	<string name="background_location_explanation">To monitor Wi-Fi while the app is closed, Android requires \"Allow all the time\" location access. DNS Toggle only uses this to see the Wi-Fi name, and never tracks your physical location or uses GPS.</string>
-	<string name="vpn_disclaimer_explanation">\n\nNote: Active VPN connections may mask your Wi-Fi network name, temporarily disabling auto-blacklist/whitelist rules.</string>
-	<string name="add_ssid">Add SSID</string>
-	<string name="edit_ssid">Edit SSID</string>
+	<string name="vpn_disclaimer_explanation">\n\nNote: Active VPN connections may mask your Wi-Fi network name, temporarily disabling Wi-Fi Profile automation.</string>
+	<string name="add_ssid">Add Wi-Fi Profile</string>
+	<string name="edit_ssid">Edit Wi-Fi Profile</string>
 	<string name="ssid_hint">SSID (Wi-Fi Name)</string>
-	<string name="ssid_saved">SSID permanently blacklisted</string>
-	<string name="ssid_auto_added_label">Auto-added</string>
-	<string name="delete_ssid_confirm">Remove this SSID from blacklist?</string>
+	<string name="ssid_saved">Wi-Fi profile saved</string>
+	<string name="delete_ssid_confirm">Delete this Wi-Fi profile?</string>
 
 	<!-- Main UI - VPN Override -->
 	<string name="vpn_override_title">VPN Override</string>
@@ -112,8 +122,6 @@
 	<string name="show_usb_debugging_tile_summary">Show an extra Quick Settings tile to toggle USB Debugging. Long-press to open developer options.</string>
 	<string name="usb_debugging_tile_steps">Tap %1$d more times to enable a USB debugging tile.</string>
 	<string name="usb_debugging_tile_enabled">USB debugging Quick Settings tile now available!</string>
-	<string name="enabling">Enabling…</string>
-	<string name="disabling">Disabling…</string>
 
 	<!-- Menu Actions -->
 	<string name="rename_app">Rename App</string>
@@ -123,14 +131,14 @@
 
 	<!-- Security -->
 	<string name="keystore_error_title">Security Reset</string>
-	<string name="keystore_error_message">Due to a change in your device\'s security settings (like changing your screen lock), your Wi-Fi blacklist was reset to protect your data. You will need to re-add your blacklisted networks.</string>
+	<string name="keystore_error_message">Due to a change in your device\'s security settings (like changing your screen lock), your Wi-Fi profiles were reset to protect your data. You will need to re-add your saved networks.</string>
 
 	<!-- Backup/Restore -->
 	<string name="export">Export</string>
 	<string name="export_password_description">Enter a password to encrypt your backup file. You will need this same password to restore this configuration later.</string>
 	<string name="password">Password</string>
 	<string name="import_action">Import</string>
-	<string name="import_confirmation_message">Importing this configuration will overwrite your current settings, hostnames, and Wi-Fi blacklist. Do you want to proceed?</string>
+	<string name="import_confirmation_message">Importing this configuration will overwrite your current settings, hostnames, and Wi-Fi profiles. Do you want to proceed?</string>
 	<string name="export_success">Configuration exported successfully</string>
 	<string name="export_failed">Failed to export configuration</string>
 	<string name="import_success">Configuration imported successfully</string>
@@ -139,17 +147,22 @@
 
 	<!-- Feedback & Notifications -->
 	<string name="notif_channel_alerts_name">Automation Alerts</string>
-	<string name="notif_channel_alerts_desc">Notifications when Private DNS is automatically toggled or networks are blacklisted.</string>
+	<string name="notif_channel_alerts_desc">Notifications when Private DNS is automatically toggled or Wi-Fi profiles are triggered.</string>
 	<string name="notif_channel_service_name">Background Monitoring</string>
 	<string name="notif_channel_service_desc">A silent, persistent notification required by Android to monitor Wi-Fi networks in the background.</string>
 	<string name="service_notif_title">Monitoring Network Status</string>
 	<string name="service_notif_text">DNS Toggle is active to automate Private DNS mode.</string>
 	<string name="notif_dns_disabled_auto">Private DNS disabled automatically for %s</string>
+	<string name="notif_dns_enabled_auto">Private DNS enabled automatically for %s</string>
 	<string name="notif_vpn_dns_applied">Private DNS adjusted for VPN</string>
 	<string name="notif_vpn_dns_restored">Private DNS restored after VPN</string>
-	<string name="notif_ssid_added">Added %s to blacklist</string>
-	<string name="notif_ssid_removed">Removed %s from blacklist</string>
+	<string name="notif_ssid_added">Wi-Fi profile: Private DNS Off for %s</string>
+	<string name="notif_ssid_removed">Wi-Fi profile: Private DNS On for %s</string>
 	<string name="toast_dns_changed">Private DNS changed to %s</string>
+	<string name="qs_ssid_context">Changes apply to %s</string>
+	<string name="qs_hostname_context">Hostname changes apply to %s</string>
+	<string name="qs_shadowed_warning">Modifying global settings.\n%s override active.</string>
+	<string name="badge_wifi_override">OVERRIDE</string>
 	<string name="hostname_saved">Hostname saved</string>
 
 	<!-- App Shortcuts -->

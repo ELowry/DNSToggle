@@ -22,7 +22,8 @@ import com.google.android.material.materialswitch.MaterialSwitch
 class MiscSettingsController(
 	private val activity: AppCompatActivity,
 	private val viewModel: DnsViewModel,
-	private val onOpenUrl: (String) -> Unit
+	private val onOpenUrl: (String) -> Unit,
+	private val onUsbToggleVisibilityChanged: () -> Unit
 ) {
 	private lateinit var switchShowToast: MaterialSwitch
 	private lateinit var rowShowToast: View
@@ -117,12 +118,17 @@ class MiscSettingsController(
 		switchUsbDebuggingTile.isChecked =
 			prefs.getBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, false)
 
+		rowUsbDebuggingTile.setOnClickListener {
+			switchUsbDebuggingTile.toggle()
+		}
+
 		switchUsbDebuggingTile.setOnCheckedChangeListener { _, isChecked ->
 			prefs.edit { putBoolean(Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED, isChecked) }
 
 			if (!isChecked) {
 				rowUsbDebuggingTile.visibility = View.GONE
 				devHitCount = 0
+				onUsbToggleVisibilityChanged()
 			}
 
 			(activity.application as DnsToggleApplication).updateUsbDebuggingTileAvailability()
@@ -178,6 +184,7 @@ class MiscSettingsController(
 
 				rowUsbDebuggingTile.visibility = View.VISIBLE
 				switchUsbDebuggingTile.isChecked = true
+				onUsbToggleVisibilityChanged()
 
 				(activity.application as DnsToggleApplication).updateUsbDebuggingTileAvailability()
 			}

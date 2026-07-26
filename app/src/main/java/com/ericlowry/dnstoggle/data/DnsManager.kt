@@ -9,6 +9,9 @@ import android.widget.Toast
 import androidx.core.content.edit
 import com.ericlowry.dnstoggle.DnsToggleApplication
 import com.ericlowry.dnstoggle.R
+import com.ericlowry.dnstoggle.data.repository.HostnameRepository
+import com.ericlowry.dnstoggle.data.repository.NetworkProfileRepository
+import com.ericlowry.dnstoggle.data.repository.VpnRepository
 import com.ericlowry.dnstoggle.util.EncryptionManager
 import com.ericlowry.dnstoggle.util.NetworkUtils
 import com.ericlowry.dnstoggle.util.NotificationUtils
@@ -28,7 +31,8 @@ object DnsManager {
 		enabled: Boolean,
 		targetHostname: String? = null,
 		isInteractiveMainUi: Boolean = false,
-		forceFeedback: Boolean = false
+		forceFeedback: Boolean = false,
+		isFromTile: Boolean = false
 	): ToggleResult {
 		val resolver = context.contentResolver
 		val app = context.applicationContext as DnsToggleApplication
@@ -55,7 +59,6 @@ object DnsManager {
 				}
 			}
 			if (effectiveHostname.isNullOrEmpty()) {
-				// Try current system specifier
 				effectiveHostname =
 					Settings.Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
 			}
@@ -70,54 +73,75 @@ object DnsManager {
 
 		val newMode = if (enabled) Constants.DNS_MODE_HOSTNAME else Constants.DNS_MODE_OPPORTUNISTIC
 		val currentSsid = NetworkUtils.getCurrentWifiSsid(context)
+		val isInVpn = sharedPreferences.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)
 
-		if (sharedPreferences.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)) {
+		if (isInVpn) {
+			if (enabled) {
+				effectiveHostname?.let { hostname -> VpnRepository.updateVpnDnsHostname(hostname) }
+			} else {
+				VpnRepository.updateVpnDnsHostname(null)
+			}
+		}
+
+		try {
 			if (enabled) {
 				effectiveHostname?.let { hostname ->
-					DnsSettingsRepository.updateVpnDnsHostname(hostname)
+					Settings.Global.putString(
+						resolver,
+						Constants.SETTINGS_PRIVATE_DNS_SPECIFIER,
+						hostname
+					)
 				}
-			} else {
-				DnsSettingsRepository.updateVpnDnsHostname(null)
 			}
+			Settings.Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE, newMode)
+		} catch (e: SecurityException) {
+			Log.e(TAG, "Failed to update private DNS mode", e)
+			return ToggleResult.PermissionRequired
+		} catch (e: Exception) {
+			Log.e(TAG, "Unexpected error updating private DNS mode", e)
+			return ToggleResult.Error
 		}
 
-		var handledByAuto = false
+		var handledByProfile = false
+		if (currentSsid != null && isFromTile && !isInVpn) {
+			val autoSaveState = sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_STATE, false)
+			val autoSaveHost = sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_HOST, false)
 
-		if (currentSsid != null) {
-			if (!enabled && sharedPreferences.getBoolean(Constants.PREF_AUTO_BLACKLIST, false)) {
-				DnsSettingsRepository.addToBlacklist(currentSsid)
-				if (forceFeedback || sharedPreferences.getBoolean(
-						Constants.PREF_SHOW_TOAST,
-						true
-					)
-				) {
-					NotificationUtils.showStatusNotification(
-						context,
-						context.getString(R.string.notif_ssid_added, currentSsid)
-					)
-				}
-				handledByAuto = true
-			} else if (enabled && sharedPreferences.getBoolean(
-					Constants.PREF_AUTO_WHITELIST,
-					false
+			val isExplicitHostChange = targetHostname != null
+			val shouldInterceptForProfile =
+				if (isExplicitHostChange) autoSaveHost else autoSaveState
+
+			if (shouldInterceptForProfile) {
+				val targetHost = if (enabled && autoSaveHost) effectiveHostname else null
+				val existingProfile =
+					NetworkProfileRepository.networkProfiles.value?.find { it.ssid == currentSsid }
+
+				NetworkProfileRepository.upsertNetworkProfile(
+					ssid = currentSsid,
+					isEnabled = enabled,
+					targetHostname = targetHost,
+					isAutoDetected = false,
+					isUnsaved = existingProfile == null,
+					preserveExistingHostname = !enabled
 				)
-			) {
-				DnsSettingsRepository.removeFromBlacklist(currentSsid)
+
 				if (forceFeedback || sharedPreferences.getBoolean(
 						Constants.PREF_SHOW_TOAST,
 						true
 					)
 				) {
+					val messageRes =
+						if (enabled) R.string.notif_ssid_removed else R.string.notif_ssid_added
 					NotificationUtils.showStatusNotification(
 						context,
-						context.getString(R.string.notif_ssid_removed, currentSsid)
+						context.getString(messageRes, currentSsid)
 					)
 				}
-				handledByAuto = true
+				handledByProfile = true
 			}
 		}
 
-		if (!handledByAuto) {
+		if (!handledByProfile && !isInVpn) {
 			effectiveHostname?.let { hostname ->
 				app.getEncryptedPrefs().edit {
 					putString(
@@ -126,67 +150,42 @@ object DnsManager {
 					)
 				}
 			}
+			sharedPreferences.edit { putString(Constants.PREF_PREFERRED_DNS_MODE, newMode) }
 		}
 
-		return try {
-			if (enabled) {
-				effectiveHostname?.let { hostname ->
-					Settings.Global.putString(
-						resolver,
-						Constants.SETTINGS_PRIVATE_DNS_SPECIFIER,
-						hostname
-					)
-					app.getEncryptedPrefs().edit {
-						putString(
-							Constants.PREF_LAST_USED_HOSTNAME,
-							EncryptionManager.encrypt(hostname)
-						)
-					}
-				}
-			}
-			Settings.Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE, newMode)
-			if (!handledByAuto) {
-				sharedPreferences.edit { putString(Constants.PREF_PREFERRED_DNS_MODE, newMode) }
-			}
-			if (!isInteractiveMainUi && (forceFeedback || sharedPreferences.getBoolean(
-					Constants.PREF_SHOW_TOAST,
-					true
-				)) && !handledByAuto
-			) {
-				Handler(Looper.getMainLooper()).post {
-					if (enabled) {
-						if (previousMode != Constants.DNS_MODE_HOSTNAME) {
-							Toast.makeText(
-								context,
-								"${context.getString(R.string.private_dns)}: ${context.getString(R.string.on_label)}",
-								Toast.LENGTH_SHORT
-							).show()
-						} else if (previousHostname != effectiveHostname) {
-							val displayName = DnsSettingsRepository.dnsHostnames.value
-								?.find { it.hostname == effectiveHostname }
-								?.getDisplayName() ?: effectiveHostname
-							Toast.makeText(
-								context,
-								context.getString(R.string.toast_dns_changed, displayName),
-								Toast.LENGTH_SHORT
-							).show()
-						}
-					} else if (previousMode == Constants.DNS_MODE_HOSTNAME) {
+		if (!isInteractiveMainUi && (forceFeedback || sharedPreferences.getBoolean(
+				Constants.PREF_SHOW_TOAST,
+				true
+			)) && !handledByProfile
+		) {
+			Handler(Looper.getMainLooper()).post {
+				if (enabled) {
+					if (previousMode != Constants.DNS_MODE_HOSTNAME) {
 						Toast.makeText(
 							context,
-							"${context.getString(R.string.private_dns)}: ${context.getString(R.string.off_label)}",
+							"${context.getString(R.string.private_dns)}: ${context.getString(R.string.on_label)}",
+							Toast.LENGTH_SHORT
+						).show()
+					} else if (previousHostname != effectiveHostname) {
+						val displayName =
+							HostnameRepository.dnsHostnames.value?.find { it.hostname == effectiveHostname }
+								?.getDisplayName() ?: effectiveHostname
+						Toast.makeText(
+							context,
+							context.getString(R.string.toast_dns_changed, displayName),
 							Toast.LENGTH_SHORT
 						).show()
 					}
+				} else if (previousMode == Constants.DNS_MODE_HOSTNAME) {
+					Toast.makeText(
+						context,
+						"${context.getString(R.string.private_dns)}: ${context.getString(R.string.off_label)}",
+						Toast.LENGTH_SHORT
+					).show()
 				}
 			}
-			ToggleResult.Success
-		} catch (e: SecurityException) {
-			Log.e(TAG, "Failed to update private DNS mode", e)
-			ToggleResult.PermissionRequired
-		} catch (e: Exception) {
-			Log.e(TAG, "Unexpected error updating private DNS mode", e)
-			ToggleResult.Error
 		}
+
+		return ToggleResult.Success
 	}
 }
