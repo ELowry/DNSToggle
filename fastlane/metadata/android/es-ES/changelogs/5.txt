@@ -1,0 +1,1 @@
+Me aseguré de que zipalign formara parte del proceso de compilación

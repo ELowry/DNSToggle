@@ -1,0 +1,3 @@
+- Ahora los SSID de Wi-Fi y la configuración de las aplicaciones se almacenan de forma encriptada.
+- Se han agregado advertencias claras para direcciones DNS vacías o inválidas.
+- Mejoras en el rendimiento.

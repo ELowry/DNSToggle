@@ -1,0 +1,1 @@
+Activa y desactiva fácilmente el DNS privado a través del panel de Ajustes.

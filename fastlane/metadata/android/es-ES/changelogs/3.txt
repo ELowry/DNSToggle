@@ -1,0 +1,1 @@
+Se trasladaron los metadatos de Fastlane a la ubicación correcta

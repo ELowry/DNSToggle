@@ -1,0 +1,5 @@
+- Se simplificó el proceso de configuración inicial de permisos
+- Se agregó un indicador de carga al otorgar permisos a través de Root o Shizuku
+- Se hizo que la detección automática de Wi-Fi sea mucho más rápida y confiable en redes restrictivas
+- Se actualizó la información de la ficha de la tienda, las capturas de pantalla y el seguimiento de traducciones
+- Reestructuración interna del código y optimizaciones de rendimiento
