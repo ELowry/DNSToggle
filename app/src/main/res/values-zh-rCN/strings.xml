@@ -1,3 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_version_format">应用版本：%s</string>
+    <string name="github">GitHub（源代码）</string>
+    <string name="support">获取支持</string>
+    <string name="ok">确定</string>
+    <string name="cancel">取消</string>
+    <string name="close">关闭</string>
+    <string name="settings">设置</string>
+    <string name="on_label">开</string>
+    <string name="off_label">关</string>
+    <string name="automatic_off">自动（关）</string>
+    <string name="menu_content_description">更多选项</string>
+    <string name="permission_required">权限与ADB设置</string>
+    <string name="permission_message">要使用此切换工具，您必须通过 root、Shizuku 授予设置权限，或在启用 USB 调试的情况下在电脑上运行以下 ADB 命令：</string>
+    <string name="adb_command_label">ADB命令</string>
+    <string name="adb_command_content_description">ADB 命令：%s</string>
+    <string name="copy_adb_command">复制ADB命令</string>
+    <string name="command_copied">已将命令复制到剪贴板</string>
+    <string name="grant_via_shizuku">通过Shizuku授予</string>
+    <string name="grant_via_root">通过Root授予</string>
+    <string name="grant_auto_fallback">尝试授予权限</string>
+    <string name="toast_attempting_shizuku">尝试授予Shizuku…</string>
+    <string name="toast_attempting_root">尝试授予Root…</string>
+    <string name="toast_attempting_fallback">尝试自动授予权限…</string>
+    <string name="grant_failed">Shizuku/Root 授权失败或被拒绝</string>
+    <string name="permission_granted">已授予权限</string>
+    <string name="main_permission_title">需要系统设置权限</string>
+    <string name="main_permission_message">本应用需要特殊权限来修改专用DNS设置。</string>
+    <string name="btn_fix_permission">解决</string>
+    <string name="open_settings">打开设置</string>
+    <string name="private_dns">专用DNS</string>
+    <string name="disable_dns_test">跳过连接测试</string>
+    <string name="disable_dns_test_summary">只有当您的DNS正常工作但应用显示无法访问时，才启用此选项。</string>
+    <string name="custom_dns_provider">自定义DNS提供商</string>
+    <string name="add_hostname">添加主机名</string>
+    <string name="edit_hostname">编辑主机名</string>
+    <string name="dns_hostname_hint">DNS主机名（如 dns.nextdns.io）</string>
+    <string name="dns_label_hint">标签（可选）</string>
+    <string name="delete_hostname_confirm">删除此主机名？</string>
+    <string name="error_empty_dns_host">无法启用专用DNS，因为主机地址是空的</string>
+    <string name="error_invalid_dns_host">DNS主机地址格式无效</string>
+    <string name="status_testing_dns">正在测试连接…</string>
+    <string name="unsaved_active_label">当前项目（未保存）</string>
 </resources>
