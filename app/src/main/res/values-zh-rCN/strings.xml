@@ -42,4 +42,7 @@
     <string name="error_invalid_dns_host">DNS主机地址格式无效</string>
     <string name="status_testing_dns">正在测试连接…</string>
     <string name="unsaved_active_label">当前项目（未保存）</string>
+    <string name="whats_new">新版特性</string>
+    <string name="status_active_reachable">活动且可连接</string>
+    <string name="warning_unreachable_dns">DNS服务器无法在端口号853(DoT)上连接。Android可能仍会通过其他方法成功连接。</string>
 </resources>
