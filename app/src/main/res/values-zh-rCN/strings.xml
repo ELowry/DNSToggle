@@ -45,4 +45,10 @@
     <string name="whats_new">新版特性</string>
     <string name="status_active_reachable">活动且可连接</string>
     <string name="warning_unreachable_dns">DNS服务器无法在端口号853(DoT)上连接。Android可能仍会通过其他方法成功连接。</string>
+    <string name="whats_new_version_format">v%s 的新功能</string>
+    <string name="connectivity_watchdog_debounce_custom">自定义…</string>
+    <string name="connectivity_watchdog_debounce_invalid">输入一个位于5-300秒之间的值</string>
+    <string name="connectivity_watchdog_debounce_seconds_format">%ds</string>
+    <string name="options_title">选项</string>
+    <string name="show_toast_notif">显示包含状态的toast通知</string>
 </resources>
