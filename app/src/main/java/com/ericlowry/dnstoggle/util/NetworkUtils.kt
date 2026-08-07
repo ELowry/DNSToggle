@@ -8,7 +8,7 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import com.ericlowry.dnstoggle.DnsToggleApplication
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.runInterruptible
 import kotlinx.coroutines.withTimeoutOrNull
 import java.net.InetSocketAddress
 import java.net.Socket
@@ -57,16 +57,16 @@ object NetworkUtils {
 	}
 
 	suspend fun isHostReachable(host: String, port: Int, timeoutMs: Int = 3000): Boolean =
-		withContext(Dispatchers.IO) {
-			withTimeoutOrNull(timeoutMs.toLong().milliseconds) {
-				try {
+		withTimeoutOrNull(timeoutMs.toLong().milliseconds) {
+			try {
+				runInterruptible(Dispatchers.IO) {
 					Socket().use { it.connect(InetSocketAddress(host, port), timeoutMs) }
-					true
-				} catch (_: Exception) {
-					false
 				}
-			} ?: false
-		}
+				true
+			} catch (_: Exception) {
+				false
+			}
+		} ?: false
 
 	fun isValidDnsHostname(hostname: String): Boolean {
 		val hostnameRegex =

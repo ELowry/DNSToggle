@@ -1,0 +1,4 @@
+- Se agregaron etiquetas opcionales a las entradas de nombres de host de DNS.
+- Ahora se pueden reordenar manualmente los nombres de host de DNS.
+- Se agregó un mosaico oculto de depuración USB.
+- Se realizaron algunas optimizaciones de rendimiento.

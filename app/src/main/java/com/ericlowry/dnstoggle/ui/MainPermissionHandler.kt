@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import com.ericlowry.dnstoggle.DnsToggleApplication
+import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.ui.dialog.PermissionDialogHelper
 import com.ericlowry.dnstoggle.util.PermissionHelper
 
@@ -63,7 +64,8 @@ class MainPermissionHandler(
 		val prefs = (activity.application as DnsToggleApplication).getPrefs()
 
 		val isPermanentlyDenied = permissions.any { perm ->
-			val hasRequestedThisPerm = prefs.getBoolean("requested_$perm", false)
+			val hasRequestedThisPerm =
+				prefs.getBoolean(Constants.prefRequestedPermission(perm), false)
 			hasRequestedThisPerm && ContextCompat.checkSelfPermission(
 				activity,
 				perm
@@ -78,7 +80,7 @@ class MainPermissionHandler(
 
 		prefs.edit {
 			permissions.forEach { perm ->
-				putBoolean("requested_$perm", true)
+				putBoolean(Constants.prefRequestedPermission(perm), true)
 			}
 		}
 		foregroundPermissionLauncher.launch(permissions)
@@ -108,17 +110,18 @@ class MainPermissionHandler(
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 			if (!PermissionHelper.hasNotificationPermission(activity)) {
 				val prefs = (activity.application as DnsToggleApplication).getPrefs()
-				val hasRequestedBefore = prefs.getBoolean("has_requested_notif_perms", false)
+				val hasRequestedBefore =
+					prefs.getBoolean(Constants.PREF_HAS_REQUESTED_NOTIF_PERMS, false)
 
 				if (hasRequestedBefore && !activity.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
 					PermissionDialogHelper.showPermissionDeniedDialog(activity) { openAppSettings() }
 				} else if (activity.shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
 					PermissionDialogHelper.showNotificationPermissionRationale(activity) {
-						prefs.edit { putBoolean("has_requested_notif_perms", true) }
+						prefs.edit { putBoolean(Constants.PREF_HAS_REQUESTED_NOTIF_PERMS, true) }
 						notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
 					}
 				} else {
-					prefs.edit { putBoolean("has_requested_notif_perms", true) }
+					prefs.edit { putBoolean(Constants.PREF_HAS_REQUESTED_NOTIF_PERMS, true) }
 					notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
 				}
 			}

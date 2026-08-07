@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:layout_marginHorizontal="2dp"
@@ -40,13 +41,36 @@
 			android:paddingStart="8dp"
 			android:paddingEnd="6dp">
 
-			<TextView
-				android:id="@+id/tvHostname"
+			<LinearLayout
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:textAppearance="?attr/textAppearanceBodyLarge"
-				android:textColor="?attr/colorOnSurface"
-				android:textStyle="bold" />
+				android:gravity="center_vertical"
+				android:orientation="horizontal">
+
+				<TextView
+					android:id="@+id/tvHostname"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:textAppearance="?attr/textAppearanceBodyLarge"
+					android:textColor="?attr/colorOnSurface"
+					android:textStyle="bold" />
+
+				<TextView
+					android:id="@+id/tvDefaultBadge"
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_marginStart="8dp"
+					android:background="@drawable/bg_pill_badge"
+					android:paddingHorizontal="4dp"
+					android:paddingVertical="2dp"
+					android:text="@string/default_badge"
+					android:textAllCaps="true"
+					android:textColor="?attr/colorOnSecondaryContainer"
+					android:textSize="10sp"
+					android:textStyle="bold"
+					android:visibility="gone"
+					tools:visibility="visible" />
+			</LinearLayout>
 
 			<TextView
 				android:id="@+id/tvSecondaryHostname"

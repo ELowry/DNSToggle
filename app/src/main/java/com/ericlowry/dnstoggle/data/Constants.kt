@@ -9,10 +9,15 @@ object Constants {
 	const val DNS_MODE_OPPORTUNISTIC = "opportunistic"
 	const val DNS_MODE_HOSTNAME = "hostname"
 
-	// Shared Preferences Keys
+	// START_LEGACY_MIGRATION_CODE: Old shared preference keys
 	const val PREF_SSID_BLACKLIST = "ssid_blacklist"
-	const val PREF_AUTO_BLACKLIST = "auto_blacklist"
-	const val PREF_AUTO_WHITELIST = "auto_whitelist"
+	const val PREF_SSID_AUTO_DETECTED_BLACKLIST = "ssid_auto_detected_blacklist"
+	// END_LEGACY_MIGRATION_CODE
+
+	// Shared Preferences Keys
+	const val PREF_NETWORK_PROFILES = "network_profiles"
+	const val PREF_AUTO_SAVE_STATE = "pref_auto_save_state"
+	const val PREF_AUTO_SAVE_HOST = "pref_auto_save_host"
 	const val PREF_HIDE_LAUNCHER_ICON = "hide_launcher_icon"
 	const val PREF_DISABLE_DNS_TEST = "disable_dns_test"
 	const val PREF_PREFERRED_DNS_MODE = "preferred_dns_mode"
@@ -26,7 +31,6 @@ object Constants {
 	const val PREF_CONNECTIVITY_WATCHDOG_ENABLED = "connectivity_watchdog_enabled"
 	const val PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS = "connectivity_watchdog_debounce_seconds"
 	const val PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS = "connectivity_watchdog_probe_targets"
-	const val PREF_SSID_AUTO_DETECTED_BLACKLIST = "ssid_auto_detected_blacklist"
 	const val CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS = 15
 	const val CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS =
 		"91.198.174.192, 103.102.166.224, 173.239.79.196"
@@ -34,8 +38,6 @@ object Constants {
 	// VPN Override Keys
 	const val PREF_VPN_OVERRIDE_ENABLED = "vpn_override_enabled"
 	const val PREF_VPN_DNS_HOSTNAME = "vpn_dns_hostname"
-	const val PREF_PRE_VPN_DNS_MODE = "pre_vpn_dns_mode"
-	const val PREF_PRE_VPN_DNS_SPECIFIER = "pre_vpn_dns_specifier"
 	const val PREF_IS_IN_VPN_OVERRIDE = "is_in_vpn_override"
 	const val PREF_ACTIVE_SSID_OVERRIDE = "active_ssid_override"
 	const val PREF_VPN_HOSTNAME_REMOVED_WARNING = "vpn_hostname_removed_warning"
@@ -47,4 +49,8 @@ object Constants {
 	// Notification IDs
 	const val NOTIFICATION_ID_FOREGROUND = 2001
 	const val NOTIFICATION_ID_STATUS = 1001
+
+	// Permission Tracking
+	const val PREF_HAS_REQUESTED_NOTIF_PERMS = "has_requested_notif_perms"
+	fun prefRequestedPermission(permission: String): String = "requested_$permission"
 }

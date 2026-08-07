@@ -2,7 +2,7 @@
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
-	android:id="@+id/cardSsidBlacklist"
+	android:id="@+id/cardWifiProfiles"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	app:cardCornerRadius="12dp"
@@ -23,12 +23,12 @@
 			android:layout_marginHorizontal="4dp">
 
 			<TextView
-				android:id="@+id/tvSsidBlacklistTitle"
+				android:id="@+id/tvWifiProfilesTitle"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:layout_alignParentStart="true"
 				android:layout_centerVertical="true"
-				android:text="@string/ssid_blacklist_title"
+				android:text="@string/wifi_profiles_title"
 				android:textAppearance="?attr/textAppearanceTitleMedium"
 				android:textStyle="bold" />
 
@@ -37,7 +37,7 @@
 				android:layout_width="48dp"
 				android:layout_height="48dp"
 				android:layout_centerVertical="true"
-				android:layout_toEndOf="@id/tvSsidBlacklistTitle"
+				android:layout_toEndOf="@id/tvWifiProfilesTitle"
 				android:background="?attr/selectableItemBackgroundBorderless"
 				android:clickable="true"
 				android:contentDescription="@string/wifi_monitoring_info_title"
@@ -55,6 +55,15 @@
 				android:focusable="true"
 				android:src="@drawable/ic_add" />
 		</RelativeLayout>
+
+		<TextView
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginHorizontal="4dp"
+			android:layout_marginTop="2dp"
+			android:text="@string/wifi_profiles_summary"
+			android:textAppearance="?attr/textAppearanceBodySmall"
+			android:textColor="?attr/colorOnSurfaceVariant" />
 
 		<TextView
 			android:id="@+id/tvPermissionNotice"
@@ -97,51 +106,93 @@
 			android:layout_marginTop="8dp" />
 
 		<LinearLayout
-			android:id="@+id/rowAutoBlacklist"
+			android:id="@+id/rowAutoSaveState"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:layout_marginTop="8dp"
 			android:background="@drawable/bg_row_selectable"
 			android:clickable="true"
 			android:focusable="true"
-			android:focusableInTouchMode="true"
+			android:focusableInTouchMode="false"
 			android:gravity="center_vertical"
 			android:orientation="horizontal"
 			android:padding="4dp">
 
+			<LinearLayout
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:orientation="vertical"
+				android:paddingEnd="16dp"
+				tools:ignore="RtlSymmetry">
+
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/auto_save_state_title"
+					android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="2dp"
+					android:text="@string/auto_save_state_summary"
+					android:textAppearance="?attr/textAppearanceBodySmall"
+					android:textColor="?attr/colorOnSurfaceVariant" />
+			</LinearLayout>
+
 			<com.google.android.material.materialswitch.MaterialSwitch
-				android:id="@+id/switchAutoBlacklist"
-				android:layout_width="match_parent"
+				android:id="@+id/switchAutoSaveState"
+				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:clickable="false"
 				android:duplicateParentState="true"
-				android:focusable="false"
-				android:text="@string/auto_blacklist_on_disable"
-				android:textAppearance="?attr/textAppearanceBodyLarge" />
+				android:focusable="false" />
 		</LinearLayout>
 
 		<LinearLayout
-			android:id="@+id/rowAutoWhitelist"
+			android:id="@+id/rowAutoSaveHost"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:layout_marginTop="2dp"
 			android:background="@drawable/bg_row_selectable"
 			android:clickable="true"
 			android:focusable="true"
-			android:focusableInTouchMode="true"
+			android:focusableInTouchMode="false"
 			android:gravity="center_vertical"
 			android:orientation="horizontal"
 			android:padding="4dp">
 
+			<LinearLayout
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:orientation="vertical"
+				android:paddingEnd="16dp"
+				tools:ignore="RtlSymmetry">
+
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="@string/auto_save_host_title"
+					android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+				<TextView
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="2dp"
+					android:text="@string/auto_save_host_summary"
+					android:textAppearance="?attr/textAppearanceBodySmall"
+					android:textColor="?attr/colorOnSurfaceVariant" />
+			</LinearLayout>
+
 			<com.google.android.material.materialswitch.MaterialSwitch
-				android:id="@+id/switchAutoWhitelist"
-				android:layout_width="match_parent"
+				android:id="@+id/switchAutoSaveHost"
+				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:clickable="false"
 				android:duplicateParentState="true"
-				android:focusable="false"
-				android:text="@string/auto_whitelist_on_enable"
-				android:textAppearance="?attr/textAppearanceBodyLarge" />
+				android:focusable="false" />
 		</LinearLayout>
 
 		<LinearLayout
@@ -152,7 +203,7 @@
 			android:background="@drawable/bg_row_selectable"
 			android:clickable="true"
 			android:focusable="true"
-			android:focusableInTouchMode="true"
+			android:focusableInTouchMode="false"
 			android:gravity="center_vertical"
 			android:orientation="horizontal"
 			android:padding="4dp">
@@ -217,7 +268,7 @@
 					android:background="@drawable/bg_row_selectable"
 					android:clickable="true"
 					android:focusable="true"
-					android:focusableInTouchMode="true"
+					android:focusableInTouchMode="false"
 					android:gravity="center_vertical"
 					android:minHeight="48dp"
 					android:orientation="horizontal"
@@ -254,7 +305,7 @@
 					android:background="@drawable/bg_row_selectable"
 					android:clickable="true"
 					android:focusable="true"
-					android:focusableInTouchMode="true"
+					android:focusableInTouchMode="false"
 					android:gravity="center_vertical"
 					android:minHeight="48dp"
 					android:orientation="horizontal"

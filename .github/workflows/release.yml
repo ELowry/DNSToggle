@@ -44,6 +44,7 @@ jobs:
 
                   CHANGELOG_PATH="fastlane/metadata/android/en-US/changelogs/${VERSION_CODE}.txt"
                   if [ ! -f "$CHANGELOG_PATH" ]; then
+                    mkdir -p "$(dirname "$CHANGELOG_PATH")" # Avoids errors in case of missing folder
                     echo "No specific changelog found for this release." > "$CHANGELOG_PATH"
                   fi
 

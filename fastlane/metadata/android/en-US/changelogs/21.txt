@@ -1,4 +1,4 @@
 - UI fixes and better scrolling on Android TV
 - Added What's New section to display latest changes
 - Fixed display colors on older devices and TVs
-- Turkish translation WIP (thanks Kyo様)
+- Turkish translation (thanks Kyo様)

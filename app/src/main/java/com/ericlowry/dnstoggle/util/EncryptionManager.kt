@@ -95,14 +95,15 @@ object EncryptionManager {
 		return if (input.startsWith(PREFIX)) {
 			decryptInternal(input.substring(PREFIX.length))
 		} else {
-			// Try legacy decryption (no prefix)
+			// START_LEGACY_MIGRATION_CODE: Legacy decryption (no prefix)
 			val result = decryptInternal(input)
 			if (result is DecryptResult.Success || result is DecryptResult.KeyInvalidated) {
 				result
 			} else {
-				// If legacy decryption failed, and it doesn't have the prefix, assume it is plaintext
+				// Assume plaintext on failure
 				DecryptResult.Success(input)
 			}
+			// END_LEGACY_MIGRATION_CODE
 		}
 	}
 

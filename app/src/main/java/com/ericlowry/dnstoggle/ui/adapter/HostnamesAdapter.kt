@@ -37,15 +37,18 @@ class HostnamesAdapter(
 	private var reachabilityMap: Map<String, DnsViewModel.ReachabilityState> = emptyMap()
 	private var activeSpecifier: String? = null
 	private var isToggleChecked: Boolean = false
+	private var globalDefaultHostname: String? = null
 
 	fun updateMetadata(
 		reachability: Map<String, DnsViewModel.ReachabilityState>?,
 		specifier: String?,
 		isToggled: Boolean,
+		globalDefaultHostname: String? = null
 	) {
 		this.reachabilityMap = reachability ?: emptyMap()
 		this.activeSpecifier = specifier
 		this.isToggleChecked = isToggled
+		this.globalDefaultHostname = globalDefaultHostname
 		notifyItemRangeChanged(0, itemCount, "metadata")
 	}
 
@@ -59,6 +62,7 @@ class HostnamesAdapter(
 		val card: MaterialCardView = view as MaterialCardView
 		val hostnameInfoContainer: View = view.findViewById(R.id.hostnameInfoContainer)
 		val tvHostname: TextView = view.findViewById(R.id.tvHostname)
+		val tvDefaultBadge: TextView = view.findViewById(R.id.tvDefaultBadge)
 		val tvSecondaryHostname: TextView = view.findViewById(R.id.tvSecondaryHostname)
 		val tvStatus: TextView = view.findViewById(R.id.tvStatus)
 		val btnEdit: View = view.findViewById(R.id.btnEditHostname)
@@ -100,7 +104,13 @@ class HostnamesAdapter(
 		if (payloads.size == 1 && payloads.contains("metadata")) {
 			val reachability = reachabilityMap[hostname] ?: DnsViewModel.ReachabilityState.IDLE
 			val isActive = (hostname == activeSpecifier) && isToggleChecked
-			updateStatusTextOnly(holder, reachability, isActive, dnsEntry.isUnsaved)
+			updateStatusTextOnly(
+				holder,
+				reachability,
+				isActive,
+				dnsEntry.isUnsaved,
+				holder.hostnameInfoContainer.hasFocus()
+			)
 			return
 		}
 
@@ -164,7 +174,16 @@ class HostnamesAdapter(
 				}
 			}
 
-			updateStatusTextOnly(holder, reachability, isActive, dnsEntry.isUnsaved)
+			holder.tvDefaultBadge.visibility =
+				if (hostname == globalDefaultHostname) View.VISIBLE else View.GONE
+
+			updateStatusTextOnly(
+				holder,
+				reachability,
+				isActive,
+				dnsEntry.isUnsaved,
+				holder.hostnameInfoContainer.hasFocus()
+			)
 
 			holder.btnDelete.isEnabled = currentList.size > 1
 			holder.btnDelete.alpha = if (currentList.size > 1) 1.0f else 0.5f
@@ -177,6 +196,10 @@ class HostnamesAdapter(
 				if (!isActive) clickCallback(hostname)
 			}
 			holder.itemView.setOnClickListener(mainClickListener)
+
+			holder.hostnameInfoContainer.setOnFocusChangeListener { _, hasFocus ->
+				updateStatusTextOnly(holder, reachability, isActive, dnsEntry.isUnsaved, hasFocus)
+			}
 
 			holder.hostnameInfoContainer.setOnKeyListener { v, keyCode, event ->
 				if (event.action == KeyEvent.ACTION_UP &&
@@ -195,12 +218,13 @@ class HostnamesAdapter(
 		holder: ViewHolder,
 		reachability: DnsViewModel.ReachabilityState,
 		isActive: Boolean,
-		isUnsaved: Boolean
+		isUnsaved: Boolean,
+		hasFocus: Boolean
 	) {
 		val context = holder.itemView.context
 
 		if (!isUnsaved) {
-			if (isActive) {
+			if (isActive || hasFocus) {
 				holder.card.strokeColor = colors.colorPrimary
 				holder.card.strokeWidth = (2 * context.resources.displayMetrics.density).toInt()
 			} else {

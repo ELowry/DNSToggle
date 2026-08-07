@@ -1,6 +1,7 @@
 // Top-level build file where you can add configuration options common to all subprojects/modules.
 plugins {
 	alias(libs.plugins.android.application) apply false
+	alias(libs.plugins.kotlinx.serialization.plugin) apply false
 }
 
 tasks.register<Exec>("setupGitHooks") {
@@ -61,6 +62,30 @@ tasks.register("checkFastlaneMetadataLengths") {
 	}
 }
 
+tasks.register("ensureLocalizedTitles") {
+	group = "build setup"
+	description = "Ensures all locale directories have a title.txt, falling back to en-US."
+
+	doLast {
+		val baseDir = file("$rootDir/fastlane/metadata/android")
+		val defaultTitleFile = File(baseDir, "en-US/title.txt")
+
+		if (!defaultTitleFile.exists()) {
+			logger.warn("Default en-US title.txt not found. Cannot duplicate.")
+			return@doLast
+		}
+
+		baseDir.listFiles()?.filter { it.isDirectory && it.name != "en-US" }?.forEach { localeDir ->
+			val titleFile = File(localeDir, "title.txt")
+			
+			if (!titleFile.exists()) {
+				logger.lifecycle("Missing title.txt in ${localeDir.name}. Copying from en-US...")
+				defaultTitleFile.copyTo(titleFile)
+			}
+		}
+	}
+}
+
 tasks.register<Delete>("clean") {
 	group = "build"
 	description = "Deletes the build directory and runs verification tasks."
@@ -72,7 +97,12 @@ allprojects {
 	tasks.whenTaskAdded {
 		if (name == "preBuild") {
 			dependsOn(":setupGitHooks")
+			dependsOn(":ensureLocalizedTitles")
 			dependsOn(":checkFastlaneMetadataLengths")
 		}
 	}
+}
+
+tasks.named("checkFastlaneMetadataLengths") {
+	dependsOn("ensureLocalizedTitles")
 }

@@ -54,7 +54,7 @@ class VpnSectionController(
 		}
 
 		viewModel.vpnDnsHostname.observe(activity) { hostname ->
-			tvVpnDnsValue.text = if (hostname == null || hostname == "off") {
+			tvVpnDnsValue.text = if (hostname == null) {
 				activity.getString(R.string.automatic_off)
 			} else {
 				viewModel.dnsHostnames.value
@@ -88,9 +88,8 @@ class VpnSectionController(
 
 			if (hostnames.size == 1) {
 				val hostname = hostnames.first().hostname
-				// FIX: Fallback to "off" and assign "off" instead of null
-				val current = viewModel.vpnDnsHostname.value ?: "off"
-				val newValue = if (current == hostname) "off" else hostname
+				val current = viewModel.vpnDnsHostname.value
+				val newValue = if (current == hostname) null else hostname
 				viewModel.setVpnDnsHostname(newValue)
 				return@setOnClickListener
 			}
@@ -100,7 +99,7 @@ class VpnSectionController(
 				hostnames,
 				viewModel.vpnDnsHostname.value
 			) { hostname ->
-				viewModel.setVpnDnsHostname(hostname ?: "off")
+				viewModel.setVpnDnsHostname(hostname)
 			}
 		}
 

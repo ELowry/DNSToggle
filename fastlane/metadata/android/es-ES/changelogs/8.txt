@@ -1,0 +1,4 @@
+- Se agregó un mensaje solicitando los permisos `WRITE_SECURE_SETTINGS` en dispositivos con acceso root.
+- Se agregó un botón para copiar el comando adb al portapapeles, lo que permite otorgar fácilmente el permiso `WRITE_SECURE_SETTINGS` sin necesidad de acceso root.
+- Se restauró el ícono de la aplicación en el lanzador.
+- Se agregó un interruptor para ocultar el ícono de la aplicación en el lanzador.

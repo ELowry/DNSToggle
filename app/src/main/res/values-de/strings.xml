@@ -11,7 +11,7 @@
 	<string name="settings">Einstellungen</string>
 	<string name="on_label">An</string>
 	<string name="off_label">Aus</string>
-	<string name="automatic_off">Automatisch (aus)</string>
+	<string name="automatic_off">Aus (automatisch)</string>
 	<string name="permission_required">Berechtigung erforderlich</string>
 	<string name="permission_message">Um diesen Schalter nutzen zu können, müssen Sie über Root oder Shizuku die entsprechenden Berechtigungen erteilen oder diesen ADB-Befehl auf Ihrem Computer ausführen, wobei das USB-Debugging aktiviert sein muss:</string>
 	<string name="adb_command_label">ADB Befehl</string>
@@ -47,6 +47,8 @@
 	<string name="status_active_reachable">Aktiviert &amp; erreichbar</string>
 	<string name="warning_unreachable_dns">Der DNS-Server ist über Port 853 (DoT) nicht erreichbar. Android kann möglicherweise weiterhin über andere Methoden eine Verbindung herstellen.</string>
 	<string name="status_override_vpn">VPN überschreiben aktiv</string>
-	<string name="status_override_ssid">SSID Blacklist aktiv (%s)</string>
+	<string name="status_override_ssid">WLAN-Profil aktiv (%s)</string>
 	<string name="wifi_monitoring_info_title">Informationen zur WLAN-Überwachung</string>
+	<string name="wifi_profiles_title">WLAN-Profile</string>
+	<string name="menu_content_description">Weitere Einstellungen</string>
 </resources>

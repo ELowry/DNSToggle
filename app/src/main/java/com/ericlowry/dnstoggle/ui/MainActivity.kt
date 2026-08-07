@@ -5,7 +5,6 @@ import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
@@ -33,6 +32,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.ericlowry.dnstoggle.DnsToggleApplication
 import com.ericlowry.dnstoggle.R
+import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsViewModel
 import com.ericlowry.dnstoggle.service.DnsToggleService
 import com.ericlowry.dnstoggle.service.TileServiceCompat
@@ -44,6 +44,7 @@ import com.ericlowry.dnstoggle.ui.controller.VpnSectionController
 import com.ericlowry.dnstoggle.ui.dialog.CommonDialogHelper
 import com.ericlowry.dnstoggle.ui.dialog.PermissionDialogHelper
 import com.ericlowry.dnstoggle.ui.dialog.SsidDialogHelper
+import com.ericlowry.dnstoggle.ui.dialog._InfoNoticeHelper // TEMPORARY BETA INFO
 import com.ericlowry.dnstoggle.util.PermissionHelper
 import com.ericlowry.dnstoggle.util.RootUtils
 import com.ericlowry.dnstoggle.util.ShizukuUtils
@@ -79,12 +80,14 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var btnFixMainPermission: Button
 	private lateinit var cardOverrideStatus: MaterialCardView
 	private lateinit var tvOverrideStatus: TextView
+	private lateinit var mainScrollView: NestedScrollView
 
 	private var permissionDialog: AlertDialog? = null
 	private var scrollSpring: SpringAnimation? = null
+	private var lastSpringValue = 0f
 
 	private val focusChangeListener = ViewTreeObserver.OnGlobalFocusChangeListener { _, newFocus ->
-		if (newFocus != null && !findViewById<View>(R.id.mainScrollView).isInTouchMode) {
+		if (newFocus != null && !mainScrollView.isInTouchMode) {
 			smoothScrollToCenter(newFocus)
 		}
 	}
@@ -127,19 +130,42 @@ class MainActivity : AppCompatActivity() {
 		startPermissionPolling()
 		handleIntentExtras(intent)
 
-		val mainScrollView = findViewById<NestedScrollView>(R.id.mainScrollView)
 		mainScrollView.viewTreeObserver.addOnGlobalFocusChangeListener(focusChangeListener)
 
+		setupScrollSpring()
+
+		// TEMPORARY BETA INFO
+		_InfoNoticeHelper.showOnceOnStartup(this)
+		val contentWrapper =
+			findViewById<androidx.constraintlayout.widget.ConstraintLayout>(R.id.contentWrapper)
+		_InfoNoticeHelper.injectBetaFeedbackButton(
+			this,
+			contentWrapper,
+			R.id.cardMainPermissionLayout
+		)
+		// TEMPORARY BETA INFO - END
+	}
+
+	private fun setupScrollSpring() {
 		scrollSpring = SpringAnimation(mainScrollView, DynamicAnimation.SCROLL_Y).apply {
 			spring = SpringForce().apply {
 				stiffness = SpringForce.STIFFNESS_MEDIUM
 				dampingRatio = SpringForce.DAMPING_RATIO_NO_BOUNCY
 			}
+			addUpdateListener { _, value, _ ->
+				val delta = (value - lastSpringValue).toInt()
+				lastSpringValue = value
+				if (delta != 0) {
+					mainScrollView.dispatchNestedScroll(
+						0, delta, 0, 0, null, ViewCompat.TYPE_NON_TOUCH
+					)
+				}
+			}
 		}
 	}
 
 	override fun onDestroy() {
-		findViewById<View>(R.id.mainScrollView).viewTreeObserver.removeOnGlobalFocusChangeListener(
+		mainScrollView.viewTreeObserver.removeOnGlobalFocusChangeListener(
 			focusChangeListener
 		)
 		super.onDestroy()
@@ -176,7 +202,17 @@ class MainActivity : AppCompatActivity() {
 		miscController = MiscSettingsController(
 			activity = this,
 			viewModel = dnsViewModel,
-			onOpenUrl = { openUrl(it) }
+			onOpenUrl = { openUrl(it) },
+			onUsbToggleVisibilityChanged = {
+				mainScrollView.viewTreeObserver.addOnPreDrawListener(object :
+					ViewTreeObserver.OnPreDrawListener {
+					override fun onPreDraw(): Boolean {
+						mainScrollView.viewTreeObserver.removeOnPreDrawListener(this)
+						mainScrollView.fullScroll(View.FOCUS_DOWN)
+						return true
+					}
+				})
+			}
 		)
 	}
 
@@ -229,7 +265,6 @@ class MainActivity : AppCompatActivity() {
 			val left = systemBars.left.coerceAtLeast(displayCutout.left)
 			val right = systemBars.right.coerceAtLeast(displayCutout.right)
 
-
 			val statusParams = statusBarBackground.layoutParams
 			statusParams.height = systemBars.top
 			statusBarBackground.layoutParams = statusParams
@@ -239,12 +274,16 @@ class MainActivity : AppCompatActivity() {
 
 			contentWrapper.setPadding(left, 0, right, 0)
 
-			// 3. Spacing (Scroll Inner)
+			val scrollParams =
+				mainScrollView.layoutParams as android.view.ViewGroup.MarginLayoutParams
+			scrollParams.bottomMargin = systemBars.bottom
+			mainScrollView.layoutParams = scrollParams
+
 			scrollInnerContainer.setPadding(
 				defaultPadding,
 				defaultPadding,
 				defaultPadding,
-				systemBars.bottom + defaultPadding
+				defaultPadding
 			)
 
 			insets
@@ -270,6 +309,7 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun initializeViews() {
+		mainScrollView = findViewById(R.id.mainScrollView)
 		btnMenu = findViewById(R.id.btnMenu)
 		cardMainPermission = findViewById(R.id.cardMainPermissionLayout)
 		btnFixMainPermission = findViewById(R.id.btnFixMainPermission)
@@ -277,6 +317,7 @@ class MainActivity : AppCompatActivity() {
 		tvOverrideStatus = findViewById(R.id.tvOverrideStatus)
 
 		dnsController.initialize(
+			rowPrivateDns = findViewById(R.id.rowPrivateDns),
 			dnsToggleSwitch = findViewById(R.id.switchPrivateDns),
 			addHostnameButton = findViewById(R.id.btnAddHostname),
 			dnsHostnameListContainer = findViewById(R.id.dnsHostnameListContainer),
@@ -287,15 +328,16 @@ class MainActivity : AppCompatActivity() {
 		ssidController.initialize(
 			btnSsidInfo = findViewById(R.id.btnSsidInfo),
 			addSsidButton = findViewById(R.id.btnAddSsid),
+			tvWifiProfilesTitle = findViewById(R.id.tvWifiProfilesTitle),
 			permissionNoticeText = findViewById(R.id.tvPermissionNotice),
 			btnGrantPermission = findViewById(R.id.btnGrantPermission),
 			dividerSsidList = findViewById(R.id.dividerSsidList),
 			ssidListContainer = findViewById(R.id.ssidListContainer),
 			dividerSsidSettings = findViewById(R.id.dividerSsidSettings),
-			rowAutoBlacklist = findViewById(R.id.rowAutoBlacklist),
-			switchAutoBlacklist = findViewById(R.id.switchAutoBlacklist),
-			rowAutoWhitelist = findViewById(R.id.rowAutoWhitelist),
-			switchAutoWhitelist = findViewById(R.id.switchAutoWhitelist),
+			rowAutoSaveState = findViewById(R.id.rowAutoSaveState),
+			switchAutoSaveState = findViewById(R.id.switchAutoSaveState),
+			rowAutoSaveHost = findViewById(R.id.rowAutoSaveHost),
+			switchAutoSaveHost = findViewById(R.id.switchAutoSaveHost),
 			rowConnectivityWatchdogToggle = findViewById(R.id.rowConnectivityWatchdogToggle),
 			switchConnectivityWatchdog = findViewById(R.id.switchConnectivityWatchdog),
 			rowConnectivityWatchdogDebounce = findViewById(R.id.rowConnectivityWatchdogDebounce),
@@ -343,6 +385,8 @@ class MainActivity : AppCompatActivity() {
 
 		dnsViewModel.isInVpnOverride.observe(this) { _ -> updateOverrideStatusUi() }
 		dnsViewModel.activeSsidOverride.observe(this) { _ -> updateOverrideStatusUi() }
+		dnsViewModel.currentSsid.observe(this) { _ -> updateOverrideStatusUi() }
+		dnsViewModel.networkProfiles.observe(this) { _ -> updateOverrideStatusUi() }
 
 		dnsViewModel.hasPermissionError.observe(this) { hasError ->
 			if (hasError == true) showInitialPermissionDialog()
@@ -404,7 +448,10 @@ class MainActivity : AppCompatActivity() {
 
 	private fun updateOverrideStatusUi() {
 		val vpnActive = dnsViewModel.isInVpnOverride.value == true
-		val activeSsid = dnsViewModel.activeSsidOverride.value
+		val activeSsidOverride = dnsViewModel.activeSsidOverride.value
+		val currentSsid = dnsViewModel.currentSsid.value
+		val profiles = dnsViewModel.networkProfiles.value ?: emptyList()
+		val currentProfile = profiles.find { it.ssid == currentSsid }
 
 		when {
 			vpnActive -> {
@@ -412,9 +459,20 @@ class MainActivity : AppCompatActivity() {
 				tvOverrideStatus.text = getString(R.string.status_override_vpn)
 			}
 
-			activeSsid != null -> {
+			currentProfile != null && (!currentProfile.isEnabled || currentProfile.targetHostname != null) -> {
 				cardOverrideStatus.visibility = View.VISIBLE
-				tvOverrideStatus.text = getString(R.string.status_override_ssid, activeSsid)
+				val state = if (currentProfile.isEnabled) {
+					currentProfile.targetHostname ?: getString(R.string.default_dns_label)
+				} else {
+					getString(R.string.off_label)
+				}
+				tvOverrideStatus.text =
+					getString(R.string.status_override_ssid_profile, currentSsid, state)
+			}
+
+			activeSsidOverride != null -> {
+				cardOverrideStatus.visibility = View.VISIBLE
+				tvOverrideStatus.text = getString(R.string.status_override_ssid, activeSsidOverride)
 			}
 
 			else -> cardOverrideStatus.visibility = View.GONE
@@ -510,7 +568,10 @@ class MainActivity : AppCompatActivity() {
 	private fun updateToolbarTitle() {
 		val sharedPreferences = (application as DnsToggleApplication).getPrefs()
 		supportActionBar?.title =
-			sharedPreferences.getString("dynamic_app_name", getString(R.string.app_name))
+			sharedPreferences.getString(
+				Constants.PREF_DYNAMIC_APP_NAME,
+				getString(R.string.app_name)
+			)
 	}
 
 	private fun requestTileUpdate() {
@@ -596,34 +657,37 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun smoothScrollToCenter(view: View) {
-		val scrollView = findViewById<NestedScrollView>(R.id.mainScrollView)
+		val contentChild = mainScrollView.getChildAt(0) ?: return
+		val appBarLayout = findViewById<AppBarLayout>(R.id.appBarLayout)
 
 		var isDescendant = false
-		var parent = view.parent
-		while (parent != null) {
-			if (parent == scrollView) {
+		var p = view.parent
+		while (p != null) {
+			if (p == mainScrollView) {
 				isDescendant = true
 				break
 			}
-			parent = parent.parent
+			p = p.parent
 		}
-
 		if (!isDescendant) return
 
-		val rect = Rect()
+		val rect = android.graphics.Rect()
 		view.getDrawingRect(rect)
-		scrollView.offsetDescendantRectToMyCoords(view, rect)
+		(contentChild as? android.view.ViewGroup)?.offsetDescendantRectToMyCoords(view, rect)
 
-		val scrollViewHeight = scrollView.height
+		val absoluteTop = rect.top
 		val viewHeight = view.height
-		val viewTop = rect.top
+		val scrollViewHeight = mainScrollView.height
 
-		val targetScrollY = viewTop - (scrollViewHeight / 2) + (viewHeight / 2)
+		val targetY = absoluteTop - (scrollViewHeight / 2) + (viewHeight / 2)
 
-		val contentHeight = scrollView.getChildAt(0)?.height ?: 0
-		val maxScroll = contentHeight - scrollViewHeight
-		val clampedTargetY = targetScrollY.coerceIn(0, maxScroll.coerceAtLeast(0))
+		if (targetY > (appBarLayout.height / 2)) {
+			appBarLayout.setExpanded(false, true)
+		} else if (targetY <= 0) {
+			appBarLayout.setExpanded(true, true)
+		}
 
-		scrollSpring?.animateToFinalPosition(clampedTargetY.toFloat())
+		lastSpringValue = mainScrollView.scrollY.toFloat()
+		scrollSpring?.animateToFinalPosition(targetY.coerceAtLeast(0).toFloat())
 	}
 }

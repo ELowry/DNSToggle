@@ -1,0 +1,4 @@
+- Opción para bloquear automáticamente el SSID cuando la conexión de DNS privado falla repetidamente.
+- Compatibilidad con Shizuku para la concesión de permisos.
+- Se muestra el formulario de DNS privado en la configuración del sistema utilizando un marcador de posición visual para que se pueda guardar fácilmente.
+- Se corrigieron problemas con el interruptor de depuración USB, las copias de seguridad de dispositivos y las restauraciones de red.

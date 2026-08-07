@@ -22,7 +22,7 @@
 			android:background="@drawable/bg_row_selectable"
 			android:clickable="true"
 			android:focusable="true"
-			android:focusableInTouchMode="true"
+			android:focusableInTouchMode="false"
 			android:gravity="center_vertical"
 			android:orientation="horizontal"
 			android:padding="4dp"
@@ -91,7 +91,7 @@
 			android:background="@drawable/bg_row_selectable"
 			android:clickable="true"
 			android:focusable="true"
-			android:focusableInTouchMode="true"
+			android:focusableInTouchMode="false"
 			android:gravity="center_vertical"
 			android:minHeight="48dp"
 			android:orientation="horizontal"
@@ -111,7 +111,7 @@
 				android:layout_height="wrap_content"
 				android:textAppearance="?attr/textAppearanceBodyMedium"
 				android:textColor="?attr/colorPrimary"
-				tools:text="Automatic (Off)" />
+				tools:text="@string/automatic_off" />
 
 			<ImageView
 				android:layout_width="20dp"

@@ -14,7 +14,7 @@ import com.ericlowry.dnstoggle.DnsToggleApplication
 import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsManager
-import com.ericlowry.dnstoggle.data.DnsSettingsRepository
+import com.ericlowry.dnstoggle.data.repository.HostnameRepository
 import com.ericlowry.dnstoggle.ui.MainActivity
 import com.ericlowry.dnstoggle.util.attemptSecureSettingsGrant
 import kotlinx.coroutines.CoroutineScope
@@ -35,6 +35,11 @@ class DnsToggleService : TileService() {
 	override fun onDestroy() {
 		serviceScope.cancel()
 		super.onDestroy()
+	}
+
+	override fun onTileAdded() {
+		super.onTileAdded()
+		updateTileFromSystemSettings()
 	}
 
 	override fun onClick() {
@@ -60,7 +65,11 @@ class DnsToggleService : TileService() {
 			val currentMode = Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
 			val isEnabling = currentMode != Constants.DNS_MODE_HOSTNAME
 
-			val result = DnsManager.togglePrivateDns(this@DnsToggleService, isEnabling)
+			val result = DnsManager.togglePrivateDns(
+				context = this@DnsToggleService,
+				enabled = isEnabling,
+				isFromTile = true
+			)
 
 			withContext(Dispatchers.Main) {
 				when (result) {
@@ -91,7 +100,10 @@ class DnsToggleService : TileService() {
 
 	override fun onStartListening() {
 		super.onStartListening()
+		updateTileFromSystemSettings()
+	}
 
+	private fun updateTileFromSystemSettings() {
 		try {
 			val currentMode = Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
 			val tileState =
@@ -131,7 +143,7 @@ class DnsToggleService : TileService() {
 						Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
 							?: getString(R.string.on_label)
 
-					val displayName = DnsSettingsRepository.dnsHostnames.value
+					val displayName = HostnameRepository.dnsHostnames.value
 						?.find { it.hostname == specifier }
 						?.getDisplayName() ?: specifier
 

@@ -1,7 +1,10 @@
 package com.ericlowry.dnstoggle
 
 import androidx.test.core.app.ApplicationProvider
-import com.ericlowry.dnstoggle.data.DnsSettingsRepository
+import com.ericlowry.dnstoggle.data.repository.HostnameRepository
+import com.ericlowry.dnstoggle.data.repository.NetworkProfileRepository
+import com.ericlowry.dnstoggle.data.repository.SecurityRepository
+import com.ericlowry.dnstoggle.data.repository.VpnRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -19,7 +22,10 @@ class DnsSettingsRepositoryTest {
 	@Before
 	fun setup() {
 		val context = ApplicationProvider.getApplicationContext<DnsToggleApplication>()
-		DnsSettingsRepository.initialize(context)
+		SecurityRepository.initialize(context)
+		VpnRepository.initialize(context)
+		NetworkProfileRepository.initialize(context)
+		HostnameRepository.initialize(context)
 	}
 
 	@Test
@@ -27,75 +33,108 @@ class DnsSettingsRepositoryTest {
 		val hostname = "dns.google"
 
 		// Test duplicates handling
-		DnsSettingsRepository.addHostname(hostname)
-		DnsSettingsRepository.addHostname(hostname)
+		HostnameRepository.addHostname(hostname)
+		HostnameRepository.addHostname(hostname)
 
-		val hostnames = DnsSettingsRepository.dnsHostnames.value
+		val hostnames = HostnameRepository.dnsHostnames.value
 		assertTrue(hostnames != null)
 		assertEquals(1, hostnames?.count { it.hostname == hostname })
 	}
 
 	@Test
-	fun addSsidToBlacklist_doesNotDuplicate() = runTest {
+	fun upsertNetworkProfile_doesNotDuplicate() = runTest {
 		val ssid = "MyHomeWiFi"
 
-		DnsSettingsRepository.addToBlacklist(ssid)
-		DnsSettingsRepository.addToBlacklist(ssid)
+		NetworkProfileRepository.upsertNetworkProfile(ssid, isEnabled = false)
+		NetworkProfileRepository.upsertNetworkProfile(ssid, isEnabled = false)
 
-		val blacklist = DnsSettingsRepository.blacklist.value
-		assertTrue(blacklist != null)
-		assertEquals(1, blacklist?.count { it == ssid })
+		val profiles = NetworkProfileRepository.networkProfiles.value
+		assertTrue(profiles != null)
+		assertEquals(1, profiles?.count { it.ssid == ssid })
 	}
 
 	@Test
-	fun addToBlacklist_autoDetected_appearsInBothSets() = runTest {
+	fun upsertNetworkProfile_autoDetected_isSetCorrectly() = runTest {
 		val ssid = "AutoDetectedWiFi"
 
-		DnsSettingsRepository.addToBlacklist(ssid, autoDetected = true)
+		NetworkProfileRepository.upsertNetworkProfile(
+			ssid,
+			isEnabled = false,
+			isAutoDetected = true
+		)
 
-		assertTrue(DnsSettingsRepository.blacklist.value?.contains(ssid) == true)
-		assertTrue(DnsSettingsRepository.autoDetectedBlacklist.value?.contains(ssid) == true)
+		val profile = NetworkProfileRepository.networkProfiles.value?.find { it.ssid == ssid }
+		assertTrue(profile != null)
+		assertTrue(profile?.isAutoDetected == true)
+		assertTrue(profile?.isEnabled == false)
 	}
 
 	@Test
-	fun addToBlacklist_manual_notInAutoDetectedSet() = runTest {
+	fun upsertNetworkProfile_preservesHostname() = runTest {
+		val ssid = "PreserveHostWiFi"
+		val hostname = "dns.google"
+
+		NetworkProfileRepository.upsertNetworkProfile(
+			ssid,
+			isEnabled = true,
+			targetHostname = hostname
+		)
+
+		NetworkProfileRepository.upsertNetworkProfile(
+			ssid,
+			isEnabled = false,
+			preserveExistingHostname = true
+		)
+
+		val profile = NetworkProfileRepository.networkProfiles.value?.find { it.ssid == ssid }
+		assertEquals(hostname, profile?.targetHostname)
+		assertEquals(false, profile?.isEnabled)
+	}
+
+	@Test
+	fun upsertNetworkProfile_manual_notAutoDetected() = runTest {
 		val ssid = "ManualWiFi"
 
-		DnsSettingsRepository.addToBlacklist(ssid)
+		NetworkProfileRepository.upsertNetworkProfile(ssid, isEnabled = false)
 
-		assertTrue(DnsSettingsRepository.blacklist.value?.contains(ssid) == true)
-		assertTrue(DnsSettingsRepository.autoDetectedBlacklist.value?.contains(ssid) != true)
+		val profile = NetworkProfileRepository.networkProfiles.value?.find { it.ssid == ssid }
+		assertTrue(profile != null)
+		assertTrue(profile?.isAutoDetected == false)
 	}
 
 	@Test
-	fun removeFromBlacklist_autoDetected_removedFromBothSets() = runTest {
+	fun removeNetworkProfile_removesCorrectly() = runTest {
 		val ssid = "AutoDetectedRemovable"
 
-		DnsSettingsRepository.addToBlacklist(ssid, autoDetected = true)
-		DnsSettingsRepository.removeFromBlacklist(ssid)
+		NetworkProfileRepository.upsertNetworkProfile(
+			ssid,
+			isEnabled = false,
+			isAutoDetected = true
+		)
+		NetworkProfileRepository.removeNetworkProfile(ssid)
 
-		assertTrue(DnsSettingsRepository.blacklist.value?.contains(ssid) != true)
-		assertTrue(DnsSettingsRepository.autoDetectedBlacklist.value?.contains(ssid) != true)
+		val profile = NetworkProfileRepository.networkProfiles.value?.find { it.ssid == ssid }
+		assertTrue(profile == null)
 	}
 
 	@Test
 	fun vpnDnsHostname_nullableBehavior() = runTest {
 		val hostname = "dns.google"
-		DnsSettingsRepository.updateVpnDnsHostname(hostname)
-		assertEquals(hostname, DnsSettingsRepository.vpnDnsHostname.value)
+		VpnRepository.updateVpnDnsHostname(hostname)
+		assertEquals(hostname, VpnRepository.vpnDnsHostname.value)
 
-		DnsSettingsRepository.updateVpnDnsHostname(null)
-		assertEquals(null, DnsSettingsRepository.vpnDnsHostname.value)
+		VpnRepository.updateVpnDnsHostname(null)
+		assertEquals(null, VpnRepository.vpnDnsHostname.value)
 	}
 
 	@Test
 	fun removeHostname_allowsEmptyList() = runTest {
 		val hostname = "dns.google"
-		DnsSettingsRepository.addHostname(hostname)
+		HostnameRepository.addHostname(hostname)
 
-		DnsSettingsRepository.removeHostname(hostname)
+		HostnameRepository.removeHostname(hostname)
 
-		val hostnames = DnsSettingsRepository.dnsHostnames.value
+		val hostnames = HostnameRepository.dnsHostnames.value
 		assertTrue(hostnames?.isEmpty() == true)
 	}
 }

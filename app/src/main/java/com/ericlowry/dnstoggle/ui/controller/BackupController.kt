@@ -14,8 +14,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.ericlowry.dnstoggle.DnsToggleApplication
 import com.ericlowry.dnstoggle.R
-import com.ericlowry.dnstoggle.data.DnsSettingsRepository
+import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsViewModel
+import com.ericlowry.dnstoggle.data.repository.DnsSettingsRepository
 import com.ericlowry.dnstoggle.service.DnsToggleService
 import com.ericlowry.dnstoggle.service.TileServiceCompat
 import com.ericlowry.dnstoggle.ui.dialog.BackupDialogHelper
@@ -155,10 +156,13 @@ class BackupController(
 	fun showRenameAppDialog() {
 		val sharedPreferences = (activity.application as DnsToggleApplication).getPrefs()
 		val currentAppName =
-			sharedPreferences.getString("dynamic_app_name", activity.getString(R.string.app_name))
+			sharedPreferences.getString(
+				Constants.PREF_DYNAMIC_APP_NAME,
+				activity.getString(R.string.app_name)
+			)
 
 		BackupDialogHelper.showRenameAppDialog(activity, currentAppName) { newAppName ->
-			sharedPreferences.edit { putString("dynamic_app_name", newAppName) }
+			sharedPreferences.edit { putString(Constants.PREF_DYNAMIC_APP_NAME, newAppName) }
 			onUpdateToolbarTitle()
 			requestTileUpdate()
 		}

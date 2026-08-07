@@ -1,5 +1,6 @@
 plugins {
 	alias(libs.plugins.android.application)
+	alias(libs.plugins.kotlinx.serialization.plugin)
 }
 
 abstract class CopyChangelogsTask @Inject constructor(
@@ -36,8 +37,8 @@ android {
 		applicationId = "com.ericlowry.dnstoggle"
 		minSdk = 28
 		targetSdk = 37
-		versionCode = 21
-		versionName = "1.7.1"
+		versionCode = 22
+		versionName = "2.0.0"
 
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 	}
@@ -99,6 +100,7 @@ androidComponents {
 
 dependencies {
 	implementation(libs.androidx.core.ktx)
+	implementation(libs.kotlinx.serialization.json)
 	implementation(libs.androidx.appcompat)
 	implementation(libs.material)
 	implementation(libs.androidx.activity)
