@@ -52,15 +52,15 @@
 	<string name="status_active_reachable">Actif et joignable</string>
 	<string name="warning_unreachable_dns">Serveur DNS injoignable sur le port 853 (DoT). Android peut possiblement s\'y connecter par d\'autres méthodes.</string>
 	<string name="status_override_vpn">Override VPN en cours</string>
-	<string name="status_override_ssid">SSID exclu (%s)</string>
-	<string name="ssid_blacklist_title">Profils Wi-Fi</string>
+	<string name="status_override_ssid">Profil Wi-Fi actif (%s)</string>
+	<string name="wifi_profiles_title">Profils Wi-Fi</string>
 	<string name="wifi_profiles_summary">Définissez des règles DNS privées spécifiques ou des contournements pour chaque réseau Wi-Fi.</string>
 	<string name="wifi_monitoring_info_title">Info sur la surveillance du SSID</string>
 	<string name="wifi_monitoring_info_text">Pour prendre en charge le basculement automatique, l\'application surveille les changements de réseau. L\'impact sur la consommation de la batterie devrait être minimal, mais le système peut afficher une activité en arrière-plan continue.</string>
 	<string name="battery_optimization_explanation">Certains appareils arrêtent la surveillance en arrière-plan pour économiser la batterie. Si l\'automatisation cesse de fonctionner, désactivez les restrictions pour cette application.</string>
 	<string name="ignore_battery_optimizations">Désactiver les restrictions de batterie</string>
-	<string name="connectivity_watchdog_toggle">Exclure automatiquement si échec de connexion</string>
-	<string name="connectivity_watchdog_info_text">Lorsque le DNS privé échoue mais que l\'internet est toujours disponible, l\'application ajoutera automatiquement le réseau actuel aux exclusions pour restaurer la connectivité.</string>
+	<string name="connectivity_watchdog_toggle">Ajout automatique d\'un profil Wi-Fi si échec de connexion</string>
+	<string name="connectivity_watchdog_info_text">Lorsque le DNS privé échoue mais que l\'internet est toujours disponible, l\'application créera automatiquement un profil Wi-Fi pour le réseau actuel afin de restaurer la connectivité.</string>
 	<string name="connectivity_watchdog_debounce_label">Délai avant désactivation</string>
 	<string name="connectivity_watchdog_targets_label">Serveurs de test</string>
 	<string name="connectivity_watchdog_targets_title">Serveurs de test de connectivité</string>
@@ -74,11 +74,11 @@
 	<string name="notification_permission_explanation">Pour vous avertir lorsque le DNS privé est automatiquement activé en arrière-plan, et pour garantir la vérification en arrière-plan, veuillez autoriser les notifications.</string>
 	<string name="background_location_explanation">Pour surveiller le Wi-Fi lorsque l\'application est fermée, Android nécessite l\'accès à la position \"Toujours autoriser\". DNS Toggle utilise uniquement cela pour voir le nom du Wi-Fi et ne suit jamais votre position physique ni n\'utilise le GPS.</string>
 	<string name="vpn_disclaimer_explanation">\n\nRemarque: L\'utilisation d\'un VPN peut masquer le nom de votre réseau Wi-Fi, désactivant temporairement l\'automatisation des profils Wi-Fi.</string>
-	<string name="add_ssid">Ajouter un SSID</string>
-	<string name="edit_ssid">Modifier le SSID</string>
+	<string name="add_ssid">Ajouter un profil Wi-Fi</string>
+	<string name="edit_ssid">Modifier le profil Wi-Fi</string>
 	<string name="ssid_hint">SSID (Nom du Wi-Fi)</string>
-	<string name="ssid_saved">Réseau ajouté aux exclusions permanentes</string>
-	<string name="delete_ssid_confirm">Retirer ce réseau des exclusions ?</string>
+	<string name="ssid_saved">Profil Wi-Fi enregistré</string>
+	<string name="delete_ssid_confirm">Supprimer ce profil Wi-Fi ?</string>
 	<!-- Main UI - VPN Override -->
 	<string name="vpn_override_title">Override VPN</string>
 	<string name="vpn_override_summary">Changer automatiquement le DNS privé lorsqu\'un VPN est connecté.</string>
@@ -104,13 +104,13 @@
 	<string name="import_config">Importer une configuration</string>
 	<!-- Security -->
 	<string name="keystore_error_title">Réinitialisation de sécurité</string>
-	<string name="keystore_error_message">En raison d\'un changement dans les paramètres de sécurité de votre appareil (comme la modification du verrouillage de l\'écran), votre liste d\'exclusions Wi-Fi a été réinitialisée pour protéger vos données. Vous devrez rajouter vos réseaux exclus.</string>
+	<string name="keystore_error_message">En raison d\'un changement dans les paramètres de sécurité de votre appareil (comme la modification du verrouillage de l\'écran), vos profils Wi-Fi ont été réinitialisés pour protéger vos données. Vous devrez rajouter vos réseaux enregistrés.</string>
 	<!-- Backup/Restore -->
 	<string name="export">Exporter</string>
 	<string name="export_password_description">Saisissez un mot de passe pour chiffrer votre fichier de sauvegarde. Vous aurez besoin de ce même mot de passe pour restaurer cette configuration ulterieurement.</string>
 	<string name="password">Mot de passe</string>
 	<string name="import_action">Importer</string>
-	<string name="import_confirmation_message">Importer cette configuration remplacera les paramètres de l\'application ainsi que les addresses DNS et SSID enregistrées. Voulez-vous continuer?</string>
+	<string name="import_confirmation_message">Importer cette configuration remplacera les paramètres de l\'application ainsi que les addresses DNS et les profils Wi-Fi enregistrés. Voulez-vous continuer?</string>
 	<string name="export_success">Configuration exportée avec succès</string>
 	<string name="export_failed">L\'exportation a échoué</string>
 	<string name="import_success">Configuration importée avec succès</string>
@@ -118,18 +118,18 @@
 	<string name="import_failed_password">Échec du déchiffrement. Mot de passe incorrect ou fichier corrompu.</string>
 	<!-- Feedback & Notifications -->
 	<string name="notif_channel_alerts_name">Alertes d\'automatisation</string>
-	<string name="notif_channel_alerts_desc">Notifications lorsque le DNS privé est automatiquement activé/désactivé ou lorsque des réseaux sont exclus.</string>
+	<string name="notif_channel_alerts_desc">Notifications lorsque le DNS privé est automatiquement activé/désactivé ou lorsque des profils Wi-Fi sont déclenchés.</string>
 	<string name="notif_channel_service_name">Surveillance en arrière-plan</string>
 	<string name="notif_channel_service_desc">Une notification silencieuse et persistante requise par Android pour surveiller les réseaux Wi-Fi en arrière-plan.</string>
 	<string name="service_notif_title">Surveillance du réseau activée</string>
 	<string name="service_notif_text">DNS Toggle est actif pour automatiser le mode DNS privé.</string>
 	<string name="notif_dns_disabled_auto">DNS privé désactivé automatiquement pour %s</string>
-	<string name="notif_connectivity_watchdog_disabled">DNS privé désactivé et %s exclu en raison d\'un problème de connexion</string>
+	<string name="notif_connectivity_watchdog_disabled">DNS privé désactivé et profil Wi-Fi créé pour %s en raison d\'un problème de connexion</string>
 	<string name="notif_connectivity_watchdog_restored">Connectivité rétablie. DNS privé réactivé pour %s</string>
 	<string name="notif_vpn_dns_applied">DNS privé défini par le VPN</string>
 	<string name="notif_vpn_dns_restored">DNS privé restauré post-VPN</string>
-	<string name="notif_ssid_added">%s ajouté aux exclusions</string>
-	<string name="notif_ssid_removed">%s retiré des exclusions</string>
+	<string name="notif_ssid_added">Profil Wi-Fi: DNS privé désactivé pour %s</string>
+	<string name="notif_ssid_removed">Profil Wi-Fi: DNS privé activé pour %s</string>
 	<string name="toast_dns_changed">DNS privé: %s</string>
 	<string name="hostname_saved">Addresse enregistrée</string>
 	<string name="hide_launcher_icon_tv_summary">Cette fonctionnalité ne peut être utilisée sur Android TV.</string>
