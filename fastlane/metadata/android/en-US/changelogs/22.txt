@@ -2,4 +2,4 @@
 - General UI and code cleanup
 - Fixed an issue that required extra taps for toggles
 - Fixed issue with scrolling on TVs
-- Added translations for Spanish (thanks Allyson Simón), WIP Chinese Han (thanks XieyilinMain), and WIP Japanese (thanks Oさん)
+- Added translations for Spanish (thanks Allyson Simón), Chinese Han (thanks XieyilinMain), and WIP Japanese (thanks Oさん)
