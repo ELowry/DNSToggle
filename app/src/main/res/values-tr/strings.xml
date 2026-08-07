@@ -56,17 +56,17 @@
 	<string name="status_active_reachable">Aktif ve Ulaşılabilir</string>
 	<string name="warning_unreachable_dns">DNS sunucusuna 853 numaralı bağlantı noktasından (DoT) ulaşılamıyor. Android yine de başka yöntemlerle başarılı bir şekilde bağlanabilir.</string>
 	<string name="status_override_vpn">VPN Geçersiz Kılma Aktif</string>
-	<string name="status_override_ssid">SSID Kara Listesi Aktif (%s)</string>
+	<string name="status_override_ssid">Wi-Fi Profili Aktif (%s)</string>
 
-	<!-- Main UI - SSID Blacklist & Monitoring -->
-	<string name="ssid_blacklist_title">Wi-Fi Profilleri</string>
+	<!-- Main UI - Wi-Fi Profilleri & İzleme -->
+	<string name="wifi_profiles_title">Wi-Fi Profilleri</string>
 	<string name="wifi_profiles_summary">Ayrı Wi-Fi ağları için özel Özel DNS kuralları veya istisnaları ayarlayın.</string>
 	<string name="wifi_monitoring_info_title">Wi-Fi İzleme Bilgisi</string>
 	<string name="wifi_monitoring_info_text">Otomatik geçişi desteklemek için uygulama ağ değişikliklerini izler. Pil tüketimi üzerindeki etkisi minimum düzeyde olacaktır ancak sistem yine de arka plan etkinliği raporlayabilir.</string>
 	<string name="battery_optimization_explanation">Bazı cihazlar pil tasarrufu sağlamak için arka plan izlemeyi kapatır. Otomasyon çalışmayı durdurursa, bu uygulama için kısıtlamaları devre dışı bırak.</string>
 	<string name="ignore_battery_optimizations">Pil kısıtlamalarını devre dışı bırak</string>
-	<string name="connectivity_watchdog_toggle">Bağlantı hatasında otomatik kara listeye al</string>
-	<string name="connectivity_watchdog_info_text">Özel DNS başarısız olduğunda ancak internet hala mevcut olduğunda, uygulama bağlantıyı geri yüklemek için mevcut ağı otomatik olarak kara listeye ekler.</string>
+	<string name="connectivity_watchdog_toggle">Bağlantı hatasında otomatik Wi-Fi profili oluştur</string>
+	<string name="connectivity_watchdog_info_text">Özel DNS başarısız olduğunda ancak internet hala mevcut olduğunda, uygulama bağlantıyı geri yüklemek için mevcut ağ için otomatik olarak bir Wi-Fi profili oluşturur.</string>
 	<string name="connectivity_watchdog_debounce_label">Devre dışı bırakmadan önce bekle</string>
 	<string name="connectivity_watchdog_targets_label">Bağlantı testi sunucuları</string>
 	<string name="connectivity_watchdog_targets_title">Bağlantı kontrolü hedef sunucuları</string>
@@ -74,7 +74,7 @@
 	<string name="connectivity_watchdog_debounce_custom">Özel…</string>
 	<string name="connectivity_watchdog_debounce_invalid">5 ile 300 saniye arasında bir değer girin</string>
 	<string name="connectivity_watchdog_debounce_seconds_format">%d sn</string>
-	<string name="notif_connectivity_watchdog_disabled">Bağlantı sorunu nedeniyle Özel DNS devre dışı bırakıldı ve %s kara listeye alındı</string>
+	<string name="notif_connectivity_watchdog_disabled">Bağlantı sorunu nedeniyle Özel DNS devre dışı bırakıldı ve %s için Wi-Fi profili oluşturuldu</string>
 	<string name="notif_connectivity_watchdog_restored">Bağlantı geri yüklendi. Özel DNS %s için yeniden etkinleştirildi</string>
 	<string name="grant_permission_notice">Wi-Fi SSID\'sini doğrulamak için Konum/Yakındaki cihazlar izni (arka plan dahil) gereklidir.</string>
 	<string name="grant_permission_button">İzinleri Ver</string>
@@ -82,11 +82,11 @@
 	<string name="notification_permission_explanation">Arka planda Özel DNS otomatik olarak değiştirildiğinde sana bildirim göndermek ve izlemenin aktif kalmasını sağlamak için lütfen bildirimlere izin ver.</string>
 	<string name="background_location_explanation">Uygulama kapalıyken Wi-Fi\'ı izlemek için, Android \"Her zaman izin ver\" konum erişimi gerektirir. DNS Toggle bunu yalnızca Wi-Fi adını görmek için kullanır ve fiziksel konumunu asla takip etmez veya GPS\'i kullanmaz.</string>
 	<string name="vpn_disclaimer_explanation">\n\nNot: Aktif VPN bağlantıları Wi-Fi ağ adınızı gizleyebilir ve Wi-Fi Profili otomasyonunu geçici olarak devre dışı bırakabilir.</string>
-	<string name="add_ssid">SSID Ekle</string>
-	<string name="edit_ssid">SSID Düzenle</string>
+	<string name="add_ssid">Wi-Fi Profili Ekle</string>
+	<string name="edit_ssid">Wi-Fi Profilini Düzenle</string>
 	<string name="ssid_hint">SSID (Wi-Fi Adı)</string>
-	<string name="ssid_saved">SSID kalıcı olarak kara listeye eklendi</string>
-	<string name="delete_ssid_confirm">Bu SSID kara listeden kaldırılsın mı?</string>
+	<string name="ssid_saved">Wi-Fi profili kaydedildi</string>
+	<string name="delete_ssid_confirm">Bu Wi-Fi profili kaldırılsın mı?</string>
 
 	<!-- Main UI - VPN Override -->
 	<string name="vpn_override_title">VPN Geçersiz Kılma</string>
@@ -118,14 +118,14 @@
 
 	<!-- Security -->
 	<string name="keystore_error_title">Güvenlik Sıfırlaması</string>
-	<string name="keystore_error_message">Cihazının güvenlik ayarlarındaki bir değişiklik nedeniyle (ekran kilidini değiştirmek gibi), verilerini korumak için Wi-Fi kara listen sıfırlandı. Kara listeye aldığın ağları yeniden eklemen gerekecek.</string>
+	<string name="keystore_error_message">Cihazının güvenlik ayarlarındaki bir değişiklik nedeniyle (ekran kilidini değiştirmek gibi), verilerini korumak için Wi-Fi profillerin sıfırlandı. Kaydettiğin ağları yeniden eklemen gerekecek.</string>
 
 	<!-- Backup/Restore -->
 	<string name="export">Dışa Aktar</string>
 	<string name="export_password_description">Yedekleme dosyanı şifrelemek için bir parola gir. Bu yapılandırmayı daha sonra geri yüklemek için aynı parolaya ihtiyacın olacak.</string>
 	<string name="password">Parola</string>
 	<string name="import_action">İçe Aktar</string>
-	<string name="import_confirmation_message">Bu yapılandırmayı içe aktarmak mevcut ayarlarının, sunucu adlarının ve Wi-Fi kara listenin üzerine yazacak. Devam etmek istiyor musun?</string>
+	<string name="import_confirmation_message">Bu yapılandırmayı içe aktarmak mevcut ayarlarının, sunucu adlarının ve Wi-Fi profillerinin üzerine yazacak. Devam etmek istiyor musun?</string>
 	<string name="export_success">Yapılandırma başarıyla dışa aktarıldı</string>
 	<string name="export_failed">Yapılandırma dışa aktarılamadı</string>
 	<string name="import_success">Yapılandırma başarıyla içe aktarıldı</string>
@@ -134,7 +134,7 @@
 
 	<!-- Feedback & Notifications -->
 	<string name="notif_channel_alerts_name">Otomasyon Uyarıları</string>
-	<string name="notif_channel_alerts_desc">Özel DNS otomatik olarak değiştirildiğinde veya ağlar kara listeye alındığında bildirimler.</string>
+	<string name="notif_channel_alerts_desc">Özel DNS otomatik olarak değiştirildiğinde veya Wi-Fi profilleri tetiklendiğinde bildirimler.</string>
 	<string name="notif_channel_service_name">Arka Plan İzleme</string>
 	<string name="notif_channel_service_desc">Arka planda Wi-Fi ağlarını izlemek için Android tarafından istenen sessiz, kalıcı bir bildirim.</string>
 	<string name="service_notif_title">Ağ Durumu İzleniyor</string>
@@ -142,8 +142,8 @@
 	<string name="notif_dns_disabled_auto">%s için Özel DNS otomatik olarak devre dışı bırakıldı</string>
 	<string name="notif_vpn_dns_applied">Özel DNS, VPN için ayarlandı</string>
 	<string name="notif_vpn_dns_restored">VPN sonrasında Özel DNS geri yüklendi</string>
-	<string name="notif_ssid_added">%s kara listeye eklendi</string>
-	<string name="notif_ssid_removed">%s kara listeden kaldırıldı</string>
+	<string name="notif_ssid_added">Wi-Fi profili: %s için Özel DNS Kapalı</string>
+	<string name="notif_ssid_removed">Wi-Fi profili: %s için Özel DNS Açık</string>
 	<string name="toast_dns_changed">Özel DNS %s olarak değiştirildi</string>
 	<string name="hostname_saved">Sunucu adı kaydedildi</string>
 

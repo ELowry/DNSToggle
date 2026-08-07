@@ -47,6 +47,7 @@
 	<string name="status_active_reachable">Aktiviert &amp; erreichbar</string>
 	<string name="warning_unreachable_dns">Der DNS-Server ist über Port 853 (DoT) nicht erreichbar. Android kann möglicherweise weiterhin über andere Methoden eine Verbindung herstellen.</string>
 	<string name="status_override_vpn">VPN überschreiben aktiv</string>
-	<string name="status_override_ssid">SSID Blacklist aktiv (%s)</string>
+	<string name="status_override_ssid">WLAN-Profil aktiv (%s)</string>
 	<string name="wifi_monitoring_info_title">Informationen zur WLAN-Überwachung</string>
+	<string name="wifi_profiles_title">WLAN-Profile</string>
 </resources>
