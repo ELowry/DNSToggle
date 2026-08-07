@@ -1,0 +1,5 @@
+- Le système de réseaux exclus a été remplacé par les profis Wi-Fi
+- Mise à jour et nettoyage de l'interface et du code
+- Réparation d'un problème d'activation tactile des options
+- Réparation du défilement sur Android TV
+- Ajout des traductions en espagnol (merci Allyson Simón), choinois Han (merci XieyilinMain), et japonais en cours (merci Oさん)
