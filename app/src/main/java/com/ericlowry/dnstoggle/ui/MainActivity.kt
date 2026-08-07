@@ -11,6 +11,7 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.Button
 import android.widget.ImageButton
@@ -49,6 +50,7 @@ import com.ericlowry.dnstoggle.util.PermissionHelper
 import com.ericlowry.dnstoggle.util.RootUtils
 import com.ericlowry.dnstoggle.util.ShizukuUtils
 import com.ericlowry.dnstoggle.util.attemptSecureSettingsGrant
+import com.ericlowry.dnstoggle.util.setConditionalVisibility
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.card.MaterialCardView
@@ -275,7 +277,7 @@ class MainActivity : AppCompatActivity() {
 			contentWrapper.setPadding(left, 0, right, 0)
 
 			val scrollParams =
-				mainScrollView.layoutParams as android.view.ViewGroup.MarginLayoutParams
+				mainScrollView.layoutParams as ViewGroup.MarginLayoutParams
 			scrollParams.bottomMargin = systemBars.bottom
 			mainScrollView.layoutParams = scrollParams
 
@@ -453,14 +455,17 @@ class MainActivity : AppCompatActivity() {
 		val profiles = dnsViewModel.networkProfiles.value ?: emptyList()
 		val currentProfile = profiles.find { it.ssid == currentSsid }
 
+		val container = cardOverrideStatus.parent as? ViewGroup
+		val showCard: Boolean
+
 		when {
 			vpnActive -> {
-				cardOverrideStatus.visibility = View.VISIBLE
+				showCard = true
 				tvOverrideStatus.text = getString(R.string.status_override_vpn)
 			}
 
 			currentProfile != null && (!currentProfile.isEnabled || currentProfile.targetHostname != null) -> {
-				cardOverrideStatus.visibility = View.VISIBLE
+				showCard = true
 				val state = if (currentProfile.isEnabled) {
 					currentProfile.targetHostname ?: getString(R.string.default_dns_label)
 				} else {
@@ -471,19 +476,25 @@ class MainActivity : AppCompatActivity() {
 			}
 
 			activeSsidOverride != null -> {
-				cardOverrideStatus.visibility = View.VISIBLE
+				showCard = true
 				tvOverrideStatus.text = getString(R.string.status_override_ssid, activeSsidOverride)
 			}
 
-			else -> cardOverrideStatus.visibility = View.GONE
+			else -> {
+				showCard = false
+			}
 		}
+
+		cardOverrideStatus.setConditionalVisibility(showCard, container)
 	}
 
 	private fun updateMainPermissionUiState() {
-		if (PermissionHelper.hasSecureSettingsPermission(this)) {
-			if (::cardMainPermission.isInitialized) cardMainPermission.visibility = View.GONE
-		} else {
-			cardMainPermission.visibility = View.VISIBLE
+		if (::cardMainPermission.isInitialized) {
+			val container = cardMainPermission.parent as? ViewGroup
+			cardMainPermission.setConditionalVisibility(
+				!PermissionHelper.hasSecureSettingsPermission(this),
+				container
+			)
 		}
 	}
 
@@ -673,7 +684,7 @@ class MainActivity : AppCompatActivity() {
 
 		val rect = android.graphics.Rect()
 		view.getDrawingRect(rect)
-		(contentChild as? android.view.ViewGroup)?.offsetDescendantRectToMyCoords(view, rect)
+		(contentChild as? ViewGroup)?.offsetDescendantRectToMyCoords(view, rect)
 
 		val absoluteTop = rect.top
 		val viewHeight = view.height

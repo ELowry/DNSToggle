@@ -104,6 +104,7 @@
 	<!-- Main UI - VPN Override -->
 	<string name="vpn_override_title">VPN Override</string>
 	<string name="vpn_override_summary">Automatically change Private DNS when a VPN is connected.</string>
+	<string name="vpn_override_toggle_label">Enable VPN Override</string>
 	<string name="vpn_dns_label">DNS on VPN</string>
 	<string name="vpn_permission_notice">Notification permission is required for background automation.</string>
 	<string name="vpn_hostname_removed_warning">The DNS hostname previously used for VPN was removed. VPN Override has been disabled.</string>

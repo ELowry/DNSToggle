@@ -2,6 +2,7 @@ package com.ericlowry.dnstoggle.ui.controller
 
 import android.os.PowerManager
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
@@ -22,6 +23,8 @@ import com.ericlowry.dnstoggle.ui.dialog.CommonDialogHelper
 import com.ericlowry.dnstoggle.ui.dialog.SsidDialogHelper
 import com.ericlowry.dnstoggle.util.NetworkUtils
 import com.ericlowry.dnstoggle.util.PermissionHelper
+import com.ericlowry.dnstoggle.util.setConditionalVisibility
+import com.ericlowry.dnstoggle.util.setDimmedEnabled
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.R as MaterialR
@@ -243,15 +246,16 @@ class SsidSectionController(
 	}
 
 	private fun refreshSsidListView(profiles: List<NetworkProfile>?) {
-		if (profiles.isNullOrEmpty()) {
-			dividerSsidList.visibility = View.GONE
-			dividerSsidSettings.visibility = View.GONE
+		val container = permissionNoticeText.parent as? ViewGroup
+		val isEmpty = profiles.isNullOrEmpty()
+
+		dividerSsidList.setConditionalVisibility(!isEmpty, container)
+		dividerSsidSettings.setConditionalVisibility(!isEmpty, container)
+
+		if (isEmpty) {
 			ssidsAdapter.submitList(emptyList())
 			return
 		}
-
-		dividerSsidList.visibility = View.VISIBLE
-		dividerSsidSettings.visibility = View.VISIBLE
 
 		val items = profiles.sortedByDescending { it.isAutoDetected }
 		ssidsAdapter.submitList(items)
@@ -286,53 +290,23 @@ class SsidSectionController(
 	}
 
 	fun updateUiState(hasPermission: Boolean) {
+		val container = permissionNoticeText.parent as? ViewGroup
+
+		permissionNoticeText.setConditionalVisibility(!hasPermission, container)
+		btnGrantPermission.setConditionalVisibility(!hasPermission, container)
+
+		addSsidButton.setConditionalVisibility(hasPermission, container)
+		rowAutoSaveState.setConditionalVisibility(hasPermission, container)
+		rowAutoSaveHost.setConditionalVisibility(hasPermission, container)
+		ssidListContainer.setConditionalVisibility(hasPermission, container)
+		rowConnectivityWatchdogToggle.setConditionalVisibility(hasPermission, container)
+		rowConnectivityWatchdogDebounce.setConditionalVisibility(hasPermission, container)
+		rowConnectivityWatchdogTargets.setConditionalVisibility(hasPermission, container)
+
 		if (hasPermission) {
-			permissionNoticeText.visibility = View.GONE
-			btnGrantPermission.visibility = View.GONE
-			addSsidButton.isEnabled = true
-
-			rowAutoSaveState.isEnabled = true
-			rowAutoSaveState.alpha = 1.0f
-			switchAutoSaveState.isEnabled = true
-
-			rowAutoSaveHost.isEnabled = true
-			rowAutoSaveHost.alpha = 1.0f
-			switchAutoSaveHost.isEnabled = true
-
-			ssidListContainer.alpha = 1.0f
-
 			val watchdogEnabled = viewModel.connectivityWatchdogEnabled.value ?: false
-			rowConnectivityWatchdogToggle.isEnabled = true
-			rowConnectivityWatchdogToggle.alpha = 1.0f
-			switchConnectivityWatchdog.isEnabled = true
-
-			rowConnectivityWatchdogDebounce.isEnabled = watchdogEnabled
-			rowConnectivityWatchdogDebounce.alpha = if (watchdogEnabled) 1.0f else 0.5f
-			rowConnectivityWatchdogTargets.isEnabled = watchdogEnabled
-			rowConnectivityWatchdogTargets.alpha = if (watchdogEnabled) 1.0f else 0.5f
-		} else {
-			permissionNoticeText.visibility = View.VISIBLE
-			btnGrantPermission.visibility = View.VISIBLE
-			addSsidButton.isEnabled = false
-
-			rowAutoSaveState.isEnabled = false
-			rowAutoSaveState.alpha = 0.5f
-			switchAutoSaveState.isEnabled = false
-
-			rowAutoSaveHost.isEnabled = false
-			rowAutoSaveHost.alpha = 0.5f
-			switchAutoSaveHost.isEnabled = false
-
-			ssidListContainer.alpha = 0.5f
-
-			rowConnectivityWatchdogToggle.isEnabled = false
-			rowConnectivityWatchdogToggle.alpha = 0.5f
-			switchConnectivityWatchdog.isEnabled = false
-
-			rowConnectivityWatchdogDebounce.isEnabled = false
-			rowConnectivityWatchdogDebounce.alpha = 0.5f
-			rowConnectivityWatchdogTargets.isEnabled = false
-			rowConnectivityWatchdogTargets.alpha = 0.5f
+			rowConnectivityWatchdogDebounce.setDimmedEnabled(watchdogEnabled)
+			rowConnectivityWatchdogTargets.setDimmedEnabled(watchdogEnabled)
 		}
 	}
 }

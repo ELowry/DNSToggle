@@ -1,6 +1,7 @@
 package com.ericlowry.dnstoggle.ui.controller
 
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
@@ -11,6 +12,8 @@ import com.ericlowry.dnstoggle.data.DnsViewModel
 import com.ericlowry.dnstoggle.ui.MainPermissionHandler
 import com.ericlowry.dnstoggle.ui.dialog.DnsDialogHelper
 import com.ericlowry.dnstoggle.util.PermissionHelper
+import com.ericlowry.dnstoggle.util.setConditionalVisibility
+import com.ericlowry.dnstoggle.util.setDimmedEnabled
 import com.google.android.material.materialswitch.MaterialSwitch
 
 class VpnSectionController(
@@ -111,18 +114,17 @@ class VpnSectionController(
 	}
 
 	fun updateUiState(hasPermission: Boolean) {
+		val container = rowVpnOverrideToggle.parent as? ViewGroup
+
+		vpnPermissionNoticeText.setConditionalVisibility(!hasPermission, container)
+		btnGrantVpnPermission.setConditionalVisibility(!hasPermission, container)
+
+		rowVpnOverrideToggle.setConditionalVisibility(hasPermission, container)
+		rowVpnDns.setConditionalVisibility(hasPermission, container)
+
 		if (hasPermission) {
-			vpnPermissionNoticeText.visibility = View.GONE
-			btnGrantVpnPermission.visibility = View.GONE
-			switchVpnOverride.isEnabled = true
-			rowVpnDns.isEnabled = viewModel.vpnOverrideEnabled.value == true
-			rowVpnDns.alpha = if (viewModel.vpnOverrideEnabled.value == true) 1.0f else 0.5f
-		} else {
-			vpnPermissionNoticeText.visibility = View.VISIBLE
-			btnGrantVpnPermission.visibility = View.VISIBLE
-			switchVpnOverride.isEnabled = false
-			rowVpnDns.isEnabled = false
-			rowVpnDns.alpha = 0.5f
+			val vpnEnabled = viewModel.vpnOverrideEnabled.value == true
+			rowVpnDns.setDimmedEnabled(vpnEnabled)
 		}
 	}
 }
