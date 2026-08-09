@@ -25,6 +25,9 @@ object VpnRepository {
 	private val _vpnDnsHostname = MutableStateFlow<String?>(null)
 	val vpnDnsHostname: StateFlow<String?> = _vpnDnsHostname.asStateFlow()
 
+	private val _vpnDnsMode = MutableStateFlow(Constants.DNS_MODE_OPPORTUNISTIC)
+	val vpnDnsMode: StateFlow<String> = _vpnDnsMode.asStateFlow()
+
 	fun initialize(context: Context) {
 		val app = context.applicationContext as DnsToggleApplication
 		sharedPreferences = app.getPrefs()
@@ -32,6 +35,11 @@ object VpnRepository {
 
 		_vpnOverrideEnabled.value =
 			sharedPreferences.getBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, false)
+
+		_vpnDnsMode.value = sharedPreferences.getString(
+			Constants.PREF_VPN_DNS_MODE,
+			Constants.DNS_MODE_OPPORTUNISTIC
+		) ?: Constants.DNS_MODE_OPPORTUNISTIC
 
 		scope.launch {
 			val encryptedVpnHostname =
@@ -41,13 +49,13 @@ object VpnRepository {
 			} else {
 				when (val result = EncryptionManager.decrypt(encryptedVpnHostname)) {
 					is EncryptionManager.DecryptResult.Success -> {
-						// START_LEGACY_MIGRATION_CODE: VPN DNS 'off' string migration
-						if (result.data == "off") {
-							// Migration from app versions <1.6
+						// START_LEGACY_MIGRATION_CODE: Purge legacy "off" or "opportunistic" strings saved in the hostname slot
+						val decryptedHostname = result.data
+						if (decryptedHostname == Constants.DNS_MODE_OFF || decryptedHostname == Constants.DNS_MODE_OPPORTUNISTIC) {
 							encryptedPrefs.edit { remove(Constants.PREF_VPN_DNS_HOSTNAME) }
 							null
 						} else {
-							result.data
+							decryptedHostname
 						}
 						// END_LEGACY_MIGRATION_CODE
 					}
@@ -68,8 +76,12 @@ object VpnRepository {
 		sharedPreferences.edit { putBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, enabled) }
 	}
 
-	fun updateVpnDnsHostname(hostname: String?) {
+	fun updateVpnDns(mode: String, hostname: String?) {
+		_vpnDnsMode.value = mode
 		_vpnDnsHostname.value = hostname
+
+		sharedPreferences.edit { putString(Constants.PREF_VPN_DNS_MODE, mode) }
+
 		if (hostname == null) {
 			encryptedPrefs.edit { remove(Constants.PREF_VPN_DNS_HOSTNAME) }
 		} else {

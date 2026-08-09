@@ -11,6 +11,7 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.Button
 import android.widget.ImageButton
@@ -44,11 +45,12 @@ import com.ericlowry.dnstoggle.ui.controller.VpnSectionController
 import com.ericlowry.dnstoggle.ui.dialog.CommonDialogHelper
 import com.ericlowry.dnstoggle.ui.dialog.PermissionDialogHelper
 import com.ericlowry.dnstoggle.ui.dialog.SsidDialogHelper
-import com.ericlowry.dnstoggle.ui.dialog._InfoNoticeHelper // TEMPORARY BETA INFO
+//import com.ericlowry.dnstoggle.ui.dialog._InfoNoticeHelper // TEMPORARY INFO
 import com.ericlowry.dnstoggle.util.PermissionHelper
 import com.ericlowry.dnstoggle.util.RootUtils
 import com.ericlowry.dnstoggle.util.ShizukuUtils
 import com.ericlowry.dnstoggle.util.attemptSecureSettingsGrant
+import com.ericlowry.dnstoggle.util.setConditionalVisibility
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.card.MaterialCardView
@@ -134,16 +136,16 @@ class MainActivity : AppCompatActivity() {
 
 		setupScrollSpring()
 
-		// TEMPORARY BETA INFO
-		_InfoNoticeHelper.showOnceOnStartup(this)
-		val contentWrapper =
-			findViewById<androidx.constraintlayout.widget.ConstraintLayout>(R.id.contentWrapper)
-		_InfoNoticeHelper.injectBetaFeedbackButton(
-			this,
-			contentWrapper,
-			R.id.cardMainPermissionLayout
-		)
-		// TEMPORARY BETA INFO - END
+//		// TEMPORARY INFO
+//		_InfoNoticeHelper.showOnceOnStartup(this)
+//		val contentWrapper =
+//			findViewById<androidx.constraintlayout.widget.ConstraintLayout>(R.id.contentWrapper)
+//		_InfoNoticeHelper.injectNoticeButton(
+//			this,
+//			contentWrapper,
+//			R.id.cardMainPermissionLayout
+//		)
+//		// TEMPORARY INFO - END
 	}
 
 	private fun setupScrollSpring() {
@@ -275,7 +277,7 @@ class MainActivity : AppCompatActivity() {
 			contentWrapper.setPadding(left, 0, right, 0)
 
 			val scrollParams =
-				mainScrollView.layoutParams as android.view.ViewGroup.MarginLayoutParams
+				mainScrollView.layoutParams as ViewGroup.MarginLayoutParams
 			scrollParams.bottomMargin = systemBars.bottom
 			mainScrollView.layoutParams = scrollParams
 
@@ -318,6 +320,8 @@ class MainActivity : AppCompatActivity() {
 
 		dnsController.initialize(
 			rowPrivateDns = findViewById(R.id.rowPrivateDns),
+			tvToggleLabel = findViewById(R.id.tvToggleLabel),
+			tvToggleSubtitle = findViewById(R.id.tvToggleSubtitle),
 			dnsToggleSwitch = findViewById(R.id.switchPrivateDns),
 			addHostnameButton = findViewById(R.id.btnAddHostname),
 			dnsHostnameListContainer = findViewById(R.id.dnsHostnameListContainer),
@@ -331,7 +335,6 @@ class MainActivity : AppCompatActivity() {
 			tvWifiProfilesTitle = findViewById(R.id.tvWifiProfilesTitle),
 			permissionNoticeText = findViewById(R.id.tvPermissionNotice),
 			btnGrantPermission = findViewById(R.id.btnGrantPermission),
-			dividerSsidList = findViewById(R.id.dividerSsidList),
 			ssidListContainer = findViewById(R.id.ssidListContainer),
 			dividerSsidSettings = findViewById(R.id.dividerSsidSettings),
 			rowAutoSaveState = findViewById(R.id.rowAutoSaveState),
@@ -343,7 +346,8 @@ class MainActivity : AppCompatActivity() {
 			rowConnectivityWatchdogDebounce = findViewById(R.id.rowConnectivityWatchdogDebounce),
 			tvConnectivityWatchdogDebounceValue = findViewById(R.id.tvConnectivityWatchdogDebounceValue),
 			rowConnectivityWatchdogTargets = findViewById(R.id.rowConnectivityWatchdogTargets),
-			tvConnectivityWatchdogTargetsValue = findViewById(R.id.tvConnectivityWatchdogTargetsValue)
+			tvConnectivityWatchdogTargetsValue = findViewById(R.id.tvConnectivityWatchdogTargetsValue),
+			layoutWatchdogSubset = findViewById(R.id.layoutWatchdogSubset)
 		)
 
 		vpnController.initialize(
@@ -359,14 +363,17 @@ class MainActivity : AppCompatActivity() {
 		miscController.initialize(
 			switchShowToast = findViewById(R.id.switchShowToast),
 			rowShowToast = findViewById(R.id.rowShowToast),
+			switchEnableStrictOff = findViewById(R.id.switchEnableStrictOff),
+			rowEnableStrictOff = findViewById(R.id.rowEnableStrictOff),
+			tvDefaultOffModeValue = findViewById(R.id.tvDefaultOffModeValue),
+			rowDefaultOffMode = findViewById(R.id.rowDefaultOffMode),
+			layoutStrictOffSubset = findViewById(R.id.layoutStrictOffSubset),
 			switchHideLauncher = findViewById(R.id.switchHideLauncher),
 			rowHideLauncher = findViewById(R.id.rowHideLauncher),
 			rowUsbDebuggingTile = findViewById(R.id.rowUsbDebuggingTileLayout),
 			switchUsbDebuggingTile = findViewById(R.id.switchUsbDebuggingTile),
 			tvUsbDebuggingTileSummary = findViewById(R.id.tvUsbDebuggingTileSummary)
 		)
-
-		findViewById<TextView>(R.id.tvToggleLabel).text = getString(R.string.private_dns)
 
 		val tvAppVersion = findViewById<TextView>(R.id.tvAppVersion)
 		try {
@@ -453,14 +460,17 @@ class MainActivity : AppCompatActivity() {
 		val profiles = dnsViewModel.networkProfiles.value ?: emptyList()
 		val currentProfile = profiles.find { it.ssid == currentSsid }
 
+		val container = cardOverrideStatus.parent as? ViewGroup
+		val showCard: Boolean
+
 		when {
 			vpnActive -> {
-				cardOverrideStatus.visibility = View.VISIBLE
+				showCard = true
 				tvOverrideStatus.text = getString(R.string.status_override_vpn)
 			}
 
 			currentProfile != null && (!currentProfile.isEnabled || currentProfile.targetHostname != null) -> {
-				cardOverrideStatus.visibility = View.VISIBLE
+				showCard = true
 				val state = if (currentProfile.isEnabled) {
 					currentProfile.targetHostname ?: getString(R.string.default_dns_label)
 				} else {
@@ -471,19 +481,25 @@ class MainActivity : AppCompatActivity() {
 			}
 
 			activeSsidOverride != null -> {
-				cardOverrideStatus.visibility = View.VISIBLE
+				showCard = true
 				tvOverrideStatus.text = getString(R.string.status_override_ssid, activeSsidOverride)
 			}
 
-			else -> cardOverrideStatus.visibility = View.GONE
+			else -> {
+				showCard = false
+			}
 		}
+
+		cardOverrideStatus.setConditionalVisibility(showCard, container)
 	}
 
 	private fun updateMainPermissionUiState() {
-		if (PermissionHelper.hasSecureSettingsPermission(this)) {
-			if (::cardMainPermission.isInitialized) cardMainPermission.visibility = View.GONE
-		} else {
-			cardMainPermission.visibility = View.VISIBLE
+		if (::cardMainPermission.isInitialized) {
+			val container = cardMainPermission.parent as? ViewGroup
+			cardMainPermission.setConditionalVisibility(
+				!PermissionHelper.hasSecureSettingsPermission(this),
+				container
+			)
 		}
 	}
 
@@ -673,7 +689,7 @@ class MainActivity : AppCompatActivity() {
 
 		val rect = android.graphics.Rect()
 		view.getDrawingRect(rect)
-		(contentChild as? android.view.ViewGroup)?.offsetDescendantRectToMyCoords(view, rect)
+		(contentChild as? ViewGroup)?.offsetDescendantRectToMyCoords(view, rect)
 
 		val absoluteTop = rect.top
 		val viewHeight = view.height

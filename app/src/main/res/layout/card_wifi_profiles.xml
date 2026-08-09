@@ -14,6 +14,8 @@
 	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
+		android:clipChildren="false"
+		android:clipToPadding="false"
 		android:orientation="vertical"
 		android:padding="12dp">
 
@@ -82,13 +84,6 @@
 			android:text="@string/grant_permission_button"
 			android:visibility="gone" />
 
-		<View
-			android:id="@+id/dividerSsidList"
-			android:layout_width="match_parent"
-			android:layout_height="1dp"
-			android:layout_marginTop="16dp"
-			android:background="?attr/colorOutlineVariant" />
-
 		<androidx.recyclerview.widget.RecyclerView
 			android:id="@+id/ssidListContainer"
 			android:layout_width="match_parent"
@@ -116,7 +111,8 @@
 			android:focusableInTouchMode="false"
 			android:gravity="center_vertical"
 			android:orientation="horizontal"
-			android:padding="4dp">
+			android:paddingHorizontal="4dp"
+			android:paddingVertical="8dp">
 
 			<LinearLayout
 				android:layout_width="0dp"
@@ -161,7 +157,8 @@
 			android:focusableInTouchMode="false"
 			android:gravity="center_vertical"
 			android:orientation="horizontal"
-			android:padding="4dp">
+			android:paddingHorizontal="4dp"
+			android:paddingVertical="8dp">
 
 			<LinearLayout
 				android:layout_width="0dp"
@@ -206,7 +203,8 @@
 			android:focusableInTouchMode="false"
 			android:gravity="center_vertical"
 			android:orientation="horizontal"
-			android:padding="4dp">
+			android:paddingHorizontal="4dp"
+			android:paddingVertical="8dp">
 
 			<LinearLayout
 				android:layout_width="0dp"
@@ -242,6 +240,7 @@
 
 		<!-- Sub-settings with hierarchy -->
 		<LinearLayout
+			android:id="@+id/layoutWatchdogSubset"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:orientation="horizontal"

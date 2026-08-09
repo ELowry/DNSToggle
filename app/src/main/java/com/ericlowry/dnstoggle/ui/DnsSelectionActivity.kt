@@ -52,8 +52,12 @@ class DnsSelectionActivity : AppCompatActivity() {
 		}
 
 		lifecycleScope.launch {
+			val prefs = (application as DnsToggleApplication).getPrefs()
+			val enableStrictOff = prefs.getBoolean(Constants.PREF_ENABLE_STRICT_OFF_OPTION, false)
+
 			val hostnames = HostnameRepository.dnsHostnames.first { it != null } ?: emptyList()
-			if (hostnames.size <= 1) {
+
+			if (hostnames.size <= 1 && !enableStrictOff) {
 				startActivity(Intent(this@DnsSelectionActivity, MainActivity::class.java).apply {
 					flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
 				})
@@ -118,6 +122,7 @@ class DnsSelectionActivity : AppCompatActivity() {
 			Settings.Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
 
 		val globalMode = prefs.getString(Constants.PREF_PREFERRED_DNS_MODE, systemMode)
+		val enableStrictOff = prefs.getBoolean(Constants.PREF_ENABLE_STRICT_OFF_OPTION, false)
 		val globalSpecifier = getGlobalFallbackHostname()
 
 		fun selectOption(selectedIndex: Int, onSelected: () -> Unit) {
@@ -132,7 +137,8 @@ class DnsSelectionActivity : AppCompatActivity() {
 		}
 
 		val globalFallbackHostname = getGlobalFallbackHostname()
-		val totalItems = hostnames.size + (if (isOverrideHostContext) 2 else 1)
+		val totalItems =
+			hostnames.size + (if (isOverrideHostContext) 2 else 1) + (if (enableStrictOff) 1 else 0)
 		var currentPosition = 0
 
 		if (isOverrideHostContext) {
@@ -230,8 +236,9 @@ class DnsSelectionActivity : AppCompatActivity() {
 			listContainer.addView(itemView)
 		}
 
-		val isGlobalOffMatch = (globalMode != Constants.DNS_MODE_HOSTNAME)
-		val isOverrideOffMatch = (activeProfile?.isEnabled == false)
+		val isGlobalOffMatch = (globalMode == Constants.DNS_MODE_OPPORTUNISTIC)
+		val isOverrideOffMatch =
+			(activeProfile?.isEnabled == false && (activeProfile.targetMode == null || activeProfile.targetMode == Constants.DNS_MODE_OPPORTUNISTIC))
 
 		val isOffCardChecked: Boolean
 		val isOffRadioChecked: Boolean
@@ -263,7 +270,7 @@ class DnsSelectionActivity : AppCompatActivity() {
 
 		val autoItemView = createListItem(
 			parent = listContainer,
-			text = getString(R.string.automatic_off),
+			text = if (enableStrictOff) getString(R.string.off_automatic_label) else getString(R.string.off_automatic_label),
 			secondaryText = null,
 			subtitleText = offSubtitle,
 			isCardChecked = isOffCardChecked,
@@ -277,11 +284,65 @@ class DnsSelectionActivity : AppCompatActivity() {
 				DnsManager.togglePrivateDns(
 					context = this@DnsSelectionActivity,
 					enabled = false,
+					targetMode = if (enableStrictOff) Constants.DNS_MODE_OPPORTUNISTIC else null,
 					isFromTile = true
 				)
 			}
 		}
 		listContainer.addView(autoItemView)
+
+		if (enableStrictOff) {
+			val isGlobalStrictMatch = (globalMode == Constants.DNS_MODE_OFF)
+			val isOverrideStrictMatch =
+				(activeProfile?.isEnabled == false && activeProfile.targetMode == Constants.DNS_MODE_OFF)
+
+			val isStrictCardChecked: Boolean
+			val isStrictRadioChecked: Boolean
+			val isStrictSubduedRadio: Boolean
+			val showStrictOverrideBadge: Boolean
+
+			if (isShadowedContext) {
+				isStrictCardChecked = isGlobalStrictMatch
+				isStrictRadioChecked = isGlobalStrictMatch || isOverrideStrictMatch
+				isStrictSubduedRadio = isGlobalStrictMatch
+				showStrictOverrideBadge = isOverrideStrictMatch
+			} else if (isOverrideStateContext) {
+				isStrictCardChecked = isOverrideStrictMatch
+				isStrictRadioChecked = isOverrideStrictMatch
+				isStrictSubduedRadio = false
+				showStrictOverrideBadge = false
+			} else {
+				isStrictCardChecked = isGlobalStrictMatch
+				isStrictRadioChecked = isGlobalStrictMatch
+				isStrictSubduedRadio = false
+				showStrictOverrideBadge = false
+			}
+
+			val strictIndex = ++currentPosition
+
+			val strictItemView = createListItem(
+				parent = listContainer,
+				text = getString(R.string.off_strict_label),
+				secondaryText = null,
+				subtitleText = offSubtitle,
+				isCardChecked = isStrictCardChecked,
+				isRadioChecked = isStrictRadioChecked,
+				isSubduedRadio = isStrictSubduedRadio,
+				showOverrideBadge = showStrictOverrideBadge,
+				position = strictIndex,
+				totalItems = totalItems
+			) {
+				selectOption(strictIndex) {
+					DnsManager.togglePrivateDns(
+						context = this@DnsSelectionActivity,
+						enabled = false,
+						targetMode = Constants.DNS_MODE_OFF,
+						isFromTile = true
+					)
+				}
+			}
+			listContainer.addView(strictItemView)
+		}
 
 		btnSettings.setOnClickListener {
 			startActivity(Intent(this, MainActivity::class.java))

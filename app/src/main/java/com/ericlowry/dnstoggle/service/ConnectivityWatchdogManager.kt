@@ -94,7 +94,8 @@ class ConnectivityWatchdogManager(
 					ssid = ssid,
 					isEnabled = false,
 					isAutoDetected = true,
-					preserveExistingHostname = true
+					preserveExistingHostname = true,
+					targetMode = Constants.DNS_MODE_OPPORTUNISTIC
 				)
 			}
 		}

@@ -29,12 +29,21 @@ object DnsSettingsRepository {
 			autoSaveHost = sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_HOST, false),
 			vpnOverride = VpnRepository.vpnOverrideEnabled.value,
 			vpnDns = VpnRepository.vpnDnsHostname.value,
+			vpnDnsMode = VpnRepository.vpnDnsMode.value,
 			hideLauncherIcon = sharedPreferences.getBoolean(
 				Constants.PREF_HIDE_LAUNCHER_ICON,
 				false
 			),
 			disableDnsTest = sharedPreferences.getBoolean(Constants.PREF_DISABLE_DNS_TEST, false),
-			showToast = sharedPreferences.getBoolean(Constants.PREF_SHOW_TOAST, false)
+			showToast = sharedPreferences.getBoolean(Constants.PREF_SHOW_TOAST, false),
+			enableStrictOff = sharedPreferences.getBoolean(
+				Constants.PREF_ENABLE_STRICT_OFF_OPTION,
+				false
+			),
+			defaultOffMode = sharedPreferences.getString(
+				Constants.PREF_DEFAULT_OFF_MODE,
+				Constants.DNS_MODE_OPPORTUNISTIC
+			) ?: Constants.DNS_MODE_OPPORTUNISTIC
 		)
 		return json.encodeToString(backupConfig)
 	}
@@ -82,14 +91,30 @@ object DnsSettingsRepository {
 				putBoolean(Constants.PREF_HIDE_LAUNCHER_ICON, config.hideLauncherIcon)
 				putBoolean(Constants.PREF_DISABLE_DNS_TEST, config.disableDnsTest)
 				putBoolean(Constants.PREF_SHOW_TOAST, config.showToast)
+				putBoolean(Constants.PREF_ENABLE_STRICT_OFF_OPTION, config.enableStrictOff)
+				putString(Constants.PREF_DEFAULT_OFF_MODE, config.defaultOffMode)
 			}
 			VpnRepository.updateVpnOverrideEnabled(config.vpnOverride)
 
 			val parsedVpnDns = config.vpnDns
-			if (parsedVpnDns == null || parsedVpnDns == "off") {
-				VpnRepository.updateVpnDnsHostname(null)
-			} else if (NetworkUtils.isValidDnsHostname(parsedVpnDns)) {
-				VpnRepository.updateVpnDnsHostname(parsedVpnDns)
+			var parsedVpnMode = config.vpnDnsMode
+
+			if (!config.enableStrictOff && parsedVpnMode == Constants.DNS_MODE_OFF) {
+				parsedVpnMode = Constants.DNS_MODE_OPPORTUNISTIC
+			}
+
+			if (parsedVpnMode == Constants.DNS_MODE_HOSTNAME) {
+				if (parsedVpnDns != null && NetworkUtils.isValidDnsHostname(parsedVpnDns)) {
+					VpnRepository.updateVpnDns(parsedVpnMode, parsedVpnDns)
+				} else {
+					VpnRepository.updateVpnDns(Constants.DNS_MODE_OPPORTUNISTIC, null)
+				}
+			} else {
+				VpnRepository.updateVpnDns(parsedVpnMode, null)
+			}
+
+			if (!config.enableStrictOff) {
+				NetworkProfileRepository.sanitizeStrictOffProfiles()
 			}
 			true
 		} catch (e: Exception) {

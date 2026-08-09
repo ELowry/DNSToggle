@@ -8,6 +8,7 @@ object Constants {
 	// DNS Modes
 	const val DNS_MODE_OPPORTUNISTIC = "opportunistic"
 	const val DNS_MODE_HOSTNAME = "hostname"
+	const val DNS_MODE_OFF = "off"
 
 	// START_LEGACY_MIGRATION_CODE: Old shared preference keys
 	const val PREF_SSID_BLACKLIST = "ssid_blacklist"
@@ -26,6 +27,8 @@ object Constants {
 	const val PREF_SHOW_TOAST = "show_toast_notification"
 	const val PREF_LAST_USED_HOSTNAME = "last_used_hostname"
 	const val PREF_USB_DEBUGGING_TILE_UNLOCKED = "usb_debugging_tile_unlocked"
+	const val PREF_ENABLE_STRICT_OFF_OPTION = "enable_strict_off_option"
+	const val PREF_DEFAULT_OFF_MODE = "default_off_mode"
 
 	// Connectivity Watchdog Keys
 	const val PREF_CONNECTIVITY_WATCHDOG_ENABLED = "connectivity_watchdog_enabled"
@@ -41,6 +44,7 @@ object Constants {
 	const val PREF_IS_IN_VPN_OVERRIDE = "is_in_vpn_override"
 	const val PREF_ACTIVE_SSID_OVERRIDE = "active_ssid_override"
 	const val PREF_VPN_HOSTNAME_REMOVED_WARNING = "vpn_hostname_removed_warning"
+	const val PREF_VPN_DNS_MODE = "vpn_dns_mode"
 
 	// Notification Channels
 	const val CHANNEL_ID_SERVICE = "wifi_monitoring"

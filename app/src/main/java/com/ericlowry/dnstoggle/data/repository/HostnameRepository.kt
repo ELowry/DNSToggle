@@ -43,6 +43,8 @@ object HostnameRepository {
 			var resultList = mutableListOf<DnsHostname>()
 
 			// START_LEGACY_MIGRATION_CODE: Legacy StringSet to JSON Array hostname migration
+			var migratedFormat = false
+			val needsPrefixMigration = (rawData is String) && !rawData.startsWith("enc:")
 			if (rawData is Set<*>) {
 				@Suppress("UNCHECKED_CAST")
 				val encryptedSet = rawData as? Set<String> ?: emptySet()
@@ -93,6 +95,7 @@ object HostnameRepository {
 							// START_LEGACY_MIGRATION_CODE: JSONArray of strings to List<DnsHostname> migration
 							try {
 								val jsonArray = JSONArray(result.data)
+								migratedFormat = true
 								for (i in 0 until jsonArray.length()) {
 									val entry = jsonArray.getString(i)
 									if (entry.startsWith("j:")) {
@@ -129,6 +132,12 @@ object HostnameRepository {
 			}
 
 			_dnsHostnames.value = resultList
+
+			// START_LEGACY_MIGRATION_CODE: Legacy StringSet to JSON Array hostname migration
+			if ((migratedFormat || needsPrefixMigration) && resultList.isNotEmpty()) {
+				saveHostnamesAsync(resultList)
+			}
+			// END_LEGACY_MIGRATION_CODE
 		}
 	}
 
@@ -156,14 +165,18 @@ object HostnameRepository {
 			val safeCurrent = current ?: emptyList()
 			if (safeCurrent.none { it.hostname == hostname }) return@update safeCurrent
 			val next = safeCurrent.filter { it.hostname != hostname }
+			val offMode = sharedPreferences.getString(
+				Constants.PREF_DEFAULT_OFF_MODE,
+				Constants.DNS_MODE_OPPORTUNISTIC
+			) ?: Constants.DNS_MODE_OPPORTUNISTIC
 
 			if (VpnRepository.vpnDnsHostname.value == hostname) {
-				VpnRepository.updateVpnDnsHostname(null)
+				VpnRepository.updateVpnDns(offMode, null)
 				sharedPreferences.edit {
 					putBoolean(Constants.PREF_VPN_HOSTNAME_REMOVED_WARNING, true)
 				}
 			} else if (next.size == 1 && VpnRepository.vpnDnsHostname.value != null) {
-				VpnRepository.updateVpnDnsHostname(null)
+				VpnRepository.updateVpnDns(offMode, null)
 			}
 
 			saveHostnamesAsync(next)
@@ -181,7 +194,7 @@ object HostnameRepository {
 			}
 
 			if (VpnRepository.vpnDnsHostname.value == oldHostname) {
-				VpnRepository.updateVpnDnsHostname(newHostname)
+				VpnRepository.updateVpnDns(Constants.DNS_MODE_HOSTNAME, newHostname)
 			}
 
 			saveHostnamesAsync(next)

@@ -23,7 +23,11 @@ import com.google.android.material.textfield.TextInputLayout
 
 object SsidDialogHelper {
 
-	private data class ProfileOption(val isEnabled: Boolean, val hostname: String?)
+	private data class ProfileOption(
+		val isEnabled: Boolean,
+		val hostname: String?,
+		val mode: String? = null
+	)
 
 	fun showAddSsidDialog(
 		activity: Activity,
@@ -31,7 +35,9 @@ object SsidDialogHelper {
 		suggestedSsid: String?,
 		globalDefaultHostname: String?,
 		hostnames: List<DnsHostname>,
-		onSave: (ssid: String, isEnabled: Boolean, targetHostname: String?) -> Unit,
+		enableStrictOff: Boolean,
+		defaultOffMode: String,
+		onSave: (ssid: String, isEnabled: Boolean, targetHostname: String?, targetMode: String?) -> Unit,
 	) {
 		val dialogView =
 			LayoutInflater.from(activity).inflate(
@@ -54,6 +60,34 @@ object SsidDialogHelper {
 
 		var selectedEnabled = existingProfile?.isEnabled ?: true
 		var selectedHostname = existingProfile?.targetHostname
+		var selectedMode = existingProfile?.targetMode
+
+		var isUpdatingProgrammatically = false
+
+		fun updateSelectionVisuals() {
+			for (i in 0 until radioContainer.childCount) {
+				val itemView = radioContainer.getChildAt(i)
+				val card = itemView.findViewById<ListItemCardView>(R.id.listItemCard)
+				val radio = itemView.findViewById<MaterialRadioButton>(R.id.radioDns)
+
+				val option = itemView.tag as? ProfileOption
+				val isSelected = if (option?.mode != null) {
+					option.mode == selectedMode
+				} else {
+					selectedMode == null && option?.hostname == selectedHostname
+				}
+
+				val bgColorAttr = if (isSelected) {
+					com.google.android.material.R.attr.colorSecondaryContainer
+				} else {
+					com.google.android.material.R.attr.colorSurfaceContainer
+				}
+				card.setCardBackgroundColor(MaterialColors.getColor(activity, bgColorAttr, 0))
+
+				card.isChecked = isSelected
+				radio.isChecked = isSelected
+			}
+		}
 
 		val switchRow = LinearLayout(activity).apply {
 			layoutParams = LinearLayout.LayoutParams(
@@ -79,10 +113,18 @@ object SsidDialogHelper {
 
 			setOnClickListener { materialSwitch.toggle() }
 			materialSwitch.setOnCheckedChangeListener { _, isChecked ->
+				if (isUpdatingProgrammatically) return@setOnCheckedChangeListener
 				selectedEnabled = isChecked
-				radioContainer.alpha = if (isChecked) 1.0f else 0.6f
+				selectedMode = if (isChecked) {
+					null
+				} else {
+					defaultOffMode
+				}
+				updateSelectionVisuals()
 			}
 		}
+
+		val materialSwitch = switchRow.getChildAt(1) as MaterialSwitch
 
 		mainContainer.addView(switchRow)
 
@@ -110,7 +152,6 @@ object SsidDialogHelper {
 		mainContainer.addView(headerView)
 
 		mainContainer.addView(radioContainer)
-		radioContainer.alpha = if (selectedEnabled) 1.0f else 0.6f
 
 		textInputLayout.hint = activity.getString(R.string.ssid_hint)
 
@@ -120,32 +161,12 @@ object SsidDialogHelper {
 			inputTextField.setSelection(textToSet.length)
 		}
 
-		fun updateSelectionVisuals() {
-			for (i in 0 until radioContainer.childCount) {
-				val itemView = radioContainer.getChildAt(i)
-				val card = itemView.findViewById<ListItemCardView>(R.id.listItemCard)
-				val radio = itemView.findViewById<MaterialRadioButton>(R.id.radioDns)
-
-				val option = itemView.tag as? ProfileOption
-				val isSelected = option != null && option.hostname == selectedHostname
-
-				val bgColorAttr = if (isSelected) {
-					com.google.android.material.R.attr.colorSecondaryContainer
-				} else {
-					com.google.android.material.R.attr.colorSurfaceContainer
-				}
-				card.setCardBackgroundColor(MaterialColors.getColor(activity, bgColorAttr, 0))
-
-				card.isChecked = isSelected
-				radio.isChecked = isSelected
-			}
-		}
-
 		fun createRadioItem(
 			text: String,
 			hostname: String?,
 			position: Int,
-			total: Int
+			total: Int,
+			mode: String? = null
 		) {
 			val itemView = LayoutInflater.from(activity)
 				.inflate(R.layout.item_dns_selection, radioContainer, false)
@@ -162,7 +183,7 @@ object SsidDialogHelper {
 				tvSub.visibility = View.GONE
 			}
 
-			itemView.tag = ProfileOption(true, hostname)
+			itemView.tag = ProfileOption(true, hostname, mode)
 			listItemLayout.updateAppearance(position, total)
 
 			card.setCardBackgroundColor(
@@ -180,13 +201,20 @@ object SsidDialogHelper {
 			card.isFocusableInTouchMode = false
 			card.setOnClickListener {
 				selectedHostname = hostname
+				selectedMode = mode
+				selectedEnabled = (mode == null)
+
+				isUpdatingProgrammatically = true
+				materialSwitch.isChecked = selectedEnabled
+				isUpdatingProgrammatically = false
+
 				updateSelectionVisuals()
 			}
 
 			radioContainer.addView(itemView)
 		}
 
-		val totalItems = hostnames.size + 1
+		val totalItems = hostnames.size + 1 + (if (enableStrictOff) 2 else 0)
 		var currentPos = 0
 
 		val defaultLabel = if (globalDefaultHostname != null) {
@@ -206,6 +234,23 @@ object SsidDialogHelper {
 			createRadioItem(dns.getDisplayName(), dns.hostname, currentPos++, totalItems)
 		}
 
+		if (enableStrictOff) {
+			createRadioItem(
+				activity.getString(R.string.mode_automatic),
+				null,
+				currentPos++,
+				totalItems,
+				com.ericlowry.dnstoggle.data.Constants.DNS_MODE_OPPORTUNISTIC
+			)
+			createRadioItem(
+				activity.getString(R.string.mode_disabled),
+				null,
+				currentPos,
+				totalItems,
+				com.ericlowry.dnstoggle.data.Constants.DNS_MODE_OFF
+			)
+		}
+
 		updateSelectionVisuals()
 
 		val dialog = MaterialAlertDialogBuilder(activity)
@@ -218,7 +263,12 @@ object SsidDialogHelper {
 			.setPositiveButton(activity.getString(R.string.ok)) { _, _ ->
 				val newSsidName =
 					inputTextField.text.toString().trim().removePrefix("\"").removeSuffix("\"")
-				if (newSsidName.isNotEmpty()) onSave(newSsidName, selectedEnabled, selectedHostname)
+				if (newSsidName.isNotEmpty()) onSave(
+					newSsidName,
+					selectedEnabled,
+					selectedHostname,
+					selectedMode
+				)
 			}
 			.setNegativeButton(activity.getString(R.string.cancel), null)
 			.create()

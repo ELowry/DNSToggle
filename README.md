@@ -40,7 +40,9 @@ By long-pressing the Quick Settings tile, you can access the configuration menu 
     - Auto-save changes to a Wi-Fi network profile when you manually toggle DNS or switch hostnames.
     - Automatically disable Private DNS for the current network if it causes connectivity issues, ensuring you never lose internet access.
 - **VPN Override**:  
-  Automatically set a specific DNS hostname or switch to "Opportunistic" (Off) mode when a VPN connection is detected.
+  Automatically set a specific DNS hostname or choose how Private DNS behaves (Automatic or fully Disabled) when a VPN connection is detected.
+- **Select DNS behavior when toggled Off**:  
+  Optionally choose between Android's default "Automatic" or "Off" Private DNS setting throughout the app.
 - **Material You UI**:  
   Modern, dynamic interface that adapts to your system theme and accent colors (Android 12+).
 - **Backup & Restore**:  
@@ -60,7 +62,7 @@ By long-pressing the Quick Settings tile, you can access the configuration menu 
 1. Install the app on your Android device.
 2. Grant the `WRITE_SECURE_SETTINGS` permission using root or Shizuku (you will be prompted when using the app), or the ADB command provided above.
 3. Edit your Quick Settings panel and drag the **DNS Toggle** tile into your active tiles.
-4. Long-press the tile to open the configuration UI to set your custom DNS hostname.
+4. Long-press the tile to open a quick-select menu to easily switch between your saved DNS hostnames and enable or disable Private DNS.
 5. Tap the tile to toggle the Private DNS on or off!
 
 > [!NOTE]

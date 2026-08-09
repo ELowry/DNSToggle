@@ -30,6 +30,7 @@ object DnsManager {
 		context: Context,
 		enabled: Boolean,
 		targetHostname: String? = null,
+		targetMode: String? = null,
 		isInteractiveMainUi: Boolean = false,
 		forceFeedback: Boolean = false,
 		isFromTile: Boolean = false
@@ -71,15 +72,22 @@ object DnsManager {
 			}
 		}
 
-		val newMode = if (enabled) Constants.DNS_MODE_HOSTNAME else Constants.DNS_MODE_OPPORTUNISTIC
+		val offMode = sharedPreferences.getString(
+			Constants.PREF_DEFAULT_OFF_MODE,
+			Constants.DNS_MODE_OPPORTUNISTIC
+		) ?: Constants.DNS_MODE_OPPORTUNISTIC
+
+		val newMode = if (enabled) Constants.DNS_MODE_HOSTNAME else (targetMode ?: offMode)
 		val currentSsid = NetworkUtils.getCurrentWifiSsid(context)
 		val isInVpn = sharedPreferences.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)
 
 		if (isInVpn) {
 			if (enabled) {
-				effectiveHostname?.let { hostname -> VpnRepository.updateVpnDnsHostname(hostname) }
+				effectiveHostname?.let { hostname ->
+					VpnRepository.updateVpnDns(Constants.DNS_MODE_HOSTNAME, hostname)
+				}
 			} else {
-				VpnRepository.updateVpnDnsHostname(null)
+				VpnRepository.updateVpnDns(targetMode ?: offMode, null)
 			}
 		}
 
@@ -122,7 +130,9 @@ object DnsManager {
 					targetHostname = targetHost,
 					isAutoDetected = false,
 					isUnsaved = existingProfile == null,
-					preserveExistingHostname = !enabled
+					preserveExistingHostname = !enabled,
+					targetMode = if (!enabled) targetMode else null,
+					preserveExistingMode = enabled
 				)
 
 				if (forceFeedback || sharedPreferences.getBoolean(
@@ -150,6 +160,11 @@ object DnsManager {
 					)
 				}
 			}
+
+			if (!enabled && targetMode != null) {
+				sharedPreferences.edit { putString(Constants.PREF_DEFAULT_OFF_MODE, targetMode) }
+			}
+
 			sharedPreferences.edit { putString(Constants.PREF_PREFERRED_DNS_MODE, newMode) }
 		}
 
@@ -177,9 +192,13 @@ object DnsManager {
 						).show()
 					}
 				} else if (previousMode == Constants.DNS_MODE_HOSTNAME) {
+					val label = when (newMode) {
+						Constants.DNS_MODE_OFF -> context.getString(R.string.off_strict_label)
+						else -> context.getString(R.string.off_automatic_label)
+					}
 					Toast.makeText(
 						context,
-						"${context.getString(R.string.private_dns)}: ${context.getString(R.string.off_label)}",
+						"${context.getString(R.string.private_dns)}: $label",
 						Toast.LENGTH_SHORT
 					).show()
 				}

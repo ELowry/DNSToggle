@@ -50,6 +50,11 @@ object NetworkProfileRepository {
 			var resultList = listOf<NetworkProfile>()
 			var keyInvalidated = false
 
+			// START_LEGACY_MIGRATION_CODE: JSONArray of strings to List<NetworkProfile> migration
+			var migratedFormat = false
+			val needsPrefixMigration = encryptedData != null && !encryptedData.startsWith("enc:")
+			// END_LEGACY_MIGRATION_CODE
+
 			if (encryptedData != null) {
 				when (val result = EncryptionManager.decrypt(encryptedData)) {
 					is EncryptionManager.DecryptResult.Success -> {
@@ -58,6 +63,7 @@ object NetworkProfileRepository {
 						} catch (_: Exception) {
 							// START_LEGACY_MIGRATION_CODE: JSONArray of strings to List<NetworkProfile> migration
 							try {
+								migratedFormat = true
 								val legacyList = mutableListOf<NetworkProfile>()
 								val jsonArray = JSONArray(result.data)
 								for (i in 0 until jsonArray.length()) {
@@ -83,6 +89,12 @@ object NetworkProfileRepository {
 				encryptedPrefs.edit { remove(Constants.PREF_NETWORK_PROFILES) }
 			}
 			_networkProfiles.value = resultList
+
+			// START_LEGACY_MIGRATION_CODE: JSONArray of strings to List<NetworkProfile> migration
+			if ((migratedFormat || needsPrefixMigration) && resultList.isNotEmpty()) {
+				saveNetworkProfilesAsync(resultList)
+			}
+			// END_LEGACY_MIGRATION_CODE
 		}
 	}
 
@@ -160,7 +172,9 @@ object NetworkProfileRepository {
 		targetHostname: String? = null,
 		isAutoDetected: Boolean = false,
 		isUnsaved: Boolean = false,
-		preserveExistingHostname: Boolean = false
+		preserveExistingHostname: Boolean = false,
+		targetMode: String? = null,
+		preserveExistingMode: Boolean = false
 	) {
 		_networkProfiles.update { current ->
 			val safeCurrent = current ?: emptyList()
@@ -172,11 +186,19 @@ object NetworkProfileRepository {
 				existing.copy(
 					isEnabled = isEnabled,
 					targetHostname = if (preserveExistingHostname) existing.targetHostname else targetHostname,
+					targetMode = if (preserveExistingMode) existing.targetMode else targetMode,
 					isAutoDetected = isAutoDetected,
 					isUnsaved = isUnsaved
 				)
 			} else {
-				NetworkProfile(ssid, isEnabled, targetHostname, isAutoDetected, isUnsaved)
+				NetworkProfile(
+					ssid,
+					isEnabled,
+					targetHostname,
+					isAutoDetected,
+					isUnsaved,
+					targetMode
+				)
 			}
 
 			if (index != -1) next[index] = newProfile else next.add(newProfile)
@@ -220,6 +242,25 @@ object NetworkProfileRepository {
 				if (it.targetHostname == hostname) it.copy(targetHostname = null) else it
 			}
 			if (next != safeCurrent) {
+				saveNetworkProfilesAsync(next)
+			}
+			next
+		}
+	}
+
+	fun sanitizeStrictOffProfiles() {
+		_networkProfiles.update { current ->
+			val safeCurrent = current ?: emptyList()
+			var changed = false
+			val next = safeCurrent.map {
+				if (it.targetMode == Constants.DNS_MODE_OFF) {
+					changed = true
+					it.copy(targetMode = Constants.DNS_MODE_OPPORTUNISTIC)
+				} else {
+					it
+				}
+			}
+			if (changed) {
 				saveNetworkProfilesAsync(next)
 			}
 			next

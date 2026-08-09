@@ -11,7 +11,6 @@
 	<string name="settings">設定</string>
 	<string name="on_label">オン</string>
 	<string name="off_label">オフ</string>
-	<string name="automatic_off">自動 (オフ)</string>
 	<string name="menu_content_description">その他のオプション</string>
 	<string name="permission_required">権限が必要です</string>
 	<string name="permission_message">この機能を使用するには、RootまたはShizukuで権限を付与するか、USBデバッグを有効にした状態で、PCで以下のADBコマンドを実行する必要があります:</string>

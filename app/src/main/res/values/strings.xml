@@ -14,7 +14,6 @@
 	<string name="settings">Settings</string>
 	<string name="on_label">On</string>
 	<string name="off_label">Off</string>
-	<string name="automatic_off">Off (automatic)</string>
 	<string name="menu_content_description">More options</string>
 
 	<!-- Permissions & ADB Setup -->
@@ -104,9 +103,20 @@
 	<!-- Main UI - VPN Override -->
 	<string name="vpn_override_title">VPN Override</string>
 	<string name="vpn_override_summary">Automatically change Private DNS when a VPN is connected.</string>
+	<string name="vpn_override_toggle_label">Enable VPN Override</string>
 	<string name="vpn_dns_label">DNS on VPN</string>
 	<string name="vpn_permission_notice">Notification permission is required for background automation.</string>
 	<string name="vpn_hostname_removed_warning">The DNS hostname previously used for VPN was removed. VPN Override has been disabled.</string>
+
+	<!-- Main UI - Full Off Support -->
+	<string name="strict_off_mode_title">Enable fully disabling Private DNS</string>
+	<string name="strict_off_mode_summary">Enables the choice between fully disabling Private DNS or setting it to automatic when toggled off.</string>
+	<string name="default_off_mode_title">Default Private DNS off mode</string>
+	<string name="default_off_mode_summary">Set what Private DNS toggle defaults to when toggled off.</string>
+	<string name="off_strict_label">Off (Disabled)</string>
+	<string name="off_automatic_label">Off (Automatic)</string>
+	<string name="mode_automatic">Automatic</string>
+	<string name="mode_disabled">Disabled</string>
 
 	<!-- Main UI - General Options -->
 	<string name="options_title">Options</string>

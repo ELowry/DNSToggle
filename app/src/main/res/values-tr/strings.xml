@@ -13,7 +13,6 @@
 	<string name="settings">Ayarlar</string>
 	<string name="on_label">Açık</string>
 	<string name="off_label">Kapalı</string>
-	<string name="automatic_off">Kapalı (otomatik)</string>
 	<string name="menu_content_description">Daha fazla seçenek</string>
 
 	<!-- Permissions & ADB Setup -->

@@ -1,6 +1,7 @@
 package com.ericlowry.dnstoggle
 
 import androidx.test.core.app.ApplicationProvider
+import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.repository.HostnameRepository
 import com.ericlowry.dnstoggle.data.repository.NetworkProfileRepository
 import com.ericlowry.dnstoggle.data.repository.SecurityRepository
@@ -118,12 +119,14 @@ class DnsSettingsRepositoryTest {
 	}
 
 	@Test
-	fun vpnDnsHostname_nullableBehavior() = runTest {
+	fun vpnDns_behavior() = runTest {
 		val hostname = "dns.google"
-		VpnRepository.updateVpnDnsHostname(hostname)
+		VpnRepository.updateVpnDns(Constants.DNS_MODE_HOSTNAME, hostname)
+		assertEquals(Constants.DNS_MODE_HOSTNAME, VpnRepository.vpnDnsMode.value)
 		assertEquals(hostname, VpnRepository.vpnDnsHostname.value)
 
-		VpnRepository.updateVpnDnsHostname(null)
+		VpnRepository.updateVpnDns(Constants.DNS_MODE_OFF, null)
+		assertEquals(Constants.DNS_MODE_OFF, VpnRepository.vpnDnsMode.value)
 		assertEquals(null, VpnRepository.vpnDnsHostname.value)
 	}
 

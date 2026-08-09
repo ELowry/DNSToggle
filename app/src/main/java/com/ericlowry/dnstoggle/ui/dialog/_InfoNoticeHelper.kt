@@ -1,24 +1,20 @@
 package com.ericlowry.dnstoggle.ui.dialog
 
 import android.content.Context
-import android.content.Intent
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.edit
-import androidx.core.net.toUri
 import com.ericlowry.dnstoggle.R
 import com.google.android.material.button.MaterialButton
 
 object _InfoNoticeHelper {
-	private const val TAG = "FeedbackHelper"
-	private const val PREF_FEEDBACK_SHOWN = "pref_feedback_shown_v2_pre"
+	private const val PREF_FEEDBACK_SHOWN = "pref_warning_shown_v2.1"
 
 	fun showOnceOnStartup(activity: AppCompatActivity) {
-		val prefs = activity.getSharedPreferences("app_prefs_v2", Context.MODE_PRIVATE)
+		val prefs = activity.getSharedPreferences("app_prefs_v2.1", Context.MODE_PRIVATE)
 		if (!prefs.getBoolean(PREF_FEEDBACK_SHOWN, false)) {
 			showDialog(activity)
 			prefs.edit { putBoolean(PREF_FEEDBACK_SHOWN, true) }
@@ -32,33 +28,17 @@ object _InfoNoticeHelper {
 			com.google.android.material.dialog.MaterialAlertDialogBuilder(context).setView(view)
 				.create()
 
-		view.findViewById<MaterialButton>(R.id.btnGithub)?.setOnClickListener {
-			openUrl(
-				context,
-				"https://github.com/ELowry/DNSToggle/discussions/new?category=chat&title=%5Bv2%3A%5D%20"
-			)
-			dialog.dismiss()
-		}
-
-		view.findViewById<MaterialButton>(R.id.btnSupport)?.setOnClickListener {
-			openUrl(
-				context,
-				"https://github.com/ELowry/DNSToggle/issues/new?template=bug-report.yml&title=%5BBug%2Fv2%3A%5D%20"
-			)
-			dialog.dismiss()
-		}
-
 		dialog.show()
 	}
 
-	fun injectBetaFeedbackButton(
+	fun injectNoticeButton(
 		activity: AppCompatActivity,
 		parent: ConstraintLayout,
 		belowOfId: Int = -1
 	) {
 		val button = MaterialButton(activity).apply {
 			id = View.generateViewId()
-			text = "V2 Feedback"
+			text = "Deprecation Warning"
 			setIconResource(R.drawable.ic_warning)
 			setOnClickListener { showDialog(activity) }
 
@@ -119,13 +99,5 @@ object _InfoNoticeHelper {
 		}
 
 		set.applyTo(parent)
-	}
-
-	private fun openUrl(context: Context, url: String) {
-		try {
-			context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
-		} catch (e: Exception) {
-			Log.e(TAG, "Failed to open URL: $url", e)
-		}
 	}
 }

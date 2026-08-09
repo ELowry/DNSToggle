@@ -71,8 +71,10 @@ object DnsDialogHelper {
 	fun showVpnDnsSelectionDialog(
 		activity: Activity,
 		hostnames: List<DnsHostname>,
-		currentVpnDns: String?,
-		onDnsSelected: (String?) -> Unit
+		currentVpnMode: String,
+		currentVpnHostname: String?,
+		enableStrictOff: Boolean,
+		onDnsSelected: (String, String?) -> Unit
 	) {
 		val dialogView =
 			LayoutInflater.from(activity).inflate(
@@ -93,11 +95,12 @@ object DnsDialogHelper {
 		btnCancel.text = activity.getString(R.string.cancel)
 		btnCancel.setOnClickListener { dialog.dismiss() }
 
-		val totalItems = hostnames.size + 1
+		val totalItems = hostnames.size + 1 + (if (enableStrictOff) 1 else 0)
 
 		hostnames.forEachIndexed { index, dnsEntry ->
 			val hostname = dnsEntry.hostname
-			val isActive = (hostname == currentVpnDns)
+			val isActive =
+				(hostname == currentVpnHostname && currentVpnMode == com.ericlowry.dnstoggle.data.Constants.DNS_MODE_HOSTNAME)
 			val itemView = createDnsListItem(
 				activity,
 				listContainer,
@@ -107,26 +110,49 @@ object DnsDialogHelper {
 				index,
 				totalItems
 			) {
-				onDnsSelected(hostname)
+				onDnsSelected(com.ericlowry.dnstoggle.data.Constants.DNS_MODE_HOSTNAME, hostname)
 				dialog.dismiss()
 			}
 			listContainer.addView(itemView)
 		}
 
-		val isAutoActive = (currentVpnDns == null)
+		var currentPos = hostnames.size
+
+		val isAutoActive =
+			(currentVpnMode == com.ericlowry.dnstoggle.data.Constants.DNS_MODE_OPPORTUNISTIC)
 		val autoItemView = createDnsListItem(
 			activity,
 			listContainer,
-			activity.getString(R.string.automatic_off),
+			if (enableStrictOff) activity.getString(R.string.off_automatic_label) else activity.getString(
+				R.string.off_automatic_label
+			),
 			null,
 			isAutoActive,
-			totalItems - 1,
+			currentPos++,
 			totalItems
 		) {
-			onDnsSelected(null)
+			onDnsSelected(com.ericlowry.dnstoggle.data.Constants.DNS_MODE_OPPORTUNISTIC, null)
 			dialog.dismiss()
 		}
 		listContainer.addView(autoItemView)
+
+		if (enableStrictOff) {
+			val isStrictActive =
+				(currentVpnMode == com.ericlowry.dnstoggle.data.Constants.DNS_MODE_OFF)
+			val strictItemView = createDnsListItem(
+				activity,
+				listContainer,
+				activity.getString(R.string.off_strict_label),
+				null,
+				isStrictActive,
+				currentPos,
+				totalItems
+			) {
+				onDnsSelected(com.ericlowry.dnstoggle.data.Constants.DNS_MODE_OFF, null)
+				dialog.dismiss()
+			}
+			listContainer.addView(strictItemView)
+		}
 
 		dialog.show()
 	}
