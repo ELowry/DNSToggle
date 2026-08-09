@@ -349,8 +349,9 @@ class WifiMonitoringService : Service() {
 				} else {
 					watchdogManager.cancelAll() // Cancels watchdog if disabled
 
-					applyOpportunisticDns(
+					applyOffDns(
 						currentSsid,
+						profile.targetMode,
 						if (profile.isAutoDetected) R.string.notif_connectivity_watchdog_disabled else R.string.notif_dns_disabled_auto
 					)
 					watchdogManager.maybeRetryAutoDetectedSsid(
@@ -407,17 +408,18 @@ class WifiMonitoringService : Service() {
 
 	private fun applyVpnDns() {
 		val vpnDns = VpnRepository.vpnDnsHostname.value
+		val vpnMode = VpnRepository.vpnDnsMode.value
 
 		val resolver = contentResolver
 		val currentMode = Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
 		val currentSpecifier = Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
 
-		if (vpnDns == null) {
-			if (currentMode != Constants.DNS_MODE_OPPORTUNISTIC) {
-				updateDnsSetting(Constants.DNS_MODE_OPPORTUNISTIC, null)
+		if (vpnMode != Constants.DNS_MODE_HOSTNAME) {
+			if (currentMode != vpnMode) {
+				updateDnsSetting(vpnMode, null)
 				dispatchStatusNotification(getString(R.string.notif_vpn_dns_applied))
 			}
-		} else {
+		} else if (vpnDns != null) {
 			// Hostname mode
 			if (currentMode != Constants.DNS_MODE_HOSTNAME || currentSpecifier != vpnDns) {
 				try {
@@ -442,12 +444,17 @@ class WifiMonitoringService : Service() {
 		networkCallback = null
 	}
 
-	private fun applyOpportunisticDns(
+	private fun applyOffDns(
 		ssid: String,
+		targetMode: String?,
 		reasonStringResId: Int = R.string.notif_dns_disabled_auto
 	) {
 		watchdogManager.cancelDebounce()
-		updateDnsSetting(Constants.DNS_MODE_OPPORTUNISTIC, ssid, reasonStringResId)
+		val offMode = targetMode ?: getPrefs().getString(
+			Constants.PREF_DEFAULT_OFF_MODE,
+			Constants.DNS_MODE_OPPORTUNISTIC
+		) ?: Constants.DNS_MODE_OPPORTUNISTIC
+		updateDnsSetting(offMode, ssid, reasonStringResId)
 	}
 
 	private fun restorePreferredDns(immediate: Boolean = false) {
@@ -495,11 +502,15 @@ class WifiMonitoringService : Service() {
 				}
 			} else {
 				// Safety fallback to avoid breaking network with a null hostname
-				updateDnsSetting(Constants.DNS_MODE_OPPORTUNISTIC, null)
+				val offMode = sharedPreferences.getString(
+					Constants.PREF_DEFAULT_OFF_MODE,
+					Constants.DNS_MODE_OPPORTUNISTIC
+				) ?: Constants.DNS_MODE_OPPORTUNISTIC
+				updateDnsSetting(offMode, null)
 				dispatchStatusNotification(
-					getString(R.string.keystore_error_title) + ": " + getString(
-						R.string.automatic_off
-					)
+					getString(R.string.keystore_error_title) + ": " + (if (offMode == Constants.DNS_MODE_OFF) getString(
+						R.string.off_strict_label
+					) else getString(R.string.off_automatic_label))
 				)
 			}
 		} else {

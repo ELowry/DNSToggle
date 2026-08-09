@@ -2,6 +2,7 @@ package com.ericlowry.dnstoggle.ui.controller
 
 import android.view.View
 import android.widget.ImageButton
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -27,6 +28,8 @@ class DnsSectionController(
 	private val onRequestTileUpdate: () -> Unit
 ) {
 	private lateinit var rowPrivateDns: View
+	private lateinit var tvToggleLabel: TextView
+	private lateinit var tvToggleSubtitle: TextView
 	private lateinit var dnsToggleSwitch: MaterialSwitch
 	private lateinit var addHostnameButton: ImageButton
 	private lateinit var dnsHostnameListContainer: RecyclerView
@@ -36,6 +39,8 @@ class DnsSectionController(
 
 	fun initialize(
 		rowPrivateDns: View,
+		tvToggleLabel: TextView,
+		tvToggleSubtitle: TextView,
 		dnsToggleSwitch: MaterialSwitch,
 		addHostnameButton: ImageButton,
 		dnsHostnameListContainer: RecyclerView,
@@ -43,6 +48,8 @@ class DnsSectionController(
 		switchDisableDnsTest: MaterialSwitch
 	) {
 		this.rowPrivateDns = rowPrivateDns
+		this.tvToggleLabel = tvToggleLabel
+		this.tvToggleSubtitle = tvToggleSubtitle
 		this.dnsToggleSwitch = dnsToggleSwitch
 		this.addHostnameButton = addHostnameButton
 		this.dnsHostnameListContainer = dnsHostnameListContainer
@@ -66,6 +73,31 @@ class DnsSectionController(
 
 		viewModel.disableDnsTest.observe(activity) { disabled ->
 			switchDisableDnsTest.isChecked = disabled
+		}
+
+		viewModel.enableStrictOffOption.observe(activity) { updateToggleLabel() }
+		viewModel.defaultOffMode.observe(activity) { updateToggleLabel() }
+		viewModel.privateDnsMode.observe(activity) { updateToggleLabel() }
+	}
+
+	private fun updateToggleLabel() {
+		val isStrictOff = viewModel.enableStrictOffOption.value == true
+		val offMode = viewModel.defaultOffMode.value ?: Constants.DNS_MODE_OPPORTUNISTIC
+		val currentMode = viewModel.privateDnsMode.value
+		val isEnabled = (currentMode == Constants.DNS_MODE_HOSTNAME)
+
+		tvToggleLabel.text = activity.getString(R.string.private_dns)
+
+		if (isStrictOff && !isEnabled) {
+			val modeString = if (offMode == Constants.DNS_MODE_OFF) {
+				activity.getString(R.string.mode_disabled)
+			} else {
+				activity.getString(R.string.mode_automatic)
+			}
+			tvToggleSubtitle.text = modeString
+			tvToggleSubtitle.visibility = View.VISIBLE
+		} else {
+			tvToggleSubtitle.visibility = View.GONE
 		}
 	}
 

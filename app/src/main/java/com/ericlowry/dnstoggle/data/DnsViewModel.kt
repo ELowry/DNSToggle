@@ -91,6 +91,15 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	private val _vpnDnsHostname = MutableLiveData<String?>()
 	val vpnDnsHostname: LiveData<String?> = _vpnDnsHostname
 
+	private val _vpnDnsMode = MutableLiveData<String>()
+	val vpnDnsMode: LiveData<String> = _vpnDnsMode
+
+	private val _enableStrictOffOption = MutableLiveData<Boolean>()
+	val enableStrictOffOption: LiveData<Boolean> = _enableStrictOffOption
+
+	private val _defaultOffMode = MutableLiveData<String>()
+	val defaultOffMode: LiveData<String> = _defaultOffMode
+
 	private val _vpnHostnameRemovedWarning = MutableLiveData<Boolean>()
 	val vpnHostnameRemovedWarning: LiveData<Boolean> = _vpnHostnameRemovedWarning
 
@@ -165,6 +174,16 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 						Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
 					)
 				}
+
+				Constants.PREF_ENABLE_STRICT_OFF_OPTION -> {
+					_enableStrictOffOption.value = prefs.getBoolean(key, false)
+				}
+
+				Constants.PREF_DEFAULT_OFF_MODE -> {
+					_defaultOffMode.value =
+						prefs.getString(key, Constants.DNS_MODE_OPPORTUNISTIC)
+							?: Constants.DNS_MODE_OPPORTUNISTIC
+				}
 			}
 		}
 
@@ -229,9 +248,16 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 			val showToast = sharedPreferences.getBoolean(Constants.PREF_SHOW_TOAST, true)
 			val vpnOverride = VpnRepository.vpnOverrideEnabled.value
 			val vpnDns = VpnRepository.vpnDnsHostname.value
+			val vpnDnsMode = VpnRepository.vpnDnsMode.value
 			val vpnRemovedWarning =
 				sharedPreferences.getBoolean(Constants.PREF_VPN_HOSTNAME_REMOVED_WARNING, false)
 			val isInVpn = sharedPreferences.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)
+			val enableStrictOff =
+				sharedPreferences.getBoolean(Constants.PREF_ENABLE_STRICT_OFF_OPTION, false)
+			val defaultOffMode = sharedPreferences.getString(
+				Constants.PREF_DEFAULT_OFF_MODE,
+				Constants.DNS_MODE_OPPORTUNISTIC
+			) ?: Constants.DNS_MODE_OPPORTUNISTIC
 			val ssidOverride =
 				sharedPreferences.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null)
 
@@ -248,6 +274,9 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 				_showToastEnabled.value = showToast
 				_vpnOverrideEnabled.value = vpnOverride
 				_vpnDnsHostname.value = vpnDns
+				_vpnDnsMode.value = vpnDnsMode
+				_enableStrictOffOption.value = enableStrictOff
+				_defaultOffMode.value = defaultOffMode
 				_vpnHostnameRemovedWarning.value = vpnRemovedWarning
 				_isInVpnOverride.value = isInVpn
 				_activeSsidOverride.value = ssidOverride
@@ -265,6 +294,12 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		viewModelScope.launch {
 			VpnRepository.vpnDnsHostname.collect {
 				_vpnDnsHostname.postValue(it)
+			}
+		}
+
+		viewModelScope.launch {
+			VpnRepository.vpnDnsMode.collect {
+				_vpnDnsMode.postValue(it)
 			}
 		}
 	}
@@ -291,7 +326,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		oldSsid: String?,
 		newSsid: String,
 		isEnabled: Boolean,
-		targetHostname: String?
+		targetHostname: String?,
+		targetMode: String? = null
 	) {
 		if (oldSsid != null && oldSsid != newSsid) {
 			NetworkProfileRepository.removeNetworkProfile(oldSsid)
@@ -299,7 +335,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		NetworkProfileRepository.upsertNetworkProfile(
 			ssid = newSsid,
 			isEnabled = isEnabled,
-			targetHostname = targetHostname
+			targetHostname = targetHostname,
+			targetMode = targetMode
 		)
 	}
 
@@ -375,17 +412,27 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		}
 	}
 
-	fun togglePrivateDns(enabled: Boolean, targetHostname: String? = null) {
+	fun togglePrivateDns(
+		enabled: Boolean,
+		targetHostname: String? = null,
+		targetMode: String? = null
+	) {
 		viewModelScope.launch(Dispatchers.IO) {
 			val result = DnsManager.togglePrivateDns(
 				getApplication(),
 				enabled,
 				targetHostname,
+				targetMode,
 				isInteractiveMainUi = true
 			)
 			_hasPermissionError.postValue(result is DnsManager.ToggleResult.PermissionRequired)
 			if (result is DnsManager.ToggleResult.Success) {
-				_privateDnsMode.postValue(if (enabled) Constants.DNS_MODE_HOSTNAME else Constants.DNS_MODE_OPPORTUNISTIC)
+				val offMode = sharedPreferences.getString(
+					Constants.PREF_DEFAULT_OFF_MODE,
+					Constants.DNS_MODE_OPPORTUNISTIC
+				) ?: Constants.DNS_MODE_OPPORTUNISTIC
+				val newMode = if (enabled) Constants.DNS_MODE_HOSTNAME else (targetMode ?: offMode)
+				_privateDnsMode.postValue(newMode)
 				if (enabled && (targetHostname != null)) {
 					_privateDnsSpecifier.postValue(targetHostname)
 					if (NetworkUtils.isValidDnsHostname(targetHostname)) {
@@ -394,6 +441,26 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 				}
 			}
 		}
+	}
+
+	fun setEnableStrictOffOption(enabled: Boolean) {
+		sharedPreferences.edit { putBoolean(Constants.PREF_ENABLE_STRICT_OFF_OPTION, enabled) }
+		_enableStrictOffOption.value = enabled
+
+		if (!enabled) {
+			setDefaultOffMode(Constants.DNS_MODE_OPPORTUNISTIC)
+
+			if (_vpnDnsMode.value == Constants.DNS_MODE_OFF) {
+				setVpnDns(Constants.DNS_MODE_OPPORTUNISTIC, null)
+			}
+
+			NetworkProfileRepository.sanitizeStrictOffProfiles()
+		}
+	}
+
+	fun setDefaultOffMode(mode: String) {
+		sharedPreferences.edit { putString(Constants.PREF_DEFAULT_OFF_MODE, mode) }
+		_defaultOffMode.value = mode
 	}
 
 	fun setShowToast(enabled: Boolean) {
@@ -501,8 +568,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		VpnRepository.updateVpnOverrideEnabled(enabled)
 	}
 
-	fun setVpnDnsHostname(hostname: String?) {
-		VpnRepository.updateVpnDnsHostname(hostname)
+	fun setVpnDns(mode: String, hostname: String?) {
+		VpnRepository.updateVpnDns(mode, hostname)
 	}
 
 	fun updateHostnameOrder(newList: List<DnsHostname>) {

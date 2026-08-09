@@ -149,7 +149,14 @@ class DnsToggleService : TileService() {
 
 					"$prefix$displayName"
 				} else {
-					"${prefix}${getString(R.string.off_label)}"
+					val currentMode =
+						Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
+					val offLabel = if (currentMode == Constants.DNS_MODE_OFF) {
+						getString(R.string.mode_disabled)
+					} else {
+						getString(R.string.off_label)
+					}
+					"$prefix$offLabel"
 				}
 			}
 

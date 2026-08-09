@@ -30,7 +30,11 @@ object SecurityRepository {
 			if (key in keysToMigrate) {
 				encryptedPrefs.edit {
 					when (value) {
-						is String -> putString(key, value)
+						is String -> putString(
+							key,
+							com.ericlowry.dnstoggle.util.EncryptionManager.encrypt(value)
+						)
+
 						is Set<*> -> @Suppress("UNCHECKED_CAST") putStringSet(
 							key,
 							value as Set<String>
@@ -38,6 +42,20 @@ object SecurityRepository {
 					}
 				}
 				sharedPreferences.edit { remove(key) }
+			}
+		}
+
+		val standaloneKeys =
+			listOf(Constants.PREF_LAST_USED_HOSTNAME, Constants.PREF_VPN_DNS_HOSTNAME)
+		standaloneKeys.forEach { key ->
+			val value = encryptedPrefs.getString(key, null)
+			if (value != null && !value.startsWith("enc:")) {
+				encryptedPrefs.edit {
+					putString(
+						key,
+						com.ericlowry.dnstoggle.util.EncryptionManager.encrypt(value)
+					)
+				}
 			}
 		}
 		// END_LEGACY_MIGRATION_CODE

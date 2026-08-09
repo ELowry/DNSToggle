@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-	xmlns:app="http://schemas.android.com/apk/res-auto"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content">
 
@@ -18,7 +17,7 @@
 			android:layout_height="wrap_content"
 			android:layout_marginBottom="4dp"
 			android:gravity="center"
-			android:text="DNS Toggle v2 update"
+			android:text="DNS Toggle v2.1 Warning"
 			android:textAppearance="?attr/textAppearanceHeadlineSmall"
 			android:textColor="?attr/colorOnSurface"
 			android:textStyle="bold" />
@@ -28,7 +27,7 @@
 			android:layout_height="wrap_content"
 			android:layout_marginBottom="24dp"
 			android:gravity="center"
-			android:text="Feedback welcome!"
+			android:text="Backwards Compatibility Deprecation"
 			android:textAppearance="?attr/textAppearanceBodyLarge"
 			android:textColor="?attr/colorOnSurfaceVariant"
 			android:textStyle="bold" />
@@ -38,7 +37,7 @@
 			android:layout_height="wrap_content"
 			android:layout_marginBottom="12dp"
 			android:layout_weight="1"
-			android:text="In this version, I'm replacing the confusing &quot;blacklist&quot; feature. that I originally built it for public networks that struggle with private DNS, but thanks to ElCruncharino's automatic failure detection, it's no longer needed."
+			android:text="As of the next update, some backwards compatibility will be removed from DNS Toggle."
 			android:textAppearance="?attr/textAppearanceBodyMedium"
 			android:textColor="?attr/colorOnSurface" />
 
@@ -47,47 +46,19 @@
 			android:layout_height="wrap_content"
 			android:layout_marginBottom="12dp"
 			android:layout_weight="1"
-			android:text="Instead, I've completely redesigned the Wi-Fi SSID automation to be much more flexible and handle a wider variety of use cases. Because this new system can get quite complex, making it feel intuitive while still providing full control and information was a bit of a challenge."
-			android:textAppearance="?attr/textAppearanceBodyMedium"
-			android:textColor="?attr/colorOnSurface" />
-
-		<TextView
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:layout_marginBottom="12dp"
-			android:layout_weight="1"
-			android:text="I would really love some feedback to make sure the update works well and remains intuitive:"
+			android:text="All settings have been properly stored by launching the app, but exported data will not."
 			android:textAppearance="?attr/textAppearanceBodyMedium"
 			android:textColor="?attr/colorOnSurface"
 			android:textStyle="bold" />
 
-		<LinearLayout
+		<TextView
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
-			android:orientation="horizontal">
-
-			<com.google.android.material.button.MaterialButton
-				android:id="@+id/btnGithub"
-				style="@style/Widget.Material3.Button.TextButton"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:text="Ask a question"
-				android:textColor="?attr/colorPrimary"
-				app:icon="@drawable/ic_question"
-				app:iconPadding="8dp"
-				app:iconTint="?attr/colorPrimary" />
-
-			<com.google.android.material.button.MaterialButton
-				android:id="@+id/btnSupport"
-				style="@style/Widget.Material3.Button.TextButton"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:text="Report a bug"
-				android:textColor="?attr/colorPrimary"
-				app:icon="@drawable/ic_bug_report"
-				app:iconPadding="8dp"
-				app:iconTint="?attr/colorPrimary" />
-		</LinearLayout>
+			android:layout_marginBottom="12dp"
+			android:layout_weight="1"
+			android:text="You can back up your settings using the built-in feature in the ⁝ menu in the top right corner."
+			android:textAppearance="?attr/textAppearanceBodyMedium"
+			android:textColor="?attr/colorOnSurface" />
 
 	</LinearLayout>
 </androidx.core.widget.NestedScrollView>

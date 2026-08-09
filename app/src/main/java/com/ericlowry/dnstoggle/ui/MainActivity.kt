@@ -45,7 +45,7 @@ import com.ericlowry.dnstoggle.ui.controller.VpnSectionController
 import com.ericlowry.dnstoggle.ui.dialog.CommonDialogHelper
 import com.ericlowry.dnstoggle.ui.dialog.PermissionDialogHelper
 import com.ericlowry.dnstoggle.ui.dialog.SsidDialogHelper
-import com.ericlowry.dnstoggle.ui.dialog._InfoNoticeHelper // TEMPORARY BETA INFO
+//import com.ericlowry.dnstoggle.ui.dialog._InfoNoticeHelper // TEMPORARY INFO
 import com.ericlowry.dnstoggle.util.PermissionHelper
 import com.ericlowry.dnstoggle.util.RootUtils
 import com.ericlowry.dnstoggle.util.ShizukuUtils
@@ -136,16 +136,16 @@ class MainActivity : AppCompatActivity() {
 
 		setupScrollSpring()
 
-		// TEMPORARY BETA INFO
-		_InfoNoticeHelper.showOnceOnStartup(this)
-		val contentWrapper =
-			findViewById<androidx.constraintlayout.widget.ConstraintLayout>(R.id.contentWrapper)
-		_InfoNoticeHelper.injectBetaFeedbackButton(
-			this,
-			contentWrapper,
-			R.id.cardMainPermissionLayout
-		)
-		// TEMPORARY BETA INFO - END
+//		// TEMPORARY INFO
+//		_InfoNoticeHelper.showOnceOnStartup(this)
+//		val contentWrapper =
+//			findViewById<androidx.constraintlayout.widget.ConstraintLayout>(R.id.contentWrapper)
+//		_InfoNoticeHelper.injectNoticeButton(
+//			this,
+//			contentWrapper,
+//			R.id.cardMainPermissionLayout
+//		)
+//		// TEMPORARY INFO - END
 	}
 
 	private fun setupScrollSpring() {
@@ -320,6 +320,8 @@ class MainActivity : AppCompatActivity() {
 
 		dnsController.initialize(
 			rowPrivateDns = findViewById(R.id.rowPrivateDns),
+			tvToggleLabel = findViewById(R.id.tvToggleLabel),
+			tvToggleSubtitle = findViewById(R.id.tvToggleSubtitle),
 			dnsToggleSwitch = findViewById(R.id.switchPrivateDns),
 			addHostnameButton = findViewById(R.id.btnAddHostname),
 			dnsHostnameListContainer = findViewById(R.id.dnsHostnameListContainer),
@@ -333,7 +335,6 @@ class MainActivity : AppCompatActivity() {
 			tvWifiProfilesTitle = findViewById(R.id.tvWifiProfilesTitle),
 			permissionNoticeText = findViewById(R.id.tvPermissionNotice),
 			btnGrantPermission = findViewById(R.id.btnGrantPermission),
-			dividerSsidList = findViewById(R.id.dividerSsidList),
 			ssidListContainer = findViewById(R.id.ssidListContainer),
 			dividerSsidSettings = findViewById(R.id.dividerSsidSettings),
 			rowAutoSaveState = findViewById(R.id.rowAutoSaveState),
@@ -345,7 +346,8 @@ class MainActivity : AppCompatActivity() {
 			rowConnectivityWatchdogDebounce = findViewById(R.id.rowConnectivityWatchdogDebounce),
 			tvConnectivityWatchdogDebounceValue = findViewById(R.id.tvConnectivityWatchdogDebounceValue),
 			rowConnectivityWatchdogTargets = findViewById(R.id.rowConnectivityWatchdogTargets),
-			tvConnectivityWatchdogTargetsValue = findViewById(R.id.tvConnectivityWatchdogTargetsValue)
+			tvConnectivityWatchdogTargetsValue = findViewById(R.id.tvConnectivityWatchdogTargetsValue),
+			layoutWatchdogSubset = findViewById(R.id.layoutWatchdogSubset)
 		)
 
 		vpnController.initialize(
@@ -361,14 +363,17 @@ class MainActivity : AppCompatActivity() {
 		miscController.initialize(
 			switchShowToast = findViewById(R.id.switchShowToast),
 			rowShowToast = findViewById(R.id.rowShowToast),
+			switchEnableStrictOff = findViewById(R.id.switchEnableStrictOff),
+			rowEnableStrictOff = findViewById(R.id.rowEnableStrictOff),
+			tvDefaultOffModeValue = findViewById(R.id.tvDefaultOffModeValue),
+			rowDefaultOffMode = findViewById(R.id.rowDefaultOffMode),
+			layoutStrictOffSubset = findViewById(R.id.layoutStrictOffSubset),
 			switchHideLauncher = findViewById(R.id.switchHideLauncher),
 			rowHideLauncher = findViewById(R.id.rowHideLauncher),
 			rowUsbDebuggingTile = findViewById(R.id.rowUsbDebuggingTileLayout),
 			switchUsbDebuggingTile = findViewById(R.id.switchUsbDebuggingTile),
 			tvUsbDebuggingTileSummary = findViewById(R.id.tvUsbDebuggingTileSummary)
 		)
-
-		findViewById<TextView>(R.id.tvToggleLabel).text = getString(R.string.private_dns)
 
 		val tvAppVersion = findViewById<TextView>(R.id.tvAppVersion)
 		try {

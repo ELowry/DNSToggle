@@ -24,7 +24,6 @@ import com.ericlowry.dnstoggle.ui.dialog.SsidDialogHelper
 import com.ericlowry.dnstoggle.util.NetworkUtils
 import com.ericlowry.dnstoggle.util.PermissionHelper
 import com.ericlowry.dnstoggle.util.setConditionalVisibility
-import com.ericlowry.dnstoggle.util.setDimmedEnabled
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.R as MaterialR
@@ -40,7 +39,6 @@ class SsidSectionController(
 	private lateinit var tvWifiProfilesTitle: TextView
 	private lateinit var permissionNoticeText: TextView
 	private lateinit var btnGrantPermission: Button
-	private lateinit var dividerSsidList: View
 	private lateinit var ssidListContainer: RecyclerView
 	private lateinit var dividerSsidSettings: View
 	private lateinit var rowAutoSaveState: View
@@ -53,6 +51,7 @@ class SsidSectionController(
 	private lateinit var tvConnectivityWatchdogDebounceValue: TextView
 	private lateinit var rowConnectivityWatchdogTargets: View
 	private lateinit var tvConnectivityWatchdogTargetsValue: TextView
+	private lateinit var layoutWatchdogSubset: View
 	private lateinit var ssidsAdapter: SsidsAdapter
 
 	fun initialize(
@@ -61,7 +60,6 @@ class SsidSectionController(
 		tvWifiProfilesTitle: TextView,
 		permissionNoticeText: TextView,
 		btnGrantPermission: Button,
-		dividerSsidList: View,
 		ssidListContainer: RecyclerView,
 		dividerSsidSettings: View,
 		rowAutoSaveState: View,
@@ -73,14 +71,14 @@ class SsidSectionController(
 		rowConnectivityWatchdogDebounce: View,
 		tvConnectivityWatchdogDebounceValue: TextView,
 		rowConnectivityWatchdogTargets: View,
-		tvConnectivityWatchdogTargetsValue: TextView
+		tvConnectivityWatchdogTargetsValue: TextView,
+		layoutWatchdogSubset: View
 	) {
 		this.btnSsidInfo = btnSsidInfo
 		this.addSsidButton = addSsidButton
 		this.tvWifiProfilesTitle = tvWifiProfilesTitle
 		this.permissionNoticeText = permissionNoticeText
 		this.btnGrantPermission = btnGrantPermission
-		this.dividerSsidList = dividerSsidList
 		this.ssidListContainer = ssidListContainer
 		this.dividerSsidSettings = dividerSsidSettings
 		this.rowAutoSaveState = rowAutoSaveState
@@ -93,6 +91,7 @@ class SsidSectionController(
 		this.tvConnectivityWatchdogDebounceValue = tvConnectivityWatchdogDebounceValue
 		this.rowConnectivityWatchdogTargets = rowConnectivityWatchdogTargets
 		this.tvConnectivityWatchdogTargetsValue = tvConnectivityWatchdogTargetsValue
+		this.layoutWatchdogSubset = layoutWatchdogSubset
 
 		setupSsidsRecyclerView()
 		setupAutoSettings()
@@ -123,10 +122,8 @@ class SsidSectionController(
 
 		viewModel.connectivityWatchdogEnabled.observe(activity) { enabled ->
 			switchConnectivityWatchdog.isChecked = enabled
-			rowConnectivityWatchdogDebounce.isEnabled = enabled
-			rowConnectivityWatchdogDebounce.alpha = if (enabled) 1.0f else 0.5f
-			rowConnectivityWatchdogTargets.isEnabled = enabled
-			rowConnectivityWatchdogTargets.alpha = if (enabled) 1.0f else 0.5f
+			val container = activity.findViewById<ViewGroup>(R.id.contentWrapper)
+			layoutWatchdogSubset.setConditionalVisibility(enabled, container)
 		}
 
 		viewModel.connectivityWatchdogDebounceSeconds.observe(activity) { seconds ->
@@ -246,11 +243,14 @@ class SsidSectionController(
 	}
 
 	private fun refreshSsidListView(profiles: List<NetworkProfile>?) {
-		val container = permissionNoticeText.parent as? ViewGroup
+		val container = activity.findViewById<ViewGroup>(R.id.contentWrapper)
 		val isEmpty = profiles.isNullOrEmpty()
+		val hasPermission = PermissionHelper.hasSsidPermissions(activity)
 
-		dividerSsidList.setConditionalVisibility(!isEmpty, container)
-		dividerSsidSettings.setConditionalVisibility(!isEmpty, container)
+		val showList = !isEmpty && hasPermission
+
+		dividerSsidSettings.setConditionalVisibility(showList, container)
+		ssidListContainer.setConditionalVisibility(showList, container)
 
 		if (isEmpty) {
 			ssidsAdapter.submitList(emptyList())
@@ -269,9 +269,17 @@ class SsidSectionController(
 			existingProfile = existingProfile,
 			suggestedSsid = suggestedSsid,
 			globalDefaultHostname = viewModel.getGlobalPreferredHostname(),
-			hostnames = viewModel.dnsHostnames.value ?: emptyList()
-		) { ssid, isEnabled, targetHostname ->
-			viewModel.saveNetworkProfile(existingProfile?.ssid, ssid, isEnabled, targetHostname)
+			hostnames = viewModel.dnsHostnames.value ?: emptyList(),
+			enableStrictOff = viewModel.enableStrictOffOption.value ?: false,
+			defaultOffMode = viewModel.defaultOffMode.value ?: Constants.DNS_MODE_OPPORTUNISTIC
+		) { ssid, isEnabled, targetHostname, targetMode ->
+			viewModel.saveNetworkProfile(
+				existingProfile?.ssid,
+				ssid,
+				isEnabled,
+				targetHostname,
+				targetMode
+			)
 		}
 	}
 
@@ -290,7 +298,7 @@ class SsidSectionController(
 	}
 
 	fun updateUiState(hasPermission: Boolean) {
-		val container = permissionNoticeText.parent as? ViewGroup
+		val container = activity.findViewById<ViewGroup>(R.id.contentWrapper)
 
 		permissionNoticeText.setConditionalVisibility(!hasPermission, container)
 		btnGrantPermission.setConditionalVisibility(!hasPermission, container)
@@ -298,15 +306,19 @@ class SsidSectionController(
 		addSsidButton.setConditionalVisibility(hasPermission, container)
 		rowAutoSaveState.setConditionalVisibility(hasPermission, container)
 		rowAutoSaveHost.setConditionalVisibility(hasPermission, container)
-		ssidListContainer.setConditionalVisibility(hasPermission, container)
 		rowConnectivityWatchdogToggle.setConditionalVisibility(hasPermission, container)
-		rowConnectivityWatchdogDebounce.setConditionalVisibility(hasPermission, container)
-		rowConnectivityWatchdogTargets.setConditionalVisibility(hasPermission, container)
+
+		val isEmpty = viewModel.networkProfiles.value.isNullOrEmpty()
+		val showList = hasPermission && !isEmpty
+
+		dividerSsidSettings.setConditionalVisibility(showList, container)
+		ssidListContainer.setConditionalVisibility(showList, container)
 
 		if (hasPermission) {
 			val watchdogEnabled = viewModel.connectivityWatchdogEnabled.value ?: false
-			rowConnectivityWatchdogDebounce.setDimmedEnabled(watchdogEnabled)
-			rowConnectivityWatchdogTargets.setDimmedEnabled(watchdogEnabled)
+			layoutWatchdogSubset.setConditionalVisibility(watchdogEnabled, container)
+		} else {
+			layoutWatchdogSubset.setConditionalVisibility(false, container)
 		}
 	}
 }

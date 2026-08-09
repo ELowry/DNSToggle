@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.ericlowry.dnstoggle.R
+import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsViewModel
 import com.ericlowry.dnstoggle.ui.MainPermissionHandler
 import com.ericlowry.dnstoggle.ui.dialog.DnsDialogHelper
@@ -56,14 +57,12 @@ class VpnSectionController(
 			updateUiState(PermissionHelper.hasNotificationPermission(activity))
 		}
 
-		viewModel.vpnDnsHostname.observe(activity) { hostname ->
-			tvVpnDnsValue.text = if (hostname == null) {
-				activity.getString(R.string.automatic_off)
-			} else {
-				viewModel.dnsHostnames.value
-					?.find { it.hostname == hostname }
-					?.getDisplayName() ?: hostname
-			}
+		viewModel.vpnDnsMode.observe(activity) { _ ->
+			updateVpnDnsLabel()
+		}
+
+		viewModel.vpnDnsHostname.observe(activity) { _ ->
+			updateVpnDnsLabel()
 		}
 
 		viewModel.vpnHostnameRemovedWarning.observe(activity) { show ->
@@ -79,6 +78,22 @@ class VpnSectionController(
 		}
 	}
 
+	private fun updateVpnDnsLabel() {
+		val mode = viewModel.vpnDnsMode.value ?: Constants.DNS_MODE_OPPORTUNISTIC
+		val hostname = viewModel.vpnDnsHostname.value
+
+		tvVpnDnsValue.text = when (mode) {
+			Constants.DNS_MODE_OPPORTUNISTIC -> activity.getString(R.string.off_automatic_label)
+			Constants.DNS_MODE_OFF -> activity.getString(R.string.off_strict_label)
+			else -> {
+				viewModel.dnsHostnames.value
+					?.find { it.hostname == hostname }
+					?.getDisplayName() ?: hostname
+				?: activity.getString(R.string.off_automatic_label)
+			}
+		}
+	}
+
 	private fun setupVpnSettings() {
 		rowVpnOverrideToggle.setOnClickListener { switchVpnOverride.toggle() }
 		switchVpnOverride.setOnCheckedChangeListener { _, isChecked ->
@@ -89,20 +104,26 @@ class VpnSectionController(
 			val hostnames = viewModel.dnsHostnames.value ?: emptyList()
 			if (hostnames.isEmpty()) return@setOnClickListener
 
-			if (hostnames.size == 1) {
+			if (hostnames.size == 1 && !(viewModel.enableStrictOffOption.value ?: false)) {
 				val hostname = hostnames.first().hostname
 				val current = viewModel.vpnDnsHostname.value
-				val newValue = if (current == hostname) null else hostname
-				viewModel.setVpnDnsHostname(newValue)
+				val currentMode = viewModel.vpnDnsMode.value
+				if (currentMode == Constants.DNS_MODE_HOSTNAME && current == hostname) {
+					viewModel.setVpnDns(Constants.DNS_MODE_OPPORTUNISTIC, null)
+				} else {
+					viewModel.setVpnDns(Constants.DNS_MODE_HOSTNAME, hostname)
+				}
 				return@setOnClickListener
 			}
 
 			DnsDialogHelper.showVpnDnsSelectionDialog(
 				activity,
 				hostnames,
-				viewModel.vpnDnsHostname.value
-			) { hostname ->
-				viewModel.setVpnDnsHostname(hostname)
+				viewModel.vpnDnsMode.value ?: Constants.DNS_MODE_OPPORTUNISTIC,
+				viewModel.vpnDnsHostname.value,
+				viewModel.enableStrictOffOption.value ?: false
+			) { mode, hostname ->
+				viewModel.setVpnDns(mode, hostname)
 			}
 		}
 
@@ -114,7 +135,7 @@ class VpnSectionController(
 	}
 
 	fun updateUiState(hasPermission: Boolean) {
-		val container = rowVpnOverrideToggle.parent as? ViewGroup
+		val container = activity.findViewById<ViewGroup>(R.id.contentWrapper)
 
 		vpnPermissionNoticeText.setConditionalVisibility(!hasPermission, container)
 		btnGrantVpnPermission.setConditionalVisibility(!hasPermission, container)

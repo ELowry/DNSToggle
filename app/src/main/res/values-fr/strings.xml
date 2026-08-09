@@ -14,7 +14,6 @@
 	<string name="settings">Paramètres</string>
 	<string name="on_label">Activé</string>
 	<string name="off_label">Désactivé</string>
-	<string name="automatic_off">Désactivé (auto)</string>
 	<string name="menu_content_description">Plus d\'options</string>
 	<!-- Permissions & ADB Setup -->
 	<string name="permission_required">Autorisation requise</string>

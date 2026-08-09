@@ -30,6 +30,11 @@ class MiscSettingsController(
 ) {
 	private lateinit var switchShowToast: MaterialSwitch
 	private lateinit var rowShowToast: View
+	private lateinit var switchEnableStrictOff: MaterialSwitch
+	private lateinit var rowEnableStrictOff: View
+	private lateinit var tvDefaultOffModeValue: TextView
+	private lateinit var rowDefaultOffMode: View
+	private lateinit var layoutStrictOffSubset: View
 	private lateinit var switchHideLauncher: MaterialSwitch
 	private lateinit var rowHideLauncher: View
 	private lateinit var tvHideLauncherSummary: TextView
@@ -50,6 +55,11 @@ class MiscSettingsController(
 	fun initialize(
 		switchShowToast: MaterialSwitch,
 		rowShowToast: View,
+		switchEnableStrictOff: MaterialSwitch,
+		rowEnableStrictOff: View,
+		tvDefaultOffModeValue: TextView,
+		rowDefaultOffMode: View,
+		layoutStrictOffSubset: View,
 		switchHideLauncher: MaterialSwitch,
 		rowHideLauncher: View,
 		rowUsbDebuggingTile: View,
@@ -58,6 +68,11 @@ class MiscSettingsController(
 	) {
 		this.switchShowToast = switchShowToast
 		this.rowShowToast = rowShowToast
+		this.switchEnableStrictOff = switchEnableStrictOff
+		this.rowEnableStrictOff = rowEnableStrictOff
+		this.tvDefaultOffModeValue = tvDefaultOffModeValue
+		this.rowDefaultOffMode = rowDefaultOffMode
+		this.layoutStrictOffSubset = layoutStrictOffSubset
 		this.switchHideLauncher = switchHideLauncher
 		this.rowHideLauncher = rowHideLauncher
 		this.tvHideLauncherSummary = activity.findViewById(R.id.tvHideLauncherSummary)
@@ -92,6 +107,19 @@ class MiscSettingsController(
 			switchShowToast.isChecked = enabled
 		}
 
+		viewModel.enableStrictOffOption.observe(activity) { enabled ->
+			switchEnableStrictOff.isChecked = enabled
+			val container = activity.findViewById<ViewGroup>(R.id.contentWrapper)
+			layoutStrictOffSubset.setConditionalVisibility(enabled, container)
+		}
+
+		viewModel.defaultOffMode.observe(activity) { mode ->
+			tvDefaultOffModeValue.text = when (mode) {
+				Constants.DNS_MODE_OFF -> activity.getString(R.string.mode_disabled)
+				else -> activity.getString(R.string.mode_automatic)
+			}
+		}
+
 		viewModel.hideLauncherIcon.observe(activity) { isHidden ->
 			if (!isTvDevice) {
 				switchHideLauncher.isChecked = isHidden
@@ -106,6 +134,34 @@ class MiscSettingsController(
 		rowShowToast.setOnClickListener { switchShowToast.toggle() }
 		switchShowToast.setOnCheckedChangeListener { _, isChecked ->
 			viewModel.setShowToast(isChecked)
+		}
+
+		rowEnableStrictOff.setOnClickListener { switchEnableStrictOff.toggle() }
+		switchEnableStrictOff.setOnCheckedChangeListener { _, isChecked ->
+			viewModel.setEnableStrictOffOption(isChecked)
+		}
+
+		rowDefaultOffMode.setOnClickListener {
+			if (!switchEnableStrictOff.isChecked) return@setOnClickListener
+
+			val options = arrayOf(
+				activity.getString(R.string.mode_automatic),
+				activity.getString(R.string.mode_disabled)
+			)
+			val modes = arrayOf(
+				Constants.DNS_MODE_OPPORTUNISTIC,
+				Constants.DNS_MODE_OFF
+			)
+			val checkedItem = modes.indexOf(viewModel.defaultOffMode.value)
+
+			com.google.android.material.dialog.MaterialAlertDialogBuilder(activity)
+				.setTitle(R.string.default_off_mode_title)
+				.setSingleChoiceItems(options, checkedItem) { dialog, which ->
+					viewModel.setDefaultOffMode(modes[which])
+					dialog.dismiss()
+				}
+				.setNegativeButton(R.string.cancel, null)
+				.show()
 		}
 
 		rowHideLauncher.setOnClickListener { switchHideLauncher.toggle() }

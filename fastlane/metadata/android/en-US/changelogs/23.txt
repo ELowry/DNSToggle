@@ -1,0 +1,2 @@
+- Added the option to fully disable private DNS
+- Cleaned up some UI elements

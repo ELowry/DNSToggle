@@ -9,7 +9,6 @@
 	<string name="settings">设置</string>
 	<string name="on_label">开</string>
 	<string name="off_label">关</string>
-	<string name="automatic_off">关（自动）</string>
 	<string name="menu_content_description">更多选项</string>
 	<string name="permission_required">需要权限</string>
 	<string name="permission_message">要使用此切换工具，您必须通过 root、Shizuku 授予设置权限，或在启用 USB 调试的情况下在电脑上运行以下 ADB 命令：</string>
