@@ -98,9 +98,20 @@
 	<!-- Main UI - VPN Override -->
 	<string name="vpn_override_title">Override VPN</string>
 	<string name="vpn_override_summary">Changer auto le DNS privé lorsqu\'un VPN est connecté.</string>
+	<string name="vpn_override_toggle_label">Activer l\'override VPN</string>
 	<string name="vpn_dns_label">DNS sous VPN</string>
 	<string name="vpn_permission_notice">L\'autorisation de notifications est requise pour l\'automatisation.</string>
 	<string name="vpn_hostname_removed_warning">L\'adresse DNS utilisée pour le VPN a été supprimée. L\'override VPN a été désactivé.</string>
+
+	<!-- Main UI - Full Off Support -->
+	<string name="strict_off_mode_title">Autoriser la désactivation complète du DNS privé</string>
+	<string name="strict_off_mode_summary">Permet de choisir si le DNS privé doit être complètement désactivé ou en mode automatique lorsqu\'il est désactivé par DNS Toggle.</string>
+	<string name="default_off_mode_title">Mode de désactivation par défaut</string>
+	<string name="default_off_mode_summary">Définit le mode par défaut du DNS privé lorsqu\'il est désactivé.</string>
+	<string name="off_strict_label">Désactivé</string>
+	<string name="off_automatic_label">Désactivé (automatique)</string>
+	<string name="mode_automatic">Automatique</string>
+	<string name="mode_disabled">Désactivé</string>
 	<!-- Main UI - General Options -->
 	<string name="options_title">Options</string>
 	<string name="show_toast_notif">Notifications toast d\'état</string>
