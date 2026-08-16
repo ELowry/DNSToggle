@@ -20,7 +20,7 @@ class ConnectivityWatchdogManager(
 	private var debounceJob: Job? = null
 	private var connectivityWatchdogJob: Job? = null
 	private var autoRecoveryJob: Job? = null
-	var retriedAutoProfileForNetwork: Network? = null
+	var retriedAutoProfileBssid: String? = null
 
 	private fun getPrefs() = (context.applicationContext as DnsToggleApplication).getPrefs()
 
@@ -104,17 +104,17 @@ class ConnectivityWatchdogManager(
 	fun maybeRetryAutoDetectedSsid(
 		ssid: String,
 		isAutoDetected: Boolean,
-		wifiNetwork: Network?,
+		bssid: String?,
 		onRecovered: (String) -> Unit
 	) {
 		val prefs = getPrefs()
 		if (!isAutoDetected ||
 			!prefs.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false) ||
-			retriedAutoProfileForNetwork == wifiNetwork
+			(bssid != null && retriedAutoProfileBssid == bssid)
 		) {
 			return
 		}
-		retriedAutoProfileForNetwork = wifiNetwork
+		retriedAutoProfileBssid = bssid
 
 		val hostname =
 			Global.getString(context.contentResolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)

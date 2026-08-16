@@ -347,13 +347,17 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
 		val displayList = savedHostnames.toMutableList()
 
-		if ((currentMode == Constants.DNS_MODE_HOSTNAME) && !currentSpecifier.isNullOrEmpty()) {
+		if (!currentSpecifier.isNullOrEmpty()) {
 			if (savedHostnames.none { it.hostname == currentSpecifier }) {
+				val isTrulyActive = currentMode == Constants.DNS_MODE_HOSTNAME
+				val labelRes =
+					if (isTrulyActive) R.string.unsaved_active_label else R.string.unsaved_inactive_label
+
 				displayList.add(
 					0,
 					DnsHostname(
 						hostname = currentSpecifier,
-						label = getApplication<Application>().getString(R.string.unsaved_active_label),
+						label = getApplication<Application>().getString(labelRes),
 						isUnsaved = true
 					)
 				)

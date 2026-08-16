@@ -20,15 +20,24 @@ fun String.stripSsidQuotes(): String {
 
 object NetworkUtils {
 
-	/**
-	 * Fetches the SSID of the currently connected Wi-Fi network.
-	 * Returns null if not connected to Wi-Fi or if SSID is unknown/redacted.
-	 */
 	fun getCurrentWifiSsid(context: Context): String? {
 		val application = context.applicationContext as? DnsToggleApplication
 		application?.detectedSsid?.let { return it }
 
-		var ssid: String? = null
+		return getCurrentWifiInfo(context)?.ssid?.stripSsidQuotes()?.let {
+			if (it == "<unknown ssid>" || it.isEmpty()) null else it
+		}
+	}
+
+	fun getCurrentWifiBssid(context: Context): String? {
+		val application = context.applicationContext as? DnsToggleApplication
+		application?.detectedBssid?.let { return it }
+
+		return getCurrentWifiInfo(context)?.bssid
+	}
+
+	private fun getCurrentWifiInfo(context: Context): WifiInfo? {
+		var wifiInfo: WifiInfo? = null
 
 		val connectivityManager =
 			context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -39,21 +48,18 @@ object NetworkUtils {
 					networkCapabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN))
 		) {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-				val transportInfo = networkCapabilities.transportInfo as? WifiInfo
-				ssid = transportInfo?.ssid?.stripSsidQuotes()
+				wifiInfo = networkCapabilities.transportInfo as? WifiInfo
 			}
 		}
 
-		if (ssid == null || ssid == "<unknown ssid>" || ssid.isEmpty()) {
+		if (wifiInfo == null) {
 			val wifiManager =
 				context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-
 			@Suppress("DEPRECATION")
-			val wifiInfo = wifiManager.connectionInfo
-			ssid = wifiInfo?.ssid?.stripSsidQuotes()
+			wifiInfo = wifiManager.connectionInfo
 		}
 
-		return if (ssid == "<unknown ssid>" || ssid.isNullOrEmpty()) null else ssid
+		return wifiInfo
 	}
 
 	suspend fun isHostReachable(host: String, port: Int, timeoutMs: Int = 3000): Boolean =

@@ -9,8 +9,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import androidx.transition.TransitionManager
 import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsViewModel
@@ -248,6 +250,11 @@ class SsidSectionController(
 		val hasPermission = PermissionHelper.hasSsidPermissions(activity)
 
 		val showList = !isEmpty && hasPermission
+
+		val wasShowing = ssidListContainer.isVisible
+		if (wasShowing != showList) {
+			TransitionManager.beginDelayedTransition(container)
+		}
 
 		dividerSsidSettings.setConditionalVisibility(showList, container)
 		ssidListContainer.setConditionalVisibility(showList, container)
