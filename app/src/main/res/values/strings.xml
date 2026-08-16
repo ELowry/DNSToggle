@@ -53,6 +53,7 @@
 	<!-- Main UI - Status -->
 	<string name="status_testing_dns">Testing connection…</string>
 	<string name="unsaved_active_label">Current (unsaved)</string>
+	<string name="unsaved_inactive_label">Inactive (unsaved)</string>
 	<string name="status_active_reachable">Active &amp; Reachable</string>
 	<string name="default_dns_label">Default</string>
 	<string name="default_badge">DEFAULT</string>

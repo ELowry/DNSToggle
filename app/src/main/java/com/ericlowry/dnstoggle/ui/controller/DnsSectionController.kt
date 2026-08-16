@@ -136,30 +136,20 @@ class DnsSectionController(
 	private fun setupHostnamesRecyclerView() {
 		val colors = HostnameColors(
 			colorSurface = MaterialColors.getColor(
-				activity,
-				MaterialR.attr.colorSurface,
-				0
+				activity, MaterialR.attr.colorSurface, 0
 			),
 			colorSurfaceContainer = MaterialColors.getColor(
-				activity,
-				MaterialR.attr.colorSurfaceContainer,
-				0
+				activity, MaterialR.attr.colorSurfaceContainer, 0
 			),
 			colorSecondaryContainer = MaterialColors.getColor(
-				activity,
-				MaterialR.attr.colorSecondaryContainer,
-				0
+				activity, MaterialR.attr.colorSecondaryContainer, 0
 			),
 			colorPrimary = MaterialColors.getColor(activity, android.R.attr.colorPrimary, 0),
 			colorOutlineVariant = MaterialColors.getColor(
-				activity,
-				MaterialR.attr.colorOutlineVariant,
-				0
+				activity, MaterialR.attr.colorOutlineVariant, 0
 			),
 			textColorSecondary = MaterialColors.getColor(
-				activity,
-				android.R.attr.textColorSecondary,
-				0
+				activity, android.R.attr.textColorSecondary, 0
 			),
 			warningColor = MaterialColors.getColor(activity, R.attr.warning_color, 0)
 		)
@@ -188,17 +178,14 @@ class DnsSectionController(
 	}
 
 	fun showAddHostnameDialog(
-		existingHostname: String? = null,
-		enableAfterSave: Boolean = false
+		existingHostname: String? = null, enableAfterSave: Boolean = false
 	) {
 		val existingEntry = existingHostname?.let { host ->
 			viewModel.dnsHostnames.value?.find { it.hostname == host }
 		}
 
 		DnsDialogHelper.showAddHostnameDialog(
-			activity,
-			existingHostname,
-			existingEntry?.label
+			activity, existingHostname, existingEntry?.label
 		) { newHostname, newLabel ->
 			if (NetworkUtils.isValidDnsHostname(newHostname)) {
 				if (existingHostname != null) {

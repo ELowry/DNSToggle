@@ -1,0 +1,3 @@
+- Fixed an issue where Wi-Fi profiles sometimes failed to apply.
+- Improved incompatible network detection reliability.
+- Fixed minor UI issues.

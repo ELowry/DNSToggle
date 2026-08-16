@@ -143,9 +143,6 @@ class HostnamesAdapter(
 				holder.btnDelete.visibility = View.GONE
 				holder.btnAdd.visibility = View.VISIBLE
 
-				holder.tvHostname.alpha = 1.0f
-				holder.tvSecondaryHostname.alpha = 1.0f
-
 				holder.tvHostname.setTypeface(null, android.graphics.Typeface.ITALIC)
 
 				holder.card.setCardBackgroundColor(colors.colorSurface)
@@ -157,8 +154,6 @@ class HostnamesAdapter(
 				holder.btnAdd.visibility = View.GONE
 				holder.unsavedBorder.visibility = View.GONE
 
-				holder.tvHostname.alpha = 1.0f
-				holder.tvSecondaryHostname.alpha = 1.0f
 				holder.tvHostname.setTypeface(null, android.graphics.Typeface.NORMAL)
 
 				holder.card.setCardBackgroundColor(colors.colorSurfaceContainer)

@@ -75,11 +75,6 @@ class SsidsAdapter(
 		val context = holder.itemView.context
 		val isActive = (ssid == activeSsid)
 
-		if (payloads.size == 1 && payloads.contains("active_state")) {
-			updateCardStroke(holder, item, isActive, holder.ssidInfoContainer.hasFocus())
-			return
-		}
-
 		if (payloads.isEmpty() || payloads.contains("active_state") || payloads.contains("hostname_labels")) {
 			val isTransient = item.isAutoDetected || item.isUnsaved
 
@@ -116,13 +111,12 @@ class SsidsAdapter(
 				holder.tvSsidLabel.text = labelBase
 			}
 
-			if (item.isEnabled) {
+			if (item.isEnabled || isActive) {
 				holder.card.setCardBackgroundColor(colors.colorSurfaceContainer)
-				holder.card.alpha = 1.0f
-				holder.card.cardElevation = (2 * context.resources.displayMetrics.density)
+				holder.card.cardElevation =
+					if (isActive && !isTransient) (2 * context.resources.displayMetrics.density) else 0f
 			} else {
 				holder.card.setCardBackgroundColor(colors.colorSurface)
-				holder.card.alpha = 0.5f
 				holder.card.cardElevation = 0f
 			}
 

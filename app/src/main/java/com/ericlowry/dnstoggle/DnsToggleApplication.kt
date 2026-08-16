@@ -1,5 +1,6 @@
 package com.ericlowry.dnstoggle
 
+import android.app.Activity
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -10,6 +11,7 @@ import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.database.ContentObserver
+import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
@@ -37,7 +39,12 @@ import kotlinx.coroutines.launch
 class DnsToggleApplication : Application() {
 
 	var detectedSsid: String? = null
+	var detectedBssid: String? = null
+	var isAppInForeground: Boolean = false
+		private set
+
 	private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+	private var activeActivityCount = 0
 	private var isAdbObserverRegistered = false
 
 	private val preferenceChangeListener =
@@ -111,6 +118,27 @@ class DnsToggleApplication : Application() {
 			.setPrecondition { _, _ -> shouldApplyDynamicColors() }
 			.build()
 		DynamicColors.applyToActivitiesIfAvailable(this, dynamicOptions)
+		registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+			override fun onActivityStarted(activity: Activity) {
+				activeActivityCount++
+				isAppInForeground = true
+			}
+
+			override fun onActivityStopped(activity: Activity) {
+				activeActivityCount--
+				if (activeActivityCount <= 0) {
+					activeActivityCount = 0
+					isAppInForeground = false
+				}
+			}
+
+			override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+			override fun onActivityResumed(activity: Activity) {}
+			override fun onActivityPaused(activity: Activity) {}
+			override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+			override fun onActivityDestroyed(activity: Activity) {}
+		})
+
 		SecurityRepository.initialize(this)
 		VpnRepository.initialize(this)
 		NetworkProfileRepository.initialize(this)
@@ -219,6 +247,7 @@ class DnsToggleApplication : Application() {
 			} else {
 				stopService(serviceIntent)
 				detectedSsid = null
+				detectedBssid = null
 			}
 
 			// Tile resync
