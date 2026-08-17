@@ -1,0 +1,2 @@
+- Se añadió la opción de desactivar completamente el DNS privado
+- Limpieza de algunos elementos de la interfaz
