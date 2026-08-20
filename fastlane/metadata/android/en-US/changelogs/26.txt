@@ -1,0 +1,5 @@
+- Fixed an issue where Private DNS could fail to toggle when connecting to a VPN
+- Improved reliability and prevented conflicts when rapidly switching between Wi-Fi networks
+- Added a warning notification when system location services are disabled preventing Wi-Fi automation
+- Enhanced security for the Shizuku permission granting process
+- Added a minimum length requirement for backup passwords

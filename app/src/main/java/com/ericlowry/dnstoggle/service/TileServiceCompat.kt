@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Build
 import android.service.quicksettings.TileService
 import android.util.Log
+import com.ericlowry.dnstoggle.data.Constants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -23,7 +24,7 @@ object TileServiceCompat {
 	fun requestListeningState(context: Context, componentName: ComponentName) {
 		debounceJobs[componentName]?.cancel()
 		debounceJobs[componentName] = debounceScope.launch {
-			delay(500.milliseconds)
+			delay(Constants.TILE_LISTENING_DEBOUNCE_MS.milliseconds)
 			try {
 				TileService.requestListeningState(context.applicationContext, componentName)
 			} catch (e: Exception) {

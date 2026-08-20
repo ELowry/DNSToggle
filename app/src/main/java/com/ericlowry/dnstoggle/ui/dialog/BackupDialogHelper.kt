@@ -10,6 +10,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.ericlowry.dnstoggle.R
+import com.ericlowry.dnstoggle.data.Constants
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -63,7 +64,8 @@ object BackupDialogHelper {
 
 		dialog.setOnShowListener {
 			val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-			positiveButton.isEnabled = !inputTextField.text.isNullOrEmpty()
+			val currentLength = inputTextField.text?.length ?: 0
+			positiveButton.isEnabled = currentLength >= Constants.PASSWORD_MIN_LENGTH
 
 			inputTextField.addTextChangedListener(
 				object : TextWatcher {
@@ -81,7 +83,15 @@ object BackupDialogHelper {
 						before: Int,
 						count: Int
 					) {
-						positiveButton.isEnabled = !s.isNullOrEmpty()
+						val len = s?.length ?: 0
+						if (len in 1 until Constants.PASSWORD_MIN_LENGTH) {
+							textInputLayout.error =
+								activity.getString(R.string.error_password_length)
+							positiveButton.isEnabled = false
+						} else {
+							textInputLayout.error = null
+							positiveButton.isEnabled = len >= Constants.PASSWORD_MIN_LENGTH
+						}
 					}
 
 					override fun afterTextChanged(s: Editable?) {}

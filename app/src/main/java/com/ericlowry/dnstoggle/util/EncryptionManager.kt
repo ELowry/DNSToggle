@@ -5,6 +5,7 @@ import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import android.util.Log
+import com.ericlowry.dnstoggle.data.Constants
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -18,8 +19,6 @@ object EncryptionManager {
 	private const val BLOCK_MODE = KeyProperties.BLOCK_MODE_GCM
 	private const val PADDING = KeyProperties.ENCRYPTION_PADDING_NONE
 	private const val TRANSFORMATION = "$ALGORITHM/$BLOCK_MODE/$PADDING"
-	private const val KEY_ALIAS = "dns_toggle_key"
-	private const val PREFIX = "enc:"
 
 	private val keyStore: KeyStore? by lazy {
 		try {
@@ -35,7 +34,8 @@ object EncryptionManager {
 	private fun getKey(): SecretKey? {
 		val ks = keyStore ?: return null
 		return try {
-			val existingKey = ks.getEntry(KEY_ALIAS, null) as? KeyStore.SecretKeyEntry
+			val existingKey =
+				ks.getEntry(Constants.ENCRYPTION_KEY_ALIAS, null) as? KeyStore.SecretKeyEntry
 			existingKey?.secretKey ?: createKey()
 		} catch (_: Exception) {
 			createKey()
@@ -47,7 +47,7 @@ object EncryptionManager {
 			KeyGenerator.getInstance(ALGORITHM, "AndroidKeyStore").apply {
 				init(
 					KeyGenParameterSpec.Builder(
-						KEY_ALIAS,
+						Constants.ENCRYPTION_KEY_ALIAS,
 						KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
 					)
 						.setBlockModes(BLOCK_MODE)
@@ -63,6 +63,9 @@ object EncryptionManager {
 		}
 	}
 
+	/**
+	 * Blob format: [1 byte: IV size] + [n bytes: IV] + [m bytes: Payload]
+	 */
 	fun encrypt(data: String): String {
 		return try {
 			val key = getKey() ?: return data
@@ -76,7 +79,7 @@ object EncryptionManager {
 			System.arraycopy(iv, 0, combined, 1, iv.size)
 			System.arraycopy(encryptedData, 0, combined, 1 + iv.size, encryptedData.size)
 
-			PREFIX + Base64.encodeToString(combined, Base64.NO_WRAP)
+			Constants.ENCRYPTION_PREFIX + Base64.encodeToString(combined, Base64.NO_WRAP)
 		} catch (e: Exception) {
 			Log.e(TAG, "Encryption failed, falling back to plaintext", e)
 			data
@@ -92,8 +95,8 @@ object EncryptionManager {
 	fun decrypt(input: String): DecryptResult {
 		if (input.isEmpty()) return DecryptResult.Failed
 
-		return if (input.startsWith(PREFIX)) {
-			decryptInternal(input.substring(PREFIX.length))
+		return if (input.startsWith(Constants.ENCRYPTION_PREFIX)) {
+			decryptInternal(input.substring(Constants.ENCRYPTION_PREFIX.length))
 		} else {
 			// START_LEGACY_MIGRATION_CODE: Legacy decryption (no prefix)
 			val result = decryptInternal(input)
@@ -147,7 +150,7 @@ object EncryptionManager {
 
 	private fun deleteKey() {
 		try {
-			keyStore?.deleteEntry(KEY_ALIAS)
+			keyStore?.deleteEntry(Constants.ENCRYPTION_KEY_ALIAS)
 		} catch (e: Exception) {
 			Log.e(TAG, "Failed to delete key from Keystore", e)
 		}

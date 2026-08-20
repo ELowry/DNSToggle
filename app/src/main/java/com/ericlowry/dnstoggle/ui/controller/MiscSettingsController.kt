@@ -215,15 +215,15 @@ class MiscSettingsController(
 			}
 
 			val currentTime = System.currentTimeMillis()
-			if (lastDevHitTime == 0L || (currentTime - lastDevHitTime) > 500) {
+			if (lastDevHitTime == 0L || (currentTime - lastDevHitTime) > Constants.DEV_HIT_RESET_THRESHOLD_MS) {
 				devHitCount = 1
 			} else {
 				devHitCount++
 			}
 			lastDevHitTime = currentTime
 
-			if (devHitCount in 1..4) {
-				val remaining = 5 - devHitCount
+			if (devHitCount in 1 until Constants.USB_DEBUGGING_TILE_THRESHOLD) {
+				val remaining = Constants.USB_DEBUGGING_TILE_THRESHOLD - devHitCount
 				if (remaining <= 3) {
 					devToast?.cancel()
 					devToast = Toast.makeText(
@@ -233,7 +233,7 @@ class MiscSettingsController(
 					)
 					devToast?.show()
 				}
-			} else if (devHitCount >= 5) {
+			} else if (devHitCount >= Constants.USB_DEBUGGING_TILE_THRESHOLD) {
 				devToast?.cancel()
 				devToast = Toast.makeText(
 					activity,

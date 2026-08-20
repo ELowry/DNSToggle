@@ -39,7 +39,6 @@ import kotlinx.coroutines.launch
 class DnsToggleApplication : Application() {
 
 	var detectedSsid: String? = null
-	var detectedBssid: String? = null
 	var isAppInForeground: Boolean = false
 		private set
 
@@ -247,7 +246,6 @@ class DnsToggleApplication : Application() {
 			} else {
 				stopService(serviceIntent)
 				detectedSsid = null
-				detectedBssid = null
 			}
 
 			// Tile resync

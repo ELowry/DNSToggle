@@ -1,5 +1,6 @@
 package com.ericlowry.dnstoggle
 
+import android.provider.Settings
 import androidx.core.content.edit
 import androidx.test.core.app.ApplicationProvider
 import com.ericlowry.dnstoggle.data.Constants
@@ -75,5 +76,42 @@ class DnsManagerTest {
 		)
 		val profile = NetworkProfileRepository.networkProfiles.value?.find { it.ssid == "TestSSID" }
 		assertEquals(false, profile?.isEnabled)
+	}
+
+	@Test
+	fun toggleOff_withStrictOffMode_updatesSystemSettings() {
+		val prefs = app.getPrefs()
+		prefs.edit {
+			putString(Constants.PREF_DEFAULT_OFF_MODE, Constants.DNS_MODE_OFF)
+		}
+
+		DnsManager.togglePrivateDns(app, enabled = false)
+
+		assertEquals(
+			Constants.DNS_MODE_OFF,
+			Settings.Global.getString(app.contentResolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
+		)
+	}
+
+	@Test
+	fun toggle_inVpnOverride_updatesVpnRepository() {
+		val prefs = app.getPrefs()
+		prefs.edit {
+			putBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, true)
+		}
+
+		val hostname = "vpn.dns.com"
+		DnsManager.togglePrivateDns(app, enabled = true, targetHostname = hostname)
+
+		assertEquals(Constants.DNS_MODE_HOSTNAME, VpnRepository.vpnDnsMode.value)
+		assertEquals(hostname, VpnRepository.vpnDnsHostname.value)
+
+		DnsManager.togglePrivateDns(
+			app,
+			enabled = false,
+			targetMode = Constants.DNS_MODE_OPPORTUNISTIC
+		)
+		assertEquals(Constants.DNS_MODE_OPPORTUNISTIC, VpnRepository.vpnDnsMode.value)
+		assertEquals(null, VpnRepository.vpnDnsHostname.value)
 	}
 }

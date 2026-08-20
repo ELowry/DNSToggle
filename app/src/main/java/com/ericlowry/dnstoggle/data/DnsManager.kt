@@ -101,6 +101,14 @@ object DnsManager {
 					)
 				}
 			}
+
+			if (previousMode == newMode) {
+				// Forced flip to bypass netd caching.
+				val dummyMode =
+					if (newMode == Constants.DNS_MODE_OFF) Constants.DNS_MODE_OPPORTUNISTIC else Constants.DNS_MODE_OFF
+				Settings.Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE, dummyMode)
+			}
+
 			Settings.Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE, newMode)
 		} catch (e: SecurityException) {
 			Log.e(TAG, "Failed to update private DNS mode", e)

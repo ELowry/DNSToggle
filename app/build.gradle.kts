@@ -37,8 +37,8 @@ android {
 		applicationId = "com.ericlowry.dnstoggle"
 		minSdk = 28
 		targetSdk = 37
-		versionCode = 25
-		versionName = "2.1.2"
+		versionCode = 26
+		versionName = "2.1.3"
 
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 	}
@@ -113,6 +113,7 @@ dependencies {
 	testImplementation(libs.robolectric)
 	testImplementation(libs.kotlinx.coroutines.test)
 	testImplementation(libs.androidx.test.core)
+	testImplementation(libs.androidx.arch.core.testing)
 	androidTestImplementation(libs.androidx.test.ext.junit)
 	androidTestImplementation(libs.androidx.test.runner)
 }

@@ -46,6 +46,7 @@ class BackupController(
 					R.string.export_password_description,
 					onCancel = {
 						try {
+							// Cleanup empty file that get auto-created if the user cancels password entry.
 							android.provider.DocumentsContract.deleteDocument(
 								activity.contentResolver,
 								targetUri

@@ -155,6 +155,8 @@
 	<string name="import_success">Configuration imported successfully</string>
 	<string name="import_failed">Failed to read file</string>
 	<string name="import_failed_password">Decryption failed. Incorrect password or corrupted file.</string>
+	<string name="error_password_length">Password must be at least 4 characters</string>
+	<string name="warning_location_disabled">Wi-Fi automation paused: System location services are disabled.</string>
 
 	<!-- Feedback & Notifications -->
 	<string name="notif_channel_alerts_name">Automation Alerts</string>
