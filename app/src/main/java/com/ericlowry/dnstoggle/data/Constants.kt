@@ -54,6 +54,45 @@ object Constants {
 	const val NOTIFICATION_ID_FOREGROUND = 2001
 	const val NOTIFICATION_ID_STATUS = 1001
 
+	// Security & Validation
+	const val PASSWORD_MIN_LENGTH = 4
+	const val BACKUP_ITERATION_COUNT = 65536
+	const val BACKUP_KEY_LENGTH = 256
+	const val BACKUP_SALT_LENGTH = 16
+
+	// Operational Durations & Debounces
+	const val DNS_SETTLE_DELAY_NORMAL_MS = 500L
+	const val DNS_SETTLE_DELAY_ROAM_MS = 2000L
+	const val DNS_SETTLE_DELAY_FAST_MS = 150L
+	const val WATCHDOG_RESTORE_DEBOUNCE_MS = 2000L
+	const val TILE_LISTENING_DEBOUNCE_MS = 500L
+	const val UI_ARTIFICIAL_DELAY_MS = 5000L
+	const val DEV_HIT_RESET_THRESHOLD_MS = 500L
+	const val PERMISSION_POLLING_INTERVAL_MS = 2000L
+
+	// Thresholds
+	const val USB_DEBUGGING_TILE_THRESHOLD = 5
+
+	// Request Codes
+	const val REQUEST_CODE_SHIZUKU_PERMISSION = 12277
+
+	// Security & Encryption
+	const val ENCRYPTION_KEY_ALIAS = "dns_toggle_key"
+	const val ENCRYPTION_PREFIX = "enc:"
+	const val PERMISSION_WRITE_SECURE_SETTINGS = "android.permission.WRITE_SECURE_SETTINGS"
+
+	val ROOT_SU_BINARY_PATHS = arrayOf(
+		"/system/bin/su",
+		"/system/xbin/su",
+		"/sbin/su",
+		"/system/sd/xbin/su",
+		"/system/bin/failsafe/su",
+		"/data/local/xbin/su",
+		"/data/local/bin/su",
+		"/data/local/su",
+		"/su/bin/su"
+	)
+
 	// Permission Tracking
 	const val PREF_HAS_REQUESTED_NOTIF_PERMS = "has_requested_notif_perms"
 	fun prefRequestedPermission(permission: String): String = "requested_$permission"

@@ -1,0 +1,5 @@
+- Correction d'un problème empêchant l'activation ou la désactivation du DNS privé lors de la connexion à un VPN
+- Amélioration de la fiabilité lors de changements rapides de réseau Wi-Fi
+- Ajout d'une notification d'avertissement lorsque la localisation de l'appareil est désactivée et epêche les fonctionalités d'automatisation
+- Renforcement de la sécurité pour le processus d'octroi des autorisations via Shizuku
+- Ajout d'une longueur minimale requise pour les mots de passe de sauvegarde

@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.os.IBinder
 import android.util.Log
 import com.ericlowry.dnstoggle.BuildConfig
+import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.shizuku.IShizukuUserService
 import com.ericlowry.dnstoggle.shizuku.ShizukuUserService
 import kotlinx.coroutines.CoroutineScope
@@ -19,7 +20,6 @@ import kotlin.coroutines.resume
 
 object ShizukuUtils {
 	private const val TAG = "ShizukuUtils"
-	private const val PERMISSION_REQUEST_CODE = 12277
 	private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
 	private fun userServiceArgs(context: Context): Shizuku.UserServiceArgs =
@@ -55,7 +55,7 @@ object ShizukuUtils {
 		return suspendCancellableCoroutine { cont ->
 			val listener = object : Shizuku.OnRequestPermissionResultListener {
 				override fun onRequestPermissionResult(requestCode: Int, grantResult: Int) {
-					if (requestCode != PERMISSION_REQUEST_CODE) return
+					if (requestCode != Constants.REQUEST_CODE_SHIZUKU_PERMISSION) return
 					Shizuku.removeRequestPermissionResultListener(this)
 					if (cont.isActive) {
 						cont.resume(grantResult == PackageManager.PERMISSION_GRANTED)
@@ -65,7 +65,7 @@ object ShizukuUtils {
 			Shizuku.addRequestPermissionResultListener(listener)
 			cont.invokeOnCancellation { Shizuku.removeRequestPermissionResultListener(listener) }
 			try {
-				Shizuku.requestPermission(PERMISSION_REQUEST_CODE)
+				Shizuku.requestPermission(Constants.REQUEST_CODE_SHIZUKU_PERMISSION)
 			} catch (e: Throwable) {
 				Shizuku.removeRequestPermissionResultListener(listener)
 				if (cont.isActive) cont.resume(false)
@@ -73,7 +73,7 @@ object ShizukuUtils {
 		}
 	}
 
-	suspend fun grantSecureSettingsPermission(context: Context, packageName: String): Boolean {
+	suspend fun grantSecureSettingsPermission(context: Context): Boolean {
 		if (!isAvailable()) return false
 		if (!requestPermission()) return false
 
@@ -86,7 +86,7 @@ object ShizukuUtils {
 						val granted = try {
 							if (binder.pingBinder()) {
 								IShizukuUserService.Stub.asInterface(binder)
-									.grantWriteSecureSettings(packageName)
+									.grantWriteSecureSettings()
 							} else {
 								false
 							}
@@ -118,14 +118,13 @@ object ShizukuUtils {
 	}
 }
 
-suspend fun attemptSecureSettingsGrant(context: Context, packageName: String): Boolean {
+suspend fun attemptSecureSettingsGrant(context: Context): Boolean {
 	if (ShizukuUtils.isAvailable() && ShizukuUtils.grantSecureSettingsPermission(
-			context,
-			packageName
+			context
 		)
 	) {
 		return true
 	}
 	// Always try root as the final fallback, even if detection failed (handles hidden root)
-	return RootUtils.grantSecureSettingsPermission(packageName)
+	return RootUtils.grantSecureSettingsPermission()
 }

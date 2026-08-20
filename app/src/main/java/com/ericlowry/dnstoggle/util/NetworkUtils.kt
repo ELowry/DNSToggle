@@ -29,13 +29,6 @@ object NetworkUtils {
 		}
 	}
 
-	fun getCurrentWifiBssid(context: Context): String? {
-		val application = context.applicationContext as? DnsToggleApplication
-		application?.detectedBssid?.let { return it }
-
-		return getCurrentWifiInfo(context)?.bssid
-	}
-
 	private fun getCurrentWifiInfo(context: Context): WifiInfo? {
 		var wifiInfo: WifiInfo? = null
 
@@ -52,6 +45,7 @@ object NetworkUtils {
 			}
 		}
 
+		// Fallback to legacy API for Android 10+, which blocks WifiInfo access via ConnectivityManager
 		if (wifiInfo == null) {
 			val wifiManager =
 				context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
@@ -74,6 +68,9 @@ object NetworkUtils {
 			}
 		} ?: false
 
+	/**
+	 * FQDN validation: Max 253 chars, alphanumeric/hyphen segments, no leading/trailing hyphens.
+	 */
 	fun isValidDnsHostname(hostname: String): Boolean {
 		val hostnameRegex =
 			"^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$".toRegex()

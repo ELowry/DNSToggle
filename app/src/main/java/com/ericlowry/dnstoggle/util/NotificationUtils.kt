@@ -31,8 +31,17 @@ object NotificationUtils {
 			true
 		}
 
-		if (hasPermission) {
+		val channel = manager.getNotificationChannel(Constants.CHANNEL_ID_ALERT)
+		val isChannelBlocked =
+			channel != null && channel.importance == android.app.NotificationManager.IMPORTANCE_NONE
+
+		if (hasPermission && !isChannelBlocked) {
 			manager.notify(Constants.NOTIFICATION_ID_STATUS, notificationBuilder.build())
+		} else {
+			android.os.Handler(android.os.Looper.getMainLooper()).post {
+				android.widget.Toast.makeText(appContext, message, android.widget.Toast.LENGTH_LONG)
+					.show()
+			}
 		}
 	}
 }

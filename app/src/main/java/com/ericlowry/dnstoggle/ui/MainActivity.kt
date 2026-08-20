@@ -508,7 +508,7 @@ class MainActivity : AppCompatActivity() {
 			repeatOnLifecycle(Lifecycle.State.STARTED) {
 				while (true) {
 					if (!PermissionHelper.hasSecureSettingsPermission(this@MainActivity)) {
-						delay(2000.milliseconds)
+						delay(Constants.PERMISSION_POLLING_INTERVAL_MS.milliseconds)
 					} else {
 						updateMainPermissionUiState()
 						if (permissionDialog?.isShowing == true) {
@@ -635,11 +635,11 @@ class MainActivity : AppCompatActivity() {
 
 				lifecycleScope.launch {
 					val startTime = System.currentTimeMillis()
-					val success = attemptSecureSettingsGrant(this@MainActivity, packageName)
+					val success = attemptSecureSettingsGrant(this@MainActivity)
 
-					// Artificial delay of 5s to ensure toasts are visible and indicate work
+					// Artificial delay to ensure toasts are visible and indicate work
 					val elapsedTime = System.currentTimeMillis() - startTime
-					if (elapsedTime < 5000) delay((5000L - elapsedTime).milliseconds)
+					if (elapsedTime < Constants.UI_ARTIFICIAL_DELAY_MS) delay((Constants.UI_ARTIFICIAL_DELAY_MS - elapsedTime).milliseconds)
 
 					updateMainPermissionUiState()
 

@@ -48,7 +48,7 @@ class DnsToggleService : TileService() {
 		serviceScope.launch(Dispatchers.IO) {
 			if (checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) != PackageManager.PERMISSION_GRANTED) {
 				// Attempt root grant
-				if ((attemptSecureSettingsGrant(this@DnsToggleService, packageName)) &&
+				if ((attemptSecureSettingsGrant(this@DnsToggleService)) &&
 					(checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED)
 				) {
 					// Success

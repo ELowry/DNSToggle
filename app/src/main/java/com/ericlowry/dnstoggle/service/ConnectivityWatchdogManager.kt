@@ -11,11 +11,18 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 class ConnectivityWatchdogManager(
 	private val context: Context,
-	private val serviceScope: CoroutineScope
+	private val serviceScope: CoroutineScope,
+	private val isDnsSpecificFailureFunc: suspend (String, String) -> Boolean = { hostname, targets ->
+		ConnectivityWatchdog.isDnsSpecificFailure(hostname, targets)
+	},
+	private val isRecoveredFunc: suspend (String, String) -> Boolean = { hostname, targets ->
+		ConnectivityWatchdog.isRecovered(hostname, targets)
+	}
 ) {
 	private var debounceJob: Job? = null
 	private var connectivityWatchdogJob: Job? = null
@@ -77,6 +84,7 @@ class ConnectivityWatchdogManager(
 		connectivityWatchdogJob = serviceScope.launch {
 			delay(debounceSeconds.seconds)
 
+			// Re-verify validation state after debounce to prevent race conditions if the network gets validated during the delay.
 			val stillNotValidated = activeNetworks.values
 				.find { it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) }
 				?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) != true
@@ -89,7 +97,7 @@ class ConnectivityWatchdogManager(
 				return@launch
 			}
 
-			if (ConnectivityWatchdog.isDnsSpecificFailure(hostname, probeTargets)) {
+			if (isDnsSpecificFailureFunc(hostname, probeTargets)) {
 				NetworkProfileRepository.upsertNetworkProfile(
 					ssid = ssid,
 					isEnabled = false,
@@ -127,7 +135,7 @@ class ConnectivityWatchdogManager(
 
 		autoRecoveryJob?.cancel()
 		autoRecoveryJob = serviceScope.launch {
-			if (ConnectivityWatchdog.isRecovered(hostname, probeTargets)) {
+			if (isRecoveredFunc(hostname, probeTargets)) {
 				NetworkProfileRepository.removeNetworkProfile(ssid)
 				onRecovered(ssid)
 			}
@@ -140,7 +148,7 @@ class ConnectivityWatchdogManager(
 			onRestore()
 		} else {
 			debounceJob = serviceScope.launch {
-				delay(2.seconds) // Wait to avoid rapid ping-pong
+				delay(Constants.WATCHDOG_RESTORE_DEBOUNCE_MS.milliseconds) // Wait to avoid rapid ping-pong
 				onRestore()
 			}
 		}

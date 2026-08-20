@@ -1,6 +1,7 @@
 package com.ericlowry.dnstoggle.util
 
 import android.util.Base64
+import com.ericlowry.dnstoggle.data.Constants
 import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.SecretKeyFactory
@@ -9,16 +10,21 @@ import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
 object BackupManager {
-	private const val ITERATION_COUNT = 65536
-	private const val KEY_LENGTH = 256
-	private const val SALT_LENGTH = 16
 
+	/**
+	 * Blob format: [1 byte: Salt size] + [n bytes: Salt] + [1 byte: IV size] + [m bytes: IV] + [x bytes: Ciphertext]
+	 */
 	fun encryptBackup(jsonData: String, password: CharArray): String {
-		val salt = ByteArray(SALT_LENGTH)
+		val salt = ByteArray(Constants.BACKUP_SALT_LENGTH)
 		SecureRandom().nextBytes(salt)
 
 		val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-		val spec = PBEKeySpec(password, salt, ITERATION_COUNT, KEY_LENGTH)
+		val spec = PBEKeySpec(
+			password,
+			salt,
+			Constants.BACKUP_ITERATION_COUNT,
+			Constants.BACKUP_KEY_LENGTH
+		)
 		val secretKey = SecretKeySpec(factory.generateSecret(spec).encoded, "AES")
 
 		val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -62,7 +68,12 @@ object BackupManager {
 			System.arraycopy(combined, offset, ciphertext, 0, ciphertext.size)
 
 			val factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256")
-			val spec = PBEKeySpec(password, salt, ITERATION_COUNT, KEY_LENGTH)
+			val spec = PBEKeySpec(
+				password,
+				salt,
+				Constants.BACKUP_ITERATION_COUNT,
+				Constants.BACKUP_KEY_LENGTH
+			)
 			val secretKey = SecretKeySpec(factory.generateSecret(spec).encoded, "AES")
 
 			val cipher = Cipher.getInstance("AES/GCM/NoPadding")

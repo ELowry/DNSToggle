@@ -39,6 +39,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		private const val TAG = "DnsViewModel"
 	}
 
+	var ioDispatcher = Dispatchers.IO
+
 	private val sharedPreferences = (application as DnsToggleApplication).getPrefs()
 
 	private val _privateDnsMode = MutableLiveData<String?>()
@@ -223,7 +225,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	}
 
 	fun loadSettings() {
-		viewModelScope.launch(Dispatchers.IO) {
+		viewModelScope.launch(ioDispatcher) {
 			val resolver = getApplication<Application>().contentResolver
 			val mode = Settings.Global.getString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
 			val specifier =
@@ -421,7 +423,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		targetHostname: String? = null,
 		targetMode: String? = null
 	) {
-		viewModelScope.launch(Dispatchers.IO) {
+		viewModelScope.launch(ioDispatcher) {
 			val result = DnsManager.togglePrivateDns(
 				getApplication(),
 				enabled,
@@ -475,7 +477,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	private fun testReachability(hostname: String) {
 		reachabilityJobs[hostname]?.cancel()
 
-		val job = viewModelScope.launch(Dispatchers.IO) {
+		val job = viewModelScope.launch(ioDispatcher) {
 			if (hostname.isEmpty() || sharedPreferences.getBoolean(
 					Constants.PREF_DISABLE_DNS_TEST,
 					false
@@ -496,6 +498,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 			}
 
 			val isReachable = try {
+				// Tests DoT availability using a TCP handshake on port 853.
 				val socket = Socket()
 				socket.connect(InetSocketAddress(hostname, 853), 3000) // DoT port
 				socket.close()

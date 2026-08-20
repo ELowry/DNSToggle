@@ -1,6 +1,7 @@
 package com.ericlowry.dnstoggle.util
 
 import android.util.Log
+import com.ericlowry.dnstoggle.data.Constants
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -15,18 +16,7 @@ object RootUtils {
 	 * Checks if su binary is available in common paths.
 	 */
 	fun isAvailable(): Boolean {
-		val paths = arrayOf(
-			"/system/bin/su",
-			"/system/xbin/su",
-			"/sbin/su",
-			"/system/sd/xbin/su",
-			"/system/bin/failsafe/su",
-			"/data/local/xbin/su",
-			"/data/local/bin/su",
-			"/data/local/su",
-			"/su/bin/su"
-		)
-		for (path in paths) {
+		for (path in Constants.ROOT_SU_BINARY_PATHS) {
 			if (java.io.File(path).exists()) return true
 		}
 		return false
@@ -36,7 +26,7 @@ object RootUtils {
 	 * Attempts to grant WRITE_SECURE_SETTINGS permission using root access.
 	 * Returns true if the command was executed successfully.
 	 */
-	suspend fun grantSecureSettingsPermission(packageName: String): Boolean =
+	suspend fun grantSecureSettingsPermission(): Boolean =
 		withContext(Dispatchers.IO) {
 			var process: Process? = null
 			var os: DataOutputStream? = null
@@ -44,7 +34,7 @@ object RootUtils {
 				process = Runtime.getRuntime().exec("su")
 				os = DataOutputStream(process.outputStream)
 
-				os.writeBytes("pm grant $packageName android.permission.WRITE_SECURE_SETTINGS\n")
+				os.writeBytes("pm grant ${com.ericlowry.dnstoggle.BuildConfig.APPLICATION_ID} ${Constants.PERMISSION_WRITE_SECURE_SETTINGS}\n")
 				os.writeBytes("exit\n")
 				os.flush()
 
