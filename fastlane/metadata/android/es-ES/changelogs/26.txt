@@ -1,0 +1,5 @@
+- Se solucionó un problema en el que el DNS privado podía fallar al activarse al conectarse a una VPN
+- Mejora de la fiabilidad y prevención de conflictos al cambiar rápidamente entre redes Wi-Fi
+- Se añadió una notificación de advertencia cuando se desactivan los servicios de localización del sistema, impidiendo la automatización Wi-Fi
+- Seguridad mejorada para el proceso de concesión de permisos de Shizuku
+- Se añadió un requisito de longitud mínima para las contraseñas de copia de seguridad

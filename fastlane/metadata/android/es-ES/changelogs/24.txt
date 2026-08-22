@@ -1,0 +1,3 @@
+- Solucionado un problema en el que los perfiles Wi-Fi a veces no se aplicaban.
+- Mejora de la fiabilidad de la detección de redes incompatibles.
+- Se han corregido pequeños problemas de la interfaz.
