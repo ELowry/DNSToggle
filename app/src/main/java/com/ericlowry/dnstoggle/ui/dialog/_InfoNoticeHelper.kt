@@ -10,6 +10,7 @@ import androidx.core.content.edit
 import com.ericlowry.dnstoggle.R
 import com.google.android.material.button.MaterialButton
 
+@Suppress("unused", "ClassName", "SetTextI18n", "SpellCheckingInspection")
 object _InfoNoticeHelper {
 	private const val PREF_FEEDBACK_SHOWN = "pref_warning_shown_v2.1"
 

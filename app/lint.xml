@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+	<!-- Play Store policy compliance (irrelevant for F-Droid) -->
+	<issue id="BackgroundLocationPolicy" severity="ignore" />
+	<issue id="ForegroundServicesPolicy" severity="ignore" />
+	<issue id="BatteryLife" severity="ignore" />
+
+	<!-- UI/Formatting preferences -->
+	<issue id="TypographyDashes" severity="ignore" />
+	<issue id="SmallSp" severity="ignore" />
+	<issue id="VectorRaster" severity="ignore" />
+	<issue id="Untranslatable" severity="ignore" />
+</lint>

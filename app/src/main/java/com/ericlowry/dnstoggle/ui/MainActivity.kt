@@ -1,5 +1,6 @@
 package com.ericlowry.dnstoggle.ui
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
@@ -535,6 +536,7 @@ class MainActivity : AppCompatActivity() {
 		}
 	}
 
+	@SuppressLint("BatteryLife")
 	private fun requestIgnoreBatteryOptimizations() {
 		val manufacturer = Build.MANUFACTURER.lowercase()
 		if (manufacturer.contains("xiaomi") || manufacturer.contains("redmi") || manufacturer.contains(

@@ -36,6 +36,7 @@ import com.ericlowry.dnstoggle.ui.MainActivity
 import com.ericlowry.dnstoggle.util.EncryptionManager
 import com.ericlowry.dnstoggle.util.NotificationUtils
 import com.ericlowry.dnstoggle.util.stripSsidQuotes
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -58,8 +59,11 @@ class WifiMonitoringService : Service() {
 	private var lastNotifiedSsid: String? = null
 	private var hasShownLocationWarning: Boolean = false
 	private var dnsSettleJob: Job? = null
+	private var isTransitioning = false
 	private val activeNetworks = ConcurrentHashMap<Network, NetworkCapabilities>()
-	private val serviceScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
+	internal var mainDispatcher: CoroutineDispatcher = Dispatchers.Main.immediate
+	internal var ioDispatcher: CoroutineDispatcher = Dispatchers.Default
+	private val serviceScope by lazy { CoroutineScope(mainDispatcher + SupervisorJob()) }
 	private lateinit var watchdogManager: ConnectivityWatchdogManager
 	private val evaluationMutex = Mutex()
 
@@ -130,6 +134,7 @@ class WifiMonitoringService : Service() {
 
 	override fun onDestroy() {
 		dnsSettleJob?.cancel()
+		isTransitioning = false
 		serviceScope.cancel()
 		watchdogManager.cancelAll()
 		unregisterNetworkCallback()
@@ -141,7 +146,7 @@ class WifiMonitoringService : Service() {
 			prefs.edit(true) { putBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false) }
 		}
 		if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != null) {
-			restorePreferredDnsSync()
+			restorePreferredDnsSyncInternal()
 			prefs.edit(true) { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) }
 		}
 
@@ -280,7 +285,7 @@ class WifiMonitoringService : Service() {
 	}
 
 	private fun evaluateActiveNetworks() {
-		serviceScope.launch(Dispatchers.Default) {
+		serviceScope.launch(ioDispatcher) {
 			evaluationMutex.withLock {
 				val allCaps = activeNetworks.values
 				val isVpnActive = allCaps.any { it.hasTransport(NetworkCapabilities.TRANSPORT_VPN) }
@@ -325,33 +330,50 @@ class WifiMonitoringService : Service() {
 				if (isVpnActive && vpnOverrideEnabled) {
 					dnsSettleJob?.cancel()
 					watchdogManager.cancelAll()
+
 					if (!isInVpnOverride) {
-						prefs.edit {
+						prefs.edit(commit = true) {
 							putBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, true)
 							putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null)
 						}
 					}
 
 					dnsSettleJob = serviceScope.launch {
-						delay(Constants.DNS_SETTLE_DELAY_NORMAL_MS.milliseconds)
-						applyVpnDns()
+						isTransitioning = true
+						try {
+							delay(Constants.DNS_SETTLE_DELAY_NORMAL_MS.milliseconds)
+							applyVpnDns()
+						} finally {
+							isTransitioning = false
+						}
 					}
 					return@withLock
 				} else if (!isVpnActive && isInVpnOverride) {
 					// Exit VPN override
-					prefs.edit { putBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false) }
+					prefs.edit(commit = true) {
+						putBoolean(
+							Constants.PREF_IS_IN_VPN_OVERRIDE,
+							false
+						)
+					}
 					dispatchStatusNotification(getString(R.string.notif_vpn_dns_restored))
 				}
 
 				// Normal Wi-Fi logic
 				if (currentSsid == null || currentSsid == "<unknown ssid>" || currentSsid.isEmpty()) {
 					dnsSettleJob?.cancel()
+					isTransitioning = false
 					lastBssid = null
 					lastValidationState = false
 					lastNotifiedSsid = null
 					watchdogManager.cancelAll()
 					if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != null) {
-						prefs.edit { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) }
+						prefs.edit(commit = true) {
+							putString(
+								Constants.PREF_ACTIVE_SSID_OVERRIDE,
+								null
+							)
+						}
 					}
 
 					val locationManager = getSystemService(LocationManager::class.java)
@@ -387,6 +409,7 @@ class WifiMonitoringService : Service() {
 				val isRoam = currentBssid != null && lastBssid != null && currentBssid != lastBssid
 
 				if (isApplyingHostname && (!isValidated || !hasInternet)) {
+					watchdogManager.cancelDebounce()
 
 					watchdogManager.evaluateConnectivityWatchdog(
 						currentSsid,
@@ -403,39 +426,89 @@ class WifiMonitoringService : Service() {
 
 				// Connection established
 				dnsSettleJob?.cancel()
-				dnsSettleJob = serviceScope.launch {
-					if (!isApplyingHostname) {
-						delay(Constants.DNS_SETTLE_DELAY_FAST_MS.milliseconds)
-					} else if (isRoam) {
-						delay(Constants.DNS_SETTLE_DELAY_ROAM_MS.milliseconds)
-					} else {
-						delay(Constants.DNS_SETTLE_DELAY_NORMAL_MS.milliseconds)
-					}
+				// Cancel restoration jobs immediately when we have a valid SSID connection
+				watchdogManager.cancelAll()
 
-					if (profile != null) {
-						if (prefs.getString(
-								Constants.PREF_ACTIVE_SSID_OVERRIDE,
-								null
-							) != currentSsid
-						) {
-							prefs.edit {
-								putString(
-									Constants.PREF_ACTIVE_SSID_OVERRIDE,
-									currentSsid
-								)
-							}
+				dnsSettleJob = serviceScope.launch {
+					isTransitioning = true
+					try {
+						if (!isApplyingHostname) {
+							delay(Constants.DNS_SETTLE_DELAY_FAST_MS.milliseconds)
+						} else if (isRoam) {
+							delay(Constants.DNS_SETTLE_DELAY_ROAM_MS.milliseconds)
+						} else {
+							delay(Constants.DNS_SETTLE_DELAY_NORMAL_MS.milliseconds)
 						}
 
-						if (profile.isEnabled) {
-							watchdogManager.cancelAll()
-
-							val targetHostname =
-								profile.targetHostname ?: getGlobalPreferredHostname()
-							if (targetHostname != null) {
-								applyHostnameDns(currentSsid, targetHostname, force = true)
-							} else {
-								restorePreferredDnsSync(force = true)
+						if (profile != null) {
+							if (prefs.getString(
+									Constants.PREF_ACTIVE_SSID_OVERRIDE,
+									null
+								) != currentSsid
+							) {
+								prefs.edit(commit = true) {
+									putString(
+										Constants.PREF_ACTIVE_SSID_OVERRIDE,
+										currentSsid
+									)
+								}
 							}
+
+							if (profile.isEnabled) {
+								watchdogManager.cancelAll()
+
+								val targetHostname =
+									profile.targetHostname ?: getGlobalPreferredHostname()
+								if (targetHostname != null) {
+									applyHostnameDns(currentSsid, targetHostname, force = true)
+								} else {
+									restorePreferredDnsSync(force = true, isFromSettleJob = true)
+								}
+
+								watchdogManager.evaluateConnectivityWatchdog(
+									currentSsid,
+									wifiCaps,
+									activeNetworks,
+									cachedDnsMode
+								)
+							} else {
+								watchdogManager.cancelAll()
+
+								applyOffDns(
+									currentSsid,
+									profile.targetMode,
+									if (profile.isAutoDetected) R.string.notif_connectivity_watchdog_disabled else R.string.notif_dns_disabled_auto,
+									force = true
+								)
+								watchdogManager.maybeRetryAutoDetectedSsid(
+									currentSsid,
+									profile.isAutoDetected,
+									currentBssid
+								) { ssid ->
+									dispatchStatusNotification(
+										getString(
+											R.string.notif_connectivity_watchdog_restored,
+											ssid
+										)
+									)
+								}
+							}
+						} else {
+							if (prefs.getString(
+									Constants.PREF_ACTIVE_SSID_OVERRIDE,
+									null
+								) != null
+							) {
+								prefs.edit(commit = true) {
+									putString(
+										Constants.PREF_ACTIVE_SSID_OVERRIDE,
+										null
+									)
+								}
+							}
+							restorePreferredDnsSync(force = true, isFromSettleJob = true)
+
+							watchdogManager.cancelAll()
 
 							watchdogManager.evaluateConnectivityWatchdog(
 								currentSsid,
@@ -443,42 +516,9 @@ class WifiMonitoringService : Service() {
 								activeNetworks,
 								cachedDnsMode
 							)
-						} else {
-							watchdogManager.cancelAll()
-
-							applyOffDns(
-								currentSsid,
-								profile.targetMode,
-								if (profile.isAutoDetected) R.string.notif_connectivity_watchdog_disabled else R.string.notif_dns_disabled_auto,
-								force = true
-							)
-							watchdogManager.maybeRetryAutoDetectedSsid(
-								currentSsid,
-								profile.isAutoDetected,
-								currentBssid
-							) { ssid ->
-								dispatchStatusNotification(
-									getString(
-										R.string.notif_connectivity_watchdog_restored,
-										ssid
-									)
-								)
-							}
 						}
-					} else {
-						if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != null) {
-							prefs.edit { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) }
-						}
-						restorePreferredDnsSync(force = true)
-
-						watchdogManager.cancelAll()
-
-						watchdogManager.evaluateConnectivityWatchdog(
-							currentSsid,
-							wifiCaps,
-							activeNetworks,
-							cachedDnsMode
-						)
+					} finally {
+						isTransitioning = false
 					}
 				}
 			}
@@ -496,6 +536,7 @@ class WifiMonitoringService : Service() {
 		} ?: Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
 	}
 
+	@Suppress("SameParameterValue")
 	private fun applyHostnameDns(ssid: String, hostname: String, force: Boolean = false) {
 		watchdogManager.cancelDebounce()
 		updateDnsSetting(
@@ -545,6 +586,7 @@ class WifiMonitoringService : Service() {
 		networkCallback = null
 	}
 
+	@Suppress("SameParameterValue")
 	private fun applyOffDns(
 		ssid: String,
 		targetMode: String?,
@@ -560,17 +602,74 @@ class WifiMonitoringService : Service() {
 	}
 
 	private fun restorePreferredDns(immediate: Boolean = false) {
+		dnsSettleJob?.cancel()
+		isTransitioning = false
 		watchdogManager.restorePreferredDns(immediate) {
 			restorePreferredDnsSync(force = true)
 		}
 	}
 
-	private fun restorePreferredDnsSync(force: Boolean = false) {
+	private suspend fun restorePreferredDnsSync(
+		force: Boolean = false,
+		isFromSettleJob: Boolean = false
+	) {
+		evaluationMutex.withLock {
+			restorePreferredDnsSyncInternal(force, isFromSettleJob)
+		}
+	}
+
+	private fun restorePreferredDnsSyncInternal(
+		force: Boolean = false,
+		isFromSettleJob: Boolean = false
+	) {
+		if (force && !isFromSettleJob && (isTransitioning || dnsSettleJob?.isActive == true)) {
+			Log.d(TAG, "Aborting restoration: transition or settle job is active")
+			return
+		}
+
 		val sharedPreferences = getPrefs()
 
-		if (sharedPreferences.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false) &&
+		val isInVpnOverride = sharedPreferences.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)
+		val vpnOverrideEnabled =
 			sharedPreferences.getBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, false)
-		) {
+		val activeSsidOverride =
+			sharedPreferences.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null)
+
+		val activeNetwork = connectivityManager.activeNetwork
+		val activeCaps = activeNetwork?.let { connectivityManager.getNetworkCapabilities(it) }
+		val allCaps = activeNetworks.values
+
+		val isVpnActive = activeCaps?.hasTransport(NetworkCapabilities.TRANSPORT_VPN) == true ||
+				allCaps.any { it.hasTransport(NetworkCapabilities.TRANSPORT_VPN) }
+
+		val wifiCaps = allCaps.find { it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) }
+			?: activeCaps?.takeIf { it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) }
+
+		val currentSsid = wifiCaps?.let { caps ->
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+				(caps.transportInfo as? WifiInfo)?.ssid?.stripSsidQuotes()
+			} else {
+				val wm = getSystemService(WIFI_SERVICE) as WifiManager
+				@Suppress("DEPRECATION") wm.connectionInfo.ssid?.stripSsidQuotes()
+			}
+		}?.takeIf { it != "<unknown ssid>" && it.isNotEmpty() }
+			?: (application as DnsToggleApplication).detectedSsid
+
+		if (force) {
+			val profiles = NetworkProfileRepository.networkProfiles.value ?: emptyList()
+			val hasActiveProfileOverride = currentSsid != null &&
+					profiles.find { it.ssid == currentSsid }?.isEnabled == true
+
+			if ((isInVpnOverride && vpnOverrideEnabled) ||
+				(isVpnActive && vpnOverrideEnabled) ||
+				activeSsidOverride != null ||
+				hasActiveProfileOverride
+			) {
+				return
+			}
+		}
+
+		if (isInVpnOverride && vpnOverrideEnabled) {
 			return
 		}
 

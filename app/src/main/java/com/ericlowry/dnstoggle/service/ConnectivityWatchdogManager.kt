@@ -142,10 +142,10 @@ class ConnectivityWatchdogManager(
 		}
 	}
 
-	fun restorePreferredDns(immediate: Boolean, onRestore: () -> Unit) {
+	fun restorePreferredDns(immediate: Boolean, onRestore: suspend () -> Unit) {
 		debounceJob?.cancel()
 		if (immediate) {
-			onRestore()
+			serviceScope.launch { onRestore() }
 		} else {
 			debounceJob = serviceScope.launch {
 				delay(Constants.WATCHDOG_RESTORE_DEBOUNCE_MS.milliseconds) // Wait to avoid rapid ping-pong
