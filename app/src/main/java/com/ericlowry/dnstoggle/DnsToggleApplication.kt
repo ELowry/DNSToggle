@@ -308,6 +308,16 @@ class DnsToggleApplication : Application() {
 		}
 	}
 
+	/**
+	 * Unregisters all observers and listeners to prevent interference in unit tests.
+	 */
+	fun unregisterAllInternalObservers() {
+		contentResolver.unregisterContentObserver(devModeObserver)
+		contentResolver.unregisterContentObserver(dnsObserver)
+		unregisterAdbObserver()
+		getPrefs().unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
+	}
+
 	private fun registerAdbObserver() {
 		if (!isAdbObserverRegistered) {
 			try {

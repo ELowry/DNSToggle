@@ -114,4 +114,54 @@ class DnsManagerTest {
 		assertEquals(Constants.DNS_MODE_OPPORTUNISTIC, VpnRepository.vpnDnsMode.value)
 		assertEquals(null, VpnRepository.vpnDnsHostname.value)
 	}
+
+	@Test
+	fun toggle_invalidHostname_returnsMissingHostname() {
+		val result = DnsManager.togglePrivateDns(
+			app,
+			enabled = true,
+			targetHostname = "invalid hostname with spaces"
+		)
+		assertEquals(DnsManager.ToggleResult.MissingHostname, result)
+	}
+
+	@Test
+	fun toggle_autoSaveHostEnabled_updatesProfileHostname() {
+		val prefs = app.getPrefs()
+		prefs.edit {
+			putBoolean(Constants.PREF_AUTO_SAVE_HOST, true)
+		}
+		app.detectedSsid = "AutoSaveSSID"
+
+		val hostname = "new.dns.com"
+		DnsManager.togglePrivateDns(
+			app,
+			enabled = true,
+			targetHostname = hostname,
+			isFromTile = true
+		)
+
+		val profile =
+			NetworkProfileRepository.networkProfiles.value?.find { it.ssid == "AutoSaveSSID" }
+		assertEquals(true, profile?.isEnabled)
+		assertEquals(hostname, profile?.targetHostname)
+	}
+
+	@Test
+	fun toggle_withEncryption_restoresLastUsedHostname() {
+		val hostname = "encrypted.dns.com"
+		val encrypted = com.ericlowry.dnstoggle.util.EncryptionManager.encrypt(hostname)
+		app.getEncryptedPrefs().edit {
+			putString(Constants.PREF_LAST_USED_HOSTNAME, encrypted)
+		}
+
+		// Toggle on without providing hostname
+		val result = DnsManager.togglePrivateDns(app, enabled = true)
+
+		assertEquals(DnsManager.ToggleResult.Success, result)
+		assertEquals(
+			hostname,
+			Settings.Global.getString(app.contentResolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
+		)
+	}
 }
