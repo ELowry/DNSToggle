@@ -19,7 +19,7 @@
 			android:layout_height="wrap_content"
 			android:layout_marginBottom="4dp"
 			android:gravity="center"
-			android:text="DNS Toggle v2.1 Warning"
+			android:text="DNS Toggle v2.1.4 Warning"
 			android:textAppearance="?attr/textAppearanceHeadlineSmall"
 			android:textColor="?attr/colorOnSurface"
 			android:textStyle="bold" />

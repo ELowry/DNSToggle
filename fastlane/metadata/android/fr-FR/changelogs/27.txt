@@ -1,0 +1,2 @@
+- Mise à jour des dépendances et nettoyage du code
+- Ajout d'une notice de dépréciation liée au stockage de données

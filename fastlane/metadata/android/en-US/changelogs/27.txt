@@ -1,0 +1,2 @@
+- Updated dependencies & cleaned up codebase
+- Added storage deprecation warning

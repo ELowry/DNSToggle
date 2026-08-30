@@ -46,7 +46,7 @@ import com.ericlowry.dnstoggle.ui.controller.VpnSectionController
 import com.ericlowry.dnstoggle.ui.dialog.CommonDialogHelper
 import com.ericlowry.dnstoggle.ui.dialog.PermissionDialogHelper
 import com.ericlowry.dnstoggle.ui.dialog.SsidDialogHelper
-//import com.ericlowry.dnstoggle.ui.dialog._InfoNoticeHelper // TEMPORARY INFO
+import com.ericlowry.dnstoggle.ui.dialog._InfoNoticeHelper // TEMPORARY INFO
 import com.ericlowry.dnstoggle.util.PermissionHelper
 import com.ericlowry.dnstoggle.util.RootUtils
 import com.ericlowry.dnstoggle.util.ShizukuUtils
@@ -137,16 +137,16 @@ class MainActivity : AppCompatActivity() {
 
 		setupScrollSpring()
 
-//		// TEMPORARY INFO
-//		_InfoNoticeHelper.showOnceOnStartup(this)
-//		val contentWrapper =
-//			findViewById<androidx.constraintlayout.widget.ConstraintLayout>(R.id.contentWrapper)
-//		_InfoNoticeHelper.injectNoticeButton(
-//			this,
-//			contentWrapper,
-//			R.id.cardMainPermissionLayout
-//		)
-//		// TEMPORARY INFO - END
+		// TEMPORARY INFO
+		_InfoNoticeHelper.showOnceOnStartup(this)
+		val contentWrapper =
+			findViewById<androidx.constraintlayout.widget.ConstraintLayout>(R.id.contentWrapper)
+		_InfoNoticeHelper.injectNoticeButton(
+			this,
+			contentWrapper,
+			R.id.cardMainPermissionLayout
+		)
+		// TEMPORARY INFO - END
 	}
 
 	private fun setupScrollSpring() {
