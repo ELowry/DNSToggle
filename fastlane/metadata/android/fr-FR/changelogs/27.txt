@@ -1,2 +1,3 @@
-- Mise à jour des dépendances et nettoyage du code
-- Ajout d'une notice de dépréciation liée au stockage de données
+- Mise à jour des dépendances et nettoyage du code.
+- Ajout d'une notice de dépréciation liée au stockage de données.
+- Traduction espagnole mise à jour (merci Allyson Simón).

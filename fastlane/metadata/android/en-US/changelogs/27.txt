@@ -1,2 +1,3 @@
-- Updated dependencies & cleaned up codebase
-- Added storage deprecation warning
+- Updated dependencies & cleaned up codebase.
+- Added storage deprecation warning.
+- Updated Spanish translation (thanks Allyson Simón).
