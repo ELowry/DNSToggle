@@ -1,0 +1,3 @@
+- Dependencias actualizadas y limpieza de la base de código. 
+- Advertencia de deprecia de almacenamiento añadida. 
+- Traducción actualizada al español (gracias Allyson 🇬🇹).
