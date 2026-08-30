@@ -106,7 +106,10 @@
 	<string name="usb_debugging">USB Hata Ayıklama</string>
 	<string name="show_usb_debugging_tile">USB Hata Ayıklama kutucuğunu göster</string>
 	<string name="show_usb_debugging_tile_summary">USB Hata Ayıklamayı açıp kapatmak için ekstra bir Hızlı Ayarlar kutucuğu göster. Geliştirici seçeneklerini açmak için uzun bas.</string>
-	<string name="usb_debugging_tile_steps">USB hata ayıklama kutucuğunu etkinleştirmek için %1$d kez daha dokun.</string>
+	<plurals name="usb_debugging_tile_steps">
+		<item quantity="one">USB hata ayıklama kutucuğunu etkinleştirmek için %1$d kez daha dokun.</item>
+		<item quantity="other">USB hata ayıklama kutucuğunu etkinleştirmek için %1$d kez daha dokun.</item>
+	</plurals>
 	<string name="usb_debugging_tile_enabled">USB hata ayıklama Hızlı Ayarlar kutucuğu artık kullanılabilir!</string>
 
 	<!-- Menu Actions -->

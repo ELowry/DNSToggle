@@ -228,7 +228,11 @@ class MiscSettingsController(
 					devToast?.cancel()
 					devToast = Toast.makeText(
 						activity,
-						activity.getString(R.string.usb_debugging_tile_steps, remaining),
+						activity.resources.getQuantityString(
+							R.plurals.usb_debugging_tile_steps,
+							remaining,
+							remaining
+						),
 						Toast.LENGTH_SHORT
 					)
 					devToast?.show()

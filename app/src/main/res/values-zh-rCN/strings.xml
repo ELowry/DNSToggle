@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
-	<string name="app_name" translatable="false">DNS Toggle</string>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="TypographyDashes,Untranslatable">
 	<string name="app_version_format">应用版本：%s</string>
 	<string name="whats_new">新版特性</string>
 	<string name="whats_new_version_format">v%s 的新特性</string>
@@ -112,7 +111,9 @@
 	<string name="usb_debugging">USB调试</string>
 	<string name="show_usb_debugging_tile">显示USB调试磁贴</string>
 	<string name="show_usb_debugging_tile_summary">显示一个额外的快速设置磁贴，用于切换USB调试。长按打开开发者选项。</string>
-	<string name="usb_debugging_tile_steps">点击超过%1$d次以启用USB调试磁贴。</string>
+	<plurals name="usb_debugging_tile_steps">
+		<item quantity="other">点击超过%1$d次以启用USB调试磁贴。</item>
+	</plurals>
 	<string name="usb_debugging_tile_enabled">USB调试快速设置磁贴现在可以使用了！</string>
 	<string name="rename_app">重命名应用</string>
 	<string name="rename_app_message">选择一个对您来说更合理的名称。此名称将显示在应用图标和快速设置磁贴上。</string>
