@@ -1,3 +1,4 @@
+- Fixed small UI bugs on phones and TVs.
 - Updated dependencies & cleaned up codebase.
 - Added storage deprecation warning.
 - Updated Spanish translation (thanks Allyson Simón).

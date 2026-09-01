@@ -1,3 +1,4 @@
-- Dependencias actualizadas y limpieza de la base de código. 
+- Se han corregido pequeños problemas de la interfaz en teléfonos y televisores.
+- Dependencias actualizadas y limpieza de la base de código.
 - Advertencia de deprecia de almacenamiento añadida. 
 - Traducción actualizada al español (gracias Allyson 🇬🇹).
