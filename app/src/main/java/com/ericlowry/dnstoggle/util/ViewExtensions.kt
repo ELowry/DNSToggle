@@ -20,7 +20,7 @@ fun View.setConditionalVisibility(isVisible: Boolean, container: ViewGroup? = nu
 
 	if (container != null) {
 		val transition = AutoTransition().apply {
-			duration = 250
+			duration = MotionUtils.DURATION_MEDIUM1
 		}
 		TransitionManager.beginDelayedTransition(container, transition)
 	}

@@ -95,23 +95,41 @@ object SsidDialogHelper {
 			}
 		}
 
-		val switchRow = LinearLayout(activity).apply {
+		val dialogContext = dialogView.context
+
+		val switchRow = LinearLayout(dialogContext).apply {
 			layoutParams = LinearLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT
 			)
 			orientation = LinearLayout.HORIZONTAL
 			gravity = android.view.Gravity.CENTER_VERTICAL
-			setPadding(0, 16, 0, 8)
 
-			val textView = TextView(activity).apply {
+			setBackgroundResource(R.drawable.bg_dialog_row_selectable)
+
+			isClickable = true
+			isFocusable = true
+			isFocusableInTouchMode = false
+			descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+
+			val density = dialogContext.resources.displayMetrics.density
+			val paddingH = (4 * density).toInt()
+			val paddingV = (8 * density).toInt()
+			setPadding(paddingH, paddingV, paddingH, paddingV)
+
+			val textView = TextView(dialogContext).apply {
 				layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
-				text = activity.getString(R.string.enable_private_dns)
+				text = dialogContext.getString(R.string.enable_private_dns)
 				setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodyLarge)
 			}
-			val materialSwitch = MaterialSwitch(activity).apply {
+
+			val materialSwitch = MaterialSwitch(dialogContext).apply {
 				id = View.generateViewId()
 				isChecked = selectedEnabled
+
+				isClickable = false
+				isFocusable = false
+				isDuplicateParentStateEnabled = true
 			}
 
 			addView(textView)

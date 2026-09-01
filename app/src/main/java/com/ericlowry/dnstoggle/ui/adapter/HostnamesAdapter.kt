@@ -167,6 +167,10 @@ class HostnamesAdapter(
 			holder.btnDelete.setOnClickListener { deleteCallback(hostname) }
 			holder.btnAdd.setOnClickListener { addInPlaceCallback(hostname) }
 
+			holder.hostnameInfoContainer.isClickable = false
+			holder.hostnameInfoContainer.isFocusable = true
+			holder.hostnameInfoContainer.isFocusableInTouchMode = false
+
 			val mainClickListener = View.OnClickListener {
 				if (!isActive) {
 					clickCallback(hostname)
@@ -174,8 +178,9 @@ class HostnamesAdapter(
 			}
 			holder.itemView.setOnClickListener(mainClickListener)
 
-			holder.hostnameInfoContainer.setOnFocusChangeListener { _, hasFocus ->
+			holder.hostnameInfoContainer.setOnFocusChangeListener { view, hasFocus ->
 				updateStatusTextOnly(holder, reachability, isActive, dnsEntry.isUnsaved, hasFocus)
+				com.ericlowry.dnstoggle.util.MotionUtils.animateFocusEffect(view, hasFocus)
 			}
 
 			holder.hostnameInfoContainer.setOnKeyListener { v, keyCode, event ->
@@ -213,10 +218,12 @@ class HostnamesAdapter(
 	) {
 		val context = holder.itemView.context
 
-		if (!isUnsaved) {
-			if (isActive || hasFocus) {
-				holder.card.strokeColor = colors.colorPrimary
-				holder.card.strokeWidth = (2 * context.resources.displayMetrics.density).toInt()
+		if (isActive || hasFocus) {
+			holder.card.strokeColor = colors.colorPrimary
+			holder.card.strokeWidth = (2 * context.resources.displayMetrics.density).toInt()
+		} else {
+			if (isUnsaved) {
+				holder.card.strokeWidth = 0
 			} else {
 				holder.card.strokeColor = colors.colorOutlineVariant
 				holder.card.strokeWidth = (1 * context.resources.displayMetrics.density).toInt()

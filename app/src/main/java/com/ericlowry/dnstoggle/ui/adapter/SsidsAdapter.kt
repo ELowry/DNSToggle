@@ -128,15 +128,30 @@ class SsidsAdapter(
 				View.GONE
 			}
 
-			holder.card.setOnClickListener {
-				onToggleClick(item)
-			}
-			holder.ssidInfoContainer.setOnClickListener {
+			holder.ssidInfoContainer.isClickable = false
+			holder.ssidInfoContainer.isFocusable = true
+			holder.ssidInfoContainer.isFocusableInTouchMode = false
+
+			val toggleListener = View.OnClickListener {
 				onToggleClick(item)
 			}
 
-			holder.ssidInfoContainer.setOnFocusChangeListener { _, hasFocus ->
+			holder.card.setOnClickListener(toggleListener)
+
+			holder.ssidInfoContainer.setOnFocusChangeListener { view, hasFocus ->
 				updateCardStroke(holder, item, isActive, hasFocus)
+				com.ericlowry.dnstoggle.util.MotionUtils.animateFocusEffect(view, hasFocus)
+			}
+
+			holder.ssidInfoContainer.setOnKeyListener { _, keyCode, event ->
+				if (event.action == android.view.KeyEvent.ACTION_UP &&
+					(keyCode == android.view.KeyEvent.KEYCODE_DPAD_CENTER || keyCode == android.view.KeyEvent.KEYCODE_ENTER)
+				) {
+					toggleListener.onClick(holder.card)
+					true
+				} else {
+					false
+				}
 			}
 
 			holder.btnEdit.setOnClickListener {
@@ -171,14 +186,13 @@ class SsidsAdapter(
 		val context = holder.itemView.context
 		val isTransient = item.isAutoDetected || item.isUnsaved
 
-		if (isTransient) {
-			// Set strokeWidth to 0 so the solid card stroke does not mask unsavedBorder
-			holder.card.strokeWidth = 0
-		} else if (isActive || hasFocus) {
+		if (isActive || hasFocus) {
 			holder.card.strokeColor = colors.colorPrimary
 			holder.card.strokeWidth = (2 * context.resources.displayMetrics.density).toInt()
 		} else {
-			if (item.isEnabled) {
+			if (isTransient) {
+				holder.card.strokeWidth = 0
+			} else if (item.isEnabled) {
 				holder.card.strokeColor = colors.colorOutlineVariant
 				holder.card.strokeWidth = (1 * context.resources.displayMetrics.density).toInt()
 			} else {
