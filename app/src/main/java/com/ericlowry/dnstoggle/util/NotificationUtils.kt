@@ -10,8 +10,18 @@ import androidx.core.content.ContextCompat
 import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.Constants
 
+/**
+ * Utility for showing system notifications and fallback toasts.
+ */
 object NotificationUtils {
 
+	/**
+	 * Shows a status notification for DNS policy changes.
+	 * If notifications are blocked or permissions are missing, falls back to a Toast.
+	 *
+	 * @param context The application or activity context.
+	 * @param message The message string to display.
+	 */
 	fun showStatusNotification(context: Context, message: String) {
 		val appContext = context.applicationContext
 		val notificationBuilder = NotificationCompat.Builder(appContext, Constants.CHANNEL_ID_ALERT)

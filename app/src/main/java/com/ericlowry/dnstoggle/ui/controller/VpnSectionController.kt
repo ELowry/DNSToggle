@@ -78,6 +78,21 @@ class VpnSectionController(
 		}
 	}
 
+	fun updateUiState(hasPermission: Boolean) {
+		val container = activity.findViewById<ViewGroup>(R.id.contentWrapper)
+
+		vpnPermissionNoticeText.setConditionalVisibility(!hasPermission, container)
+		btnGrantVpnPermission.setConditionalVisibility(!hasPermission, container)
+
+		rowVpnOverrideToggle.setConditionalVisibility(hasPermission, container)
+		rowVpnDns.setConditionalVisibility(hasPermission, container)
+
+		if (hasPermission) {
+			val vpnEnabled = viewModel.vpnOverrideEnabled.value == true
+			rowVpnDns.setDimmedEnabled(vpnEnabled)
+		}
+	}
+
 	private fun updateVpnDnsLabel() {
 		val mode = viewModel.vpnDnsMode.value ?: Constants.DNS_MODE_OPPORTUNISTIC
 		val hostname = viewModel.vpnDnsHostname.value
@@ -102,7 +117,9 @@ class VpnSectionController(
 
 		rowVpnDns.setOnClickListener {
 			val hostnames = viewModel.dnsHostnames.value ?: emptyList()
-			if (hostnames.isEmpty()) return@setOnClickListener
+			if (hostnames.isEmpty()) {
+				return@setOnClickListener
+			}
 
 			if (hostnames.size == 1 && !(viewModel.enableStrictOffOption.value ?: false)) {
 				val hostname = hostnames.first().hostname
@@ -132,20 +149,5 @@ class VpnSectionController(
 		}
 
 		btnVpnInfo.setOnClickListener { onShowWifiMonitoringInfoDialog() }
-	}
-
-	fun updateUiState(hasPermission: Boolean) {
-		val container = activity.findViewById<ViewGroup>(R.id.contentWrapper)
-
-		vpnPermissionNoticeText.setConditionalVisibility(!hasPermission, container)
-		btnGrantVpnPermission.setConditionalVisibility(!hasPermission, container)
-
-		rowVpnOverrideToggle.setConditionalVisibility(hasPermission, container)
-		rowVpnDns.setConditionalVisibility(hasPermission, container)
-
-		if (hasPermission) {
-			val vpnEnabled = viewModel.vpnOverrideEnabled.value == true
-			rowVpnDns.setDimmedEnabled(vpnEnabled)
-		}
 	}
 }

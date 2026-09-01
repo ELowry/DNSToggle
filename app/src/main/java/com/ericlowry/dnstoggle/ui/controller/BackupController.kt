@@ -119,7 +119,7 @@ class BackupController(
 								val isValidJson =
 									DnsSettingsRepository.importConfigFromJson(decryptedJson)
 								if (isValidJson) {
-									viewModel.loadSettings()
+									viewModel.refreshSystemSettings()
 									Toast.makeText(
 										activity,
 										R.string.import_success,

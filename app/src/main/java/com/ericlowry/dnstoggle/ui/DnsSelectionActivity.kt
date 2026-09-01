@@ -69,6 +69,47 @@ class DnsSelectionActivity : AppCompatActivity() {
 		}
 	}
 
+	override fun finish() {
+		if (isFinishingAnimated) {
+			super.finish()
+			if (Build.VERSION.SDK_INT >= 34) {
+				overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, 0, 0)
+			} else {
+				@Suppress("DEPRECATION")
+				overridePendingTransition(0, 0)
+			}
+			return
+		}
+
+		val popupView = findViewById<View>(R.id.dialogRootCard)
+
+		if (popupView == null || popupView.height == 0) {
+			isFinishingAnimated = true
+			finish()
+			return
+		}
+
+		isFinishingAnimated = true
+
+		// Disable touches while closing
+		window.setFlags(
+			WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
+			WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+		)
+
+		popupView.animate()
+			.translationY(-(popupView.height.toFloat() + popupView.y)) // Ensure it clears the top of the screen
+			.alpha(0f)
+			.setDuration(250)
+			.setInterpolator(AccelerateInterpolator())
+			.withEndAction {
+				finish()
+			}
+			.start()
+	}
+
+	private var isFinishingAnimated = false
+
 	private fun setupPopup(hostnames: List<DnsHostname>) {
 		val dialogView = LayoutInflater.from(this)
 			.inflate(R.layout.dialog_dns_selection, findViewById(android.R.id.content), false)
@@ -95,8 +136,11 @@ class DnsSelectionActivity : AppCompatActivity() {
 		val isShadowedContext =
 			currentSsid != null && !autoSaveHost && !autoSaveState && activeProfile != null
 
-		val currentProfile =
-			if (isOverrideHostContext || isOverrideStateContext) activeProfile else null
+		val currentProfile = if (isOverrideHostContext || isOverrideStateContext) {
+			activeProfile
+		} else {
+			null
+		}
 
 		tvPopupTitle.text =
 			prefs.getString(Constants.PREF_DYNAMIC_APP_NAME, getString(R.string.app_name))
@@ -137,8 +181,17 @@ class DnsSelectionActivity : AppCompatActivity() {
 		}
 
 		val globalFallbackHostname = getGlobalFallbackHostname()
-		val totalItems =
-			hostnames.size + (if (isOverrideHostContext) 2 else 1) + (if (enableStrictOff) 1 else 0)
+		val overrideHostContextCount = if (isOverrideHostContext) {
+			2
+		} else {
+			1
+		}
+		val strictOffCount = if (enableStrictOff) {
+			1
+		} else {
+			0
+		}
+		val totalItems = hostnames.size + overrideHostContextCount + strictOffCount
 		var currentPosition = 0
 
 		if (isOverrideHostContext) {
@@ -264,13 +317,19 @@ class DnsSelectionActivity : AppCompatActivity() {
 
 		val offSubtitle = if (isOverrideStateContext) {
 			getString(R.string.qs_ssid_context, currentSsid)
-		} else null
+		} else {
+			null
+		}
 
 		val autoIndex = currentPosition
 
 		val autoItemView = createListItem(
 			parent = listContainer,
-			text = if (enableStrictOff) getString(R.string.off_automatic_label) else getString(R.string.off_automatic_label),
+			text = if (enableStrictOff) {
+				getString(R.string.off_automatic_label)
+			} else {
+				getString(R.string.off_automatic_label)
+			},
 			secondaryText = null,
 			subtitleText = offSubtitle,
 			isCardChecked = isOffCardChecked,
@@ -284,7 +343,11 @@ class DnsSelectionActivity : AppCompatActivity() {
 				DnsManager.togglePrivateDns(
 					context = this@DnsSelectionActivity,
 					enabled = false,
-					targetMode = if (enableStrictOff) Constants.DNS_MODE_OPPORTUNISTIC else null,
+					targetMode = if (enableStrictOff) {
+						Constants.DNS_MODE_OPPORTUNISTIC
+					} else {
+						null
+					},
 					isFromTile = true
 				)
 			}
@@ -394,15 +457,27 @@ class DnsSelectionActivity : AppCompatActivity() {
 			secondaryTextView.visibility = View.GONE
 		}
 
-		overrideBadge.visibility = if (showOverrideBadge) View.VISIBLE else View.GONE
+		overrideBadge.visibility = if (showOverrideBadge) {
+			View.VISIBLE
+		} else {
+			View.GONE
+		}
 
 		cardView.isChecked = isCardChecked
 		radioButton.isChecked = isRadioChecked
 
 		val radioColorAttr = when {
-			showOverrideBadge -> com.google.android.material.R.attr.colorTertiary
-			isSubduedRadio -> com.google.android.material.R.attr.colorOutline
-			else -> android.R.attr.colorPrimary
+			showOverrideBadge -> {
+				com.google.android.material.R.attr.colorTertiary
+			}
+
+			isSubduedRadio -> {
+				com.google.android.material.R.attr.colorOutline
+			}
+
+			else -> {
+				android.R.attr.colorPrimary
+			}
 		}
 		val resolvedColor =
 			com.google.android.material.color.MaterialColors.getColor(itemView, radioColorAttr)
@@ -420,56 +495,22 @@ class DnsSelectionActivity : AppCompatActivity() {
 		val encryptedHostname = encryptedPrefs.getString(Constants.PREF_LAST_USED_HOSTNAME, null)
 		val lastUsed = encryptedHostname?.let {
 			when (val result = EncryptionManager.decrypt(it)) {
-				is EncryptionManager.DecryptResult.Success -> result.data
-				else -> null
+				is EncryptionManager.DecryptResult.Success -> {
+					result.data
+				}
+
+				else -> {
+					null
+				}
 			}
 		}
-		if (!lastUsed.isNullOrEmpty()) return lastUsed
+		if (!lastUsed.isNullOrEmpty()) {
+			return lastUsed
+		}
 
 		return Settings.Global.getString(
 			contentResolver,
 			Constants.SETTINGS_PRIVATE_DNS_SPECIFIER
 		)
-	}
-
-	private var isFinishingAnimated = false
-
-	override fun finish() {
-		if (isFinishingAnimated) {
-			super.finish()
-			if (Build.VERSION.SDK_INT >= 34) {
-				overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, 0, 0)
-			} else {
-				@Suppress("DEPRECATION")
-				overridePendingTransition(0, 0)
-			}
-			return
-		}
-
-		val popupView = findViewById<View>(R.id.dialogRootCard)
-
-		if (popupView == null || popupView.height == 0) {
-			isFinishingAnimated = true
-			finish()
-			return
-		}
-
-		isFinishingAnimated = true
-
-		// Disable touches while closing
-		window.setFlags(
-			WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
-			WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-		)
-
-		popupView.animate()
-			.translationY(-(popupView.height.toFloat() + popupView.y)) // Ensure it clears the top of the screen
-			.alpha(0f)
-			.setDuration(250)
-			.setInterpolator(AccelerateInterpolator())
-			.withEndAction {
-				finish()
-			}
-			.start()
 	}
 }

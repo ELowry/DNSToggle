@@ -9,10 +9,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.TransitionManager
 import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsViewModel
@@ -138,6 +136,53 @@ class SsidSectionController(
 		}
 	}
 
+	fun showAddSsidDialog(existingProfile: NetworkProfile? = null) {
+		val suggestedSsid = if (existingProfile == null) {
+			NetworkUtils.getCurrentWifiSsid(activity)
+		} else {
+			null
+		}
+		SsidDialogHelper.showAddSsidDialog(
+			activity = activity,
+			existingProfile = existingProfile,
+			suggestedSsid = suggestedSsid,
+			globalDefaultHostname = viewModel.getGlobalPreferredHostname(),
+			hostnames = viewModel.dnsHostnames.value ?: emptyList(),
+			enableStrictOff = viewModel.enableStrictOffOption.value ?: false,
+			defaultOffMode = viewModel.defaultOffMode.value ?: Constants.DNS_MODE_OPPORTUNISTIC
+		) { ssid, isEnabled, targetHostname, targetMode ->
+			viewModel.saveNetworkProfile(
+				existingProfile?.ssid,
+				ssid,
+				isEnabled,
+				targetHostname,
+				targetMode
+			)
+		}
+	}
+
+	fun updateUiState(hasPermission: Boolean) {
+		val container = activity.findViewById<ViewGroup>(R.id.contentWrapper)
+
+		permissionNoticeText.setConditionalVisibility(!hasPermission, container)
+		btnGrantPermission.setConditionalVisibility(!hasPermission, container)
+
+		addSsidButton.setConditionalVisibility(hasPermission, container)
+		rowAutoSaveState.setConditionalVisibility(hasPermission, container)
+		rowAutoSaveHost.setConditionalVisibility(hasPermission, container)
+		rowConnectivityWatchdogToggle.setConditionalVisibility(hasPermission, container)
+
+		dividerSsidSettings.setConditionalVisibility(hasPermission, container)
+		ssidListContainer.setConditionalVisibility(hasPermission, container)
+
+		if (hasPermission) {
+			val watchdogEnabled = viewModel.connectivityWatchdogEnabled.value ?: false
+			layoutWatchdogSubset.setConditionalVisibility(watchdogEnabled, container)
+		} else {
+			layoutWatchdogSubset.setConditionalVisibility(false, container)
+		}
+	}
+
 	private fun setupSsidsRecyclerView() {
 		val colors = SsidColors(
 			colorSurface = MaterialColors.getColor(
@@ -245,49 +290,8 @@ class SsidSectionController(
 	}
 
 	private fun refreshSsidListView(profiles: List<NetworkProfile>?) {
-		val container = activity.findViewById<ViewGroup>(R.id.contentWrapper)
-		val isEmpty = profiles.isNullOrEmpty()
-		val hasPermission = PermissionHelper.hasSsidPermissions(activity)
-
-		val showList = !isEmpty && hasPermission
-
-		val wasShowing = ssidListContainer.isVisible
-		if (wasShowing != showList) {
-			TransitionManager.beginDelayedTransition(container)
-		}
-
-		dividerSsidSettings.setConditionalVisibility(showList, container)
-		ssidListContainer.setConditionalVisibility(showList, container)
-
-		if (isEmpty) {
-			ssidsAdapter.submitList(emptyList())
-			return
-		}
-
-		val items = profiles.sortedByDescending { it.isAutoDetected }
+		val items = profiles?.sortedByDescending { it.isAutoDetected } ?: emptyList()
 		ssidsAdapter.submitList(items)
-	}
-
-	fun showAddSsidDialog(existingProfile: NetworkProfile? = null) {
-		val suggestedSsid =
-			if (existingProfile == null) NetworkUtils.getCurrentWifiSsid(activity) else null
-		SsidDialogHelper.showAddSsidDialog(
-			activity = activity,
-			existingProfile = existingProfile,
-			suggestedSsid = suggestedSsid,
-			globalDefaultHostname = viewModel.getGlobalPreferredHostname(),
-			hostnames = viewModel.dnsHostnames.value ?: emptyList(),
-			enableStrictOff = viewModel.enableStrictOffOption.value ?: false,
-			defaultOffMode = viewModel.defaultOffMode.value ?: Constants.DNS_MODE_OPPORTUNISTIC
-		) { ssid, isEnabled, targetHostname, targetMode ->
-			viewModel.saveNetworkProfile(
-				existingProfile?.ssid,
-				ssid,
-				isEnabled,
-				targetHostname,
-				targetMode
-			)
-		}
 	}
 
 	private fun showDeleteConfirmDialog(ssidToDelete: String) {
@@ -301,31 +305,6 @@ class SsidSectionController(
 		val isIgnoringBattery = powerManager.isIgnoringBatteryOptimizations(activity.packageName)
 		SsidDialogHelper.showWifiMonitoringInfo(activity, isIgnoringBattery) {
 			onRequestIgnoreBattery()
-		}
-	}
-
-	fun updateUiState(hasPermission: Boolean) {
-		val container = activity.findViewById<ViewGroup>(R.id.contentWrapper)
-
-		permissionNoticeText.setConditionalVisibility(!hasPermission, container)
-		btnGrantPermission.setConditionalVisibility(!hasPermission, container)
-
-		addSsidButton.setConditionalVisibility(hasPermission, container)
-		rowAutoSaveState.setConditionalVisibility(hasPermission, container)
-		rowAutoSaveHost.setConditionalVisibility(hasPermission, container)
-		rowConnectivityWatchdogToggle.setConditionalVisibility(hasPermission, container)
-
-		val isEmpty = viewModel.networkProfiles.value.isNullOrEmpty()
-		val showList = hasPermission && !isEmpty
-
-		dividerSsidSettings.setConditionalVisibility(showList, container)
-		ssidListContainer.setConditionalVisibility(showList, container)
-
-		if (hasPermission) {
-			val watchdogEnabled = viewModel.connectivityWatchdogEnabled.value ?: false
-			layoutWatchdogSubset.setConditionalVisibility(watchdogEnabled, container)
-		} else {
-			layoutWatchdogSubset.setConditionalVisibility(false, container)
 		}
 	}
 }

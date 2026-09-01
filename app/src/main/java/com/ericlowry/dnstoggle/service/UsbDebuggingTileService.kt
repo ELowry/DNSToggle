@@ -30,7 +30,11 @@ class UsbDebuggingTileService : TileService() {
 		super.onClick()
 
 		val isEnabled = getAdbEnabledState()
-		val nextState = if (isEnabled) 0 else 1
+		val nextState = if (isEnabled) {
+			0
+		} else {
+			1
+		}
 
 		Log.i(TAG, "Toggling ADB: $isEnabled -> ${nextState != 0}")
 
@@ -52,7 +56,11 @@ class UsbDebuggingTileService : TileService() {
 		val tile = qsTile ?: return
 		val isEnabled = getAdbEnabledState()
 
-		tile.state = if (isEnabled) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+		tile.state = if (isEnabled) {
+			Tile.STATE_ACTIVE
+		} else {
+			Tile.STATE_INACTIVE
+		}
 		tile.icon = Icon.createWithResource(this, R.drawable.ic_tool)
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 			tile.subtitle = null

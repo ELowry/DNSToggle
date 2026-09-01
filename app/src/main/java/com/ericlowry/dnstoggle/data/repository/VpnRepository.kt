@@ -12,6 +12,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 object VpnRepository {
@@ -42,6 +43,7 @@ object VpnRepository {
 		) ?: Constants.DNS_MODE_OPPORTUNISTIC
 
 		scope.launch {
+			SecurityRepository.isInitialized.first { it }
 			val encryptedVpnHostname =
 				encryptedPrefs.getString(Constants.PREF_VPN_DNS_HOSTNAME, null)
 			_vpnDnsHostname.value = if (encryptedVpnHostname == null) {
@@ -52,7 +54,9 @@ object VpnRepository {
 						// START_LEGACY_MIGRATION_CODE: Purge legacy "off" or "opportunistic" strings saved in the hostname slot
 						val decryptedHostname = result.data
 						if (decryptedHostname == Constants.DNS_MODE_OFF || decryptedHostname == Constants.DNS_MODE_OPPORTUNISTIC) {
-							encryptedPrefs.edit { remove(Constants.PREF_VPN_DNS_HOSTNAME) }
+							encryptedPrefs.edit {
+								remove(Constants.PREF_VPN_DNS_HOSTNAME)
+							}
 							null
 						} else {
 							decryptedHostname

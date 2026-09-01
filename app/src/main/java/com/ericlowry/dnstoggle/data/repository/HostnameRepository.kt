@@ -14,11 +14,16 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.json.JSONArray
 
+/**
+ * Repository for managing the list of saved DNS hostnames.
+ * Hostnames are stored in encrypted SharedPreferences.
+ */
 object HostnameRepository {
 	private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 	private lateinit var sharedPreferences: SharedPreferences
@@ -28,6 +33,9 @@ object HostnameRepository {
 	private val _dnsHostnames = MutableStateFlow<List<DnsHostname>?>(null)
 	val dnsHostnames: StateFlow<List<DnsHostname>?> = _dnsHostnames.asStateFlow()
 
+	/**
+	 * Initializes the repository and loads saved hostnames.
+	 */
 	fun initialize(context: Context) {
 		val app = context.applicationContext as DnsToggleApplication
 		sharedPreferences = app.getPrefs()
@@ -37,6 +45,7 @@ object HostnameRepository {
 
 	fun loadHostnames() {
 		scope.launch {
+			SecurityRepository.isInitialized.first { it }
 			val rawData = encryptedPrefs.all[Constants.PREF_DNS_HOSTNAMES]
 
 			var keyInvalidated = false
@@ -141,6 +150,9 @@ object HostnameRepository {
 		}
 	}
 
+	/**
+	 * Adds a new hostname to the repository or updates an existing one.
+	 */
 	fun addHostname(hostname: String, label: String? = null) {
 		_dnsHostnames.update { current ->
 			val safeCurrent = current ?: emptyList()
@@ -149,7 +161,11 @@ object HostnameRepository {
 			val existingIndex = safeCurrent.indexOfFirst { it.hostname == hostname }
 			val next = if (existingIndex != -1) {
 				safeCurrent.mapIndexed { index, dnsHostname ->
-					if (index == existingIndex) newEntry else dnsHostname
+					if (index == existingIndex) {
+						newEntry
+					} else {
+						dnsHostname
+					}
 				}
 			} else {
 				listOf(newEntry) + safeCurrent
@@ -160,10 +176,16 @@ object HostnameRepository {
 		}
 	}
 
+	/**
+	 * Removes a hostname from the repository.
+	 * Also handles fallback logic if the removed hostname was active in VPN override.
+	 */
 	fun removeHostname(hostname: String) {
 		_dnsHostnames.update { current ->
 			val safeCurrent = current ?: emptyList()
-			if (safeCurrent.none { it.hostname == hostname }) return@update safeCurrent
+			if (safeCurrent.none { it.hostname == hostname }) {
+				return@update safeCurrent
+			}
 			val next = safeCurrent.filter { it.hostname != hostname }
 			val offMode = sharedPreferences.getString(
 				Constants.PREF_DEFAULT_OFF_MODE,
@@ -190,7 +212,11 @@ object HostnameRepository {
 		_dnsHostnames.update { current ->
 			val safeCurrent = current ?: emptyList()
 			val next = safeCurrent.map {
-				if (it.hostname == oldHostname) DnsHostname(newHostname, newLabel) else it
+				if (it.hostname == oldHostname) {
+					DnsHostname(newHostname, newLabel)
+				} else {
+					it
+				}
 			}
 
 			if (VpnRepository.vpnDnsHostname.value == oldHostname) {

@@ -14,8 +14,8 @@
 	<androidx.constraintlayout.widget.ConstraintLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:clipChildren="true"
-		android:clipToPadding="true"
+		android:clipChildren="false"
+		android:clipToPadding="false"
 		android:padding="12dp">
 
 		<LinearLayout
@@ -103,6 +103,7 @@
 			android:id="@+id/dnsHostnameListContainer"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
+			android:elevation="1dp"
 			android:nestedScrollingEnabled="false"
 			android:orientation="vertical"
 			app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"

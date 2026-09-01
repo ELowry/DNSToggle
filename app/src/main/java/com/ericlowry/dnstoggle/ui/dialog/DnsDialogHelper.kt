@@ -19,8 +19,19 @@ import com.google.android.material.listitem.ListItemLayout
 import com.google.android.material.radiobutton.MaterialRadioButton
 import com.google.android.material.textfield.TextInputEditText
 
+/**
+ * Static helper for building DNS-related Material dialogs.
+ */
 object DnsDialogHelper {
 
+	/**
+	 * Shows a dialog to add or edit a DNS hostname entry.
+	 *
+	 * @param activity The host activity.
+	 * @param existingHostname The current hostname if editing, null if adding.
+	 * @param existingLabel The current label if editing.
+	 * @param onSave Callback when the user confirms the entry.
+	 */
 	fun showAddHostnameDialog(
 		activity: Activity,
 		existingHostname: String?,
@@ -39,19 +50,27 @@ object DnsDialogHelper {
 		if (existingHostname != null) {
 			etHostname.setText(existingHostname)
 			etHostname.setSelection(existingHostname.length)
-			existingLabel?.let { etLabel.setText(it) }
+			existingLabel?.let {
+				etLabel.setText(it)
+			}
 		}
 
 		val dialog = MaterialAlertDialogBuilder(activity)
 			.setTitle(
-				if (existingHostname == null) activity.getString(R.string.add_hostname) else activity.getString(
-					R.string.edit_hostname,
-				)
+				if (existingHostname == null) {
+					activity.getString(R.string.add_hostname)
+				} else {
+					activity.getString(
+						R.string.edit_hostname,
+					)
+				}
 			)
 			.setView(dialogView)
 			.setPositiveButton(activity.getString(R.string.ok)) { _, _ ->
 				val newHostname = etHostname.text.toString().trim()
-				val newLabel = etLabel.text.toString().trim().takeIf { it.isNotEmpty() }
+				val newLabel = etLabel.text.toString().trim().takeIf {
+					it.isNotEmpty()
+				}
 				onSave(newHostname, newLabel)
 			}
 			.setNegativeButton(activity.getString(R.string.cancel), null)
@@ -68,6 +87,9 @@ object DnsDialogHelper {
 		dialog.show()
 	}
 
+	/**
+	 * Shows a selection dialog for choosing the DNS configuration to apply when VPN is active.
+	 */
 	fun showVpnDnsSelectionDialog(
 		activity: Activity,
 		hostnames: List<DnsHostname>,
@@ -93,9 +115,16 @@ object DnsDialogHelper {
 		val listContainer = dialogView.findViewById<LinearLayout>(R.id.dnsListContainer)
 		val btnCancel = dialogView.findViewById<MaterialButton>(R.id.btnSettings)
 		btnCancel.text = activity.getString(R.string.cancel)
-		btnCancel.setOnClickListener { dialog.dismiss() }
+		btnCancel.setOnClickListener {
+			dialog.dismiss()
+		}
 
-		val totalItems = hostnames.size + 1 + (if (enableStrictOff) 1 else 0)
+		val strictOffCount = if (enableStrictOff) {
+			1
+		} else {
+			0
+		}
+		val totalItems = hostnames.size + 1 + strictOffCount
 
 		hostnames.forEachIndexed { index, dnsEntry ->
 			val hostname = dnsEntry.hostname
@@ -105,7 +134,9 @@ object DnsDialogHelper {
 				activity,
 				listContainer,
 				dnsEntry.getDisplayName(),
-				dnsEntry.label?.let { hostname },
+				dnsEntry.label?.let {
+					hostname
+				},
 				isActive,
 				index,
 				totalItems
@@ -123,9 +154,13 @@ object DnsDialogHelper {
 		val autoItemView = createDnsListItem(
 			activity,
 			listContainer,
-			if (enableStrictOff) activity.getString(R.string.off_automatic_label) else activity.getString(
-				R.string.off_automatic_label
-			),
+			if (enableStrictOff) {
+				activity.getString(R.string.off_automatic_label)
+			} else {
+				activity.getString(
+					R.string.off_automatic_label
+				)
+			},
 			null,
 			isAutoActive,
 			currentPos++,
@@ -186,7 +221,9 @@ object DnsDialogHelper {
 		radioButton.isChecked = isActive
 
 		listItemLayout.updateAppearance(position, totalItems)
-		cardView.setOnClickListener { onClick() }
+		cardView.setOnClickListener {
+			onClick()
+		}
 
 		return itemView
 	}

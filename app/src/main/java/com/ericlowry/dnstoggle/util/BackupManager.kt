@@ -9,10 +9,20 @@ import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
+/**
+ * Utility for encrypting and decrypting configuration backups.
+ * Uses PBKDF2 for key derivation and AES-GCM for authenticated encryption.
+ */
 object BackupManager {
 
 	/**
+	 * Encrypts application configuration data with a user-provided password.
+	 *
 	 * Blob format: [1 byte: Salt size] + [n bytes: Salt] + [1 byte: IV size] + [m bytes: IV] + [x bytes: Ciphertext]
+	 *
+	 * @param jsonData The raw JSON configuration string.
+	 * @param password The user-provided password for encryption.
+	 * @return A Base64 encoded string containing the encrypted blob.
 	 */
 	fun encryptBackup(jsonData: String, password: CharArray): String {
 		val salt = ByteArray(Constants.BACKUP_SALT_LENGTH)
@@ -49,6 +59,13 @@ object BackupManager {
 		return Base64.encodeToString(combined, Base64.NO_WRAP)
 	}
 
+	/**
+	 * Decrypts an application configuration backup with a user-provided password.
+	 *
+	 * @param encryptedBase64 The Base64 encoded encrypted blob.
+	 * @param password The user-provided password for decryption.
+	 * @return The decrypted JSON string, or null if decryption fails (e.g. wrong password).
+	 */
 	fun decryptBackup(encryptedBase64: String, password: CharArray): String? {
 		return try {
 			val combined = Base64.decode(encryptedBase64, Base64.NO_WRAP)

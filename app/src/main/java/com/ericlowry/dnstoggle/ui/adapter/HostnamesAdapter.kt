@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.DnsHostname
-import com.ericlowry.dnstoggle.data.DnsViewModel
+import com.ericlowry.dnstoggle.data.ReachabilityManager
 import com.google.android.material.card.MaterialCardView
 import java.util.Collections
 
@@ -34,13 +34,13 @@ class HostnamesAdapter(
 	private val colors: HostnameColors
 ) : ListAdapter<DnsHostname, HostnamesAdapter.ViewHolder>(DnsHostnameDiffCallback()) {
 
-	private var reachabilityMap: Map<String, DnsViewModel.ReachabilityState> = emptyMap()
+	private var reachabilityMap: Map<String, ReachabilityManager.ReachabilityState> = emptyMap()
 	private var activeSpecifier: String? = null
 	private var isToggleChecked: Boolean = false
 	private var globalDefaultHostname: String? = null
 
 	fun updateMetadata(
-		reachability: Map<String, DnsViewModel.ReachabilityState>?,
+		reachability: Map<String, ReachabilityManager.ReachabilityState>?,
 		specifier: String?,
 		isToggled: Boolean,
 		globalDefaultHostname: String? = null
@@ -58,35 +58,6 @@ class HostnamesAdapter(
 		submitList(mutableList)
 	}
 
-	class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-		val card: MaterialCardView = view as MaterialCardView
-		val hostnameInfoContainer: View = view.findViewById(R.id.hostnameInfoContainer)
-		val tvHostname: TextView = view.findViewById(R.id.tvHostname)
-		val tvDefaultBadge: TextView = view.findViewById(R.id.tvDefaultBadge)
-		val tvSecondaryHostname: TextView = view.findViewById(R.id.tvSecondaryHostname)
-		val tvStatus: TextView = view.findViewById(R.id.tvStatus)
-		val btnEdit: View = view.findViewById(R.id.btnEditHostname)
-		val btnDelete: View = view.findViewById(R.id.btnDeleteHostname)
-		val btnAdd: View = view.findViewById(R.id.btnAddHostnameInPlace)
-		val unsavedBorder: View = view.findViewById(R.id.unsavedBorder)
-	}
-
-	private fun triggerSaveAnimation(holder: ViewHolder) {
-		val card = holder.card
-
-		val pulseColor = colors.colorSecondaryContainer
-		val surfaceColor = colors.colorSurfaceContainer
-
-		val colorAnim = ValueAnimator.ofArgb(surfaceColor, pulseColor, surfaceColor)
-		colorAnim.addUpdateListener { animator ->
-			card.setCardBackgroundColor(animator.animatedValue as Int)
-		}
-		colorAnim.duration = 600
-		colorAnim.interpolator = AccelerateDecelerateInterpolator()
-
-		colorAnim.start()
-	}
-
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 		val view =
 			LayoutInflater.from(parent.context).inflate(R.layout.item_hostname, parent, false)
@@ -102,7 +73,8 @@ class HostnamesAdapter(
 		val hostname = dnsEntry.hostname
 
 		if (payloads.size == 1 && payloads.contains("metadata")) {
-			val reachability = reachabilityMap[hostname] ?: DnsViewModel.ReachabilityState.IDLE
+			val reachability =
+				reachabilityMap[hostname] ?: ReachabilityManager.ReachabilityState.IDLE
 			val isActive = (hostname == activeSpecifier) && isToggleChecked
 			updateStatusTextOnly(
 				holder,
@@ -135,7 +107,8 @@ class HostnamesAdapter(
 				holder.tvSecondaryHostname.visibility = View.GONE
 			}
 
-			val reachability = reachabilityMap[hostname] ?: DnsViewModel.ReachabilityState.IDLE
+			val reachability =
+				reachabilityMap[hostname] ?: ReachabilityManager.ReachabilityState.IDLE
 			val isActive = (hostname == activeSpecifier) && isToggleChecked
 
 			if (dnsEntry.isUnsaved) {
@@ -169,8 +142,11 @@ class HostnamesAdapter(
 				}
 			}
 
-			holder.tvDefaultBadge.visibility =
-				if (hostname == globalDefaultHostname) View.VISIBLE else View.GONE
+			holder.tvDefaultBadge.visibility = if (hostname == globalDefaultHostname) {
+				View.VISIBLE
+			} else {
+				View.GONE
+			}
 
 			updateStatusTextOnly(
 				holder,
@@ -181,19 +157,30 @@ class HostnamesAdapter(
 			)
 
 			holder.btnDelete.isEnabled = currentList.size > 1
-			holder.btnDelete.alpha = if (currentList.size > 1) 1.0f else 0.5f
+			holder.btnDelete.alpha = if (currentList.size > 1) {
+				1.0f
+			} else {
+				0.5f
+			}
 
 			holder.btnEdit.setOnClickListener { editCallback(hostname) }
 			holder.btnDelete.setOnClickListener { deleteCallback(hostname) }
 			holder.btnAdd.setOnClickListener { addInPlaceCallback(hostname) }
 
+			holder.hostnameInfoContainer.isClickable = false
+			holder.hostnameInfoContainer.isFocusable = true
+			holder.hostnameInfoContainer.isFocusableInTouchMode = false
+
 			val mainClickListener = View.OnClickListener {
-				if (!isActive) clickCallback(hostname)
+				if (!isActive) {
+					clickCallback(hostname)
+				}
 			}
 			holder.itemView.setOnClickListener(mainClickListener)
 
-			holder.hostnameInfoContainer.setOnFocusChangeListener { _, hasFocus ->
+			holder.hostnameInfoContainer.setOnFocusChangeListener { view, hasFocus ->
 				updateStatusTextOnly(holder, reachability, isActive, dnsEntry.isUnsaved, hasFocus)
+				com.ericlowry.dnstoggle.util.MotionUtils.animateFocusEffect(view, hasFocus)
 			}
 
 			holder.hostnameInfoContainer.setOnKeyListener { v, keyCode, event ->
@@ -209,19 +196,34 @@ class HostnamesAdapter(
 		}
 	}
 
+	class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+		val card: MaterialCardView = view as MaterialCardView
+		val hostnameInfoContainer: View = view.findViewById(R.id.hostnameInfoContainer)
+		val tvHostname: TextView = view.findViewById(R.id.tvHostname)
+		val tvDefaultBadge: TextView = view.findViewById(R.id.tvDefaultBadge)
+		val tvSecondaryHostname: TextView = view.findViewById(R.id.tvSecondaryHostname)
+		val tvStatus: TextView = view.findViewById(R.id.tvStatus)
+		val btnEdit: View = view.findViewById(R.id.btnEditHostname)
+		val btnDelete: View = view.findViewById(R.id.btnDeleteHostname)
+		val btnAdd: View = view.findViewById(R.id.btnAddHostnameInPlace)
+		val unsavedBorder: View = view.findViewById(R.id.unsavedBorder)
+	}
+
 	private fun updateStatusTextOnly(
 		holder: ViewHolder,
-		reachability: DnsViewModel.ReachabilityState,
+		reachability: ReachabilityManager.ReachabilityState,
 		isActive: Boolean,
 		isUnsaved: Boolean,
 		hasFocus: Boolean
 	) {
 		val context = holder.itemView.context
 
-		if (!isUnsaved) {
-			if (isActive || hasFocus) {
-				holder.card.strokeColor = colors.colorPrimary
-				holder.card.strokeWidth = (2 * context.resources.displayMetrics.density).toInt()
+		if (isActive || hasFocus) {
+			holder.card.strokeColor = colors.colorPrimary
+			holder.card.strokeWidth = (2 * context.resources.displayMetrics.density).toInt()
+		} else {
+			if (isUnsaved) {
+				holder.card.strokeWidth = 0
 			} else {
 				holder.card.strokeColor = colors.colorOutlineVariant
 				holder.card.strokeWidth = (1 * context.resources.displayMetrics.density).toInt()
@@ -232,40 +234,60 @@ class HostnamesAdapter(
 			holder.tvStatus.visibility = View.VISIBLE
 
 			when (reachability) {
-				DnsViewModel.ReachabilityState.TESTING -> {
+				ReachabilityManager.ReachabilityState.TESTING -> {
 					holder.tvStatus.text = context.getString(R.string.status_testing_dns)
 					holder.tvStatus.setTextColor(colors.textColorSecondary)
 				}
 
-				DnsViewModel.ReachabilityState.REACHABLE -> {
+				ReachabilityManager.ReachabilityState.REACHABLE -> {
 					holder.tvStatus.text = context.getString(R.string.status_active_reachable)
 					holder.tvStatus.setTextColor(colors.colorPrimary)
 				}
 
-				DnsViewModel.ReachabilityState.UNREACHABLE -> {
+				ReachabilityManager.ReachabilityState.UNREACHABLE -> {
 					holder.tvStatus.text = context.getString(R.string.warning_unreachable_dns)
 					holder.tvStatus.setTextColor(colors.warningColor)
 				}
 
-				else -> holder.tvStatus.visibility = View.GONE
+				else -> {
+					holder.tvStatus.visibility = View.GONE
+				}
 			}
 		} else {
 			when (reachability) {
-				DnsViewModel.ReachabilityState.TESTING -> {
+				ReachabilityManager.ReachabilityState.TESTING -> {
 					holder.tvStatus.visibility = View.VISIBLE
 					holder.tvStatus.text = context.getString(R.string.status_testing_dns)
 					holder.tvStatus.setTextColor(colors.textColorSecondary)
 				}
 
-				DnsViewModel.ReachabilityState.UNREACHABLE -> {
+				ReachabilityManager.ReachabilityState.UNREACHABLE -> {
 					holder.tvStatus.visibility = View.VISIBLE
 					holder.tvStatus.text = context.getString(R.string.warning_unreachable_dns)
 					holder.tvStatus.setTextColor(colors.warningColor)
 				}
 
-				else -> holder.tvStatus.visibility = View.GONE
+				else -> {
+					holder.tvStatus.visibility = View.GONE
+				}
 			}
 		}
+	}
+
+	private fun triggerSaveAnimation(holder: ViewHolder) {
+		val card = holder.card
+
+		val pulseColor = colors.colorSecondaryContainer
+		val surfaceColor = colors.colorSurfaceContainer
+
+		val colorAnim = ValueAnimator.ofArgb(surfaceColor, pulseColor, surfaceColor)
+		colorAnim.addUpdateListener { animator ->
+			card.setCardBackgroundColor(animator.animatedValue as Int)
+		}
+		colorAnim.duration = 600
+		colorAnim.interpolator = AccelerateDecelerateInterpolator()
+
+		colorAnim.start()
 	}
 }
 

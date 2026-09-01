@@ -21,6 +21,9 @@ import com.google.android.material.color.MaterialColors
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.R as MaterialR
 
+/**
+ * Controller for the Private DNS section of the main UI.
+ */
 class DnsSectionController(
 	private val activity: AppCompatActivity,
 	private val viewModel: DnsViewModel,
@@ -37,6 +40,9 @@ class DnsSectionController(
 	private lateinit var switchDisableDnsTest: MaterialSwitch
 	private lateinit var hostnamesAdapter: HostnamesAdapter
 
+	/**
+	 * Initializes the controller with view references and sets up listeners.
+	 */
 	fun initialize(
 		rowPrivateDns: View,
 		tvToggleLabel: TextView,
@@ -62,10 +68,19 @@ class DnsSectionController(
 		setupDisableDnsTest()
 	}
 
+	/**
+	 * Sets up LiveData observations for this section.
+	 */
 	fun observeViewModel() {
-		viewModel.privateDnsMode.observe(activity) { updateHostnamesMetadata() }
-		viewModel.privateDnsSpecifier.observe(activity) { updateHostnamesMetadata() }
-		viewModel.dnsReachability.observe(activity) { updateHostnamesMetadata() }
+		viewModel.privateDnsMode.observe(activity) {
+			updateHostnamesMetadata()
+		}
+		viewModel.privateDnsSpecifier.observe(activity) {
+			updateHostnamesMetadata()
+		}
+		viewModel.dnsReachability.observe(activity) {
+			updateHostnamesMetadata()
+		}
 
 		viewModel.dnsHostnames.observe(activity) { hostnames ->
 			hostnamesAdapter.submitList(hostnames)
@@ -75,9 +90,46 @@ class DnsSectionController(
 			switchDisableDnsTest.isChecked = disabled
 		}
 
-		viewModel.enableStrictOffOption.observe(activity) { updateToggleLabel() }
-		viewModel.defaultOffMode.observe(activity) { updateToggleLabel() }
-		viewModel.privateDnsMode.observe(activity) { updateToggleLabel() }
+		viewModel.enableStrictOffOption.observe(activity) {
+			updateToggleLabel()
+		}
+		viewModel.defaultOffMode.observe(activity) {
+			updateToggleLabel()
+		}
+		viewModel.privateDnsMode.observe(activity) {
+			updateToggleLabel()
+		}
+	}
+
+	/**
+	 * Shows the dialog to add a new DNS hostname.
+	 */
+	fun showAddHostnameDialog(
+		existingHostname: String? = null, enableAfterSave: Boolean = false
+	) {
+		val existingEntry = existingHostname?.let { host ->
+			viewModel.dnsHostnames.value?.find {
+				it.hostname == host
+			}
+		}
+
+		DnsDialogHelper.showAddHostnameDialog(
+			activity, existingHostname, existingEntry?.label
+		) { newHostname, newLabel ->
+			if (NetworkUtils.isValidDnsHostname(newHostname)) {
+				if (existingHostname != null) {
+					viewModel.updateHostname(existingHostname, newHostname, newLabel)
+				} else {
+					viewModel.addHostname(newHostname, newLabel)
+				}
+
+				if (enableAfterSave) {
+					viewModel.togglePrivateDns(true, newHostname)
+				}
+			} else {
+				Toast.makeText(activity, R.string.error_invalid_dns_host, Toast.LENGTH_SHORT).show()
+			}
+		}
 	}
 
 	private fun updateToggleLabel() {
@@ -155,9 +207,15 @@ class DnsSectionController(
 		)
 
 		hostnamesAdapter = HostnamesAdapter(
-			onEditClick = { hostname -> showAddHostnameDialog(hostname) },
-			onDeleteClick = { hostname -> showDeleteHostnameConfirmDialog(hostname) },
-			onItemClick = { hostname -> viewModel.togglePrivateDns(true, hostname) },
+			onEditClick = { hostname ->
+				showAddHostnameDialog(hostname)
+			},
+			onDeleteClick = { hostname ->
+				showDeleteHostnameConfirmDialog(hostname)
+			},
+			onItemClick = { hostname ->
+				viewModel.togglePrivateDns(true, hostname)
+			},
 			onAddInPlaceClick = { hostname ->
 				viewModel.addHostname(hostname)
 				Toast.makeText(activity, R.string.hostname_saved, Toast.LENGTH_SHORT).show()
@@ -171,35 +229,11 @@ class DnsSectionController(
 	}
 
 	private fun setupDisableDnsTest() {
-		rowDisableDnsTest.setOnClickListener { switchDisableDnsTest.toggle() }
+		rowDisableDnsTest.setOnClickListener {
+			switchDisableDnsTest.toggle()
+		}
 		switchDisableDnsTest.setOnCheckedChangeListener { _, isChecked ->
 			viewModel.setDisableDnsTest(isChecked)
-		}
-	}
-
-	fun showAddHostnameDialog(
-		existingHostname: String? = null, enableAfterSave: Boolean = false
-	) {
-		val existingEntry = existingHostname?.let { host ->
-			viewModel.dnsHostnames.value?.find { it.hostname == host }
-		}
-
-		DnsDialogHelper.showAddHostnameDialog(
-			activity, existingHostname, existingEntry?.label
-		) { newHostname, newLabel ->
-			if (NetworkUtils.isValidDnsHostname(newHostname)) {
-				if (existingHostname != null) {
-					viewModel.updateHostname(existingHostname, newHostname, newLabel)
-				} else {
-					viewModel.addHostname(newHostname, newLabel)
-				}
-
-				if (enableAfterSave) {
-					viewModel.togglePrivateDns(true, newHostname)
-				}
-			} else {
-				Toast.makeText(activity, R.string.error_invalid_dns_host, Toast.LENGTH_SHORT).show()
-			}
 		}
 	}
 

@@ -14,6 +14,9 @@ import kotlinx.coroutines.launch
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
+/**
+ * Manages the lifecycle and execution of connectivity watchdog jobs.
+ */
 class ConnectivityWatchdogManager(
 	private val context: Context,
 	private val serviceScope: CoroutineScope,
@@ -27,10 +30,15 @@ class ConnectivityWatchdogManager(
 	private var debounceJob: Job? = null
 	private var connectivityWatchdogJob: Job? = null
 	private var autoRecoveryJob: Job? = null
+
+	/**
+	 * BSSID of the last network where auto-recovery was attempted.
+	 */
 	var retriedAutoProfileBssid: String? = null
 
-	private fun getPrefs() = (context.applicationContext as DnsToggleApplication).getPrefs()
-
+	/**
+	 * Cancels all active watchdog and debounce jobs.
+	 */
 	fun cancelAll() {
 		debounceJob?.cancel()
 		connectivityWatchdogJob?.cancel()
@@ -40,11 +48,17 @@ class ConnectivityWatchdogManager(
 		autoRecoveryJob = null
 	}
 
+	/**
+	 * Cancels only the active restoration debounce job.
+	 */
 	fun cancelDebounce() {
 		debounceJob?.cancel()
 		debounceJob = null
 	}
 
+	/**
+	 * Evaluates if the connectivity watchdog should be started for the current network.
+	 */
 	fun evaluateConnectivityWatchdog(
 		ssid: String,
 		wifiCaps: NetworkCapabilities?,
@@ -52,9 +66,8 @@ class ConnectivityWatchdogManager(
 		cachedDnsMode: String?
 	) {
 		val prefs = getPrefs()
-		if (!prefs.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false) ||
-			cachedDnsMode != Constants.DNS_MODE_HOSTNAME
-		) {
+		val watchdogEnabled = prefs.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false)
+		if (!watchdogEnabled || cachedDnsMode != Constants.DNS_MODE_HOSTNAME) {
 			connectivityWatchdogJob?.cancel()
 			connectivityWatchdogJob = null
 			return
@@ -66,11 +79,15 @@ class ConnectivityWatchdogManager(
 			return
 		}
 
-		if (connectivityWatchdogJob?.isActive == true) return
+		if (connectivityWatchdogJob?.isActive == true) {
+			return
+		}
 
 		val hostname =
 			Global.getString(context.contentResolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
-		if (hostname.isNullOrEmpty()) return
+		if (hostname.isNullOrEmpty()) {
+			return
+		}
 
 		val debounceSeconds = prefs.getInt(
 			Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
@@ -86,7 +103,9 @@ class ConnectivityWatchdogManager(
 
 			// Re-verify validation state after debounce to prevent race conditions if the network gets validated during the delay.
 			val stillNotValidated = activeNetworks.values
-				.find { it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) }
+				.find {
+					it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+				}
 				?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) != true
 
 			if (!stillNotValidated ||
@@ -109,6 +128,9 @@ class ConnectivityWatchdogManager(
 		}
 	}
 
+	/**
+	 * Checks if an auto-detected (blocked) SSID has recovered connectivity.
+	 */
 	fun maybeRetryAutoDetectedSsid(
 		ssid: String,
 		isAutoDetected: Boolean,
@@ -126,7 +148,9 @@ class ConnectivityWatchdogManager(
 
 		val hostname =
 			Global.getString(context.contentResolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
-		if (hostname.isNullOrEmpty()) return
+		if (hostname.isNullOrEmpty()) {
+			return
+		}
 
 		val probeTargets = prefs.getString(
 			Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS,
@@ -142,10 +166,15 @@ class ConnectivityWatchdogManager(
 		}
 	}
 
+	/**
+	 * Schedules the restoration of the preferred DNS setting with a debounce delay.
+	 */
 	fun restorePreferredDns(immediate: Boolean, onRestore: suspend () -> Unit) {
 		debounceJob?.cancel()
 		if (immediate) {
-			serviceScope.launch { onRestore() }
+			serviceScope.launch {
+				onRestore()
+			}
 		} else {
 			debounceJob = serviceScope.launch {
 				delay(Constants.WATCHDOG_RESTORE_DEBOUNCE_MS.milliseconds) // Wait to avoid rapid ping-pong
@@ -153,4 +182,6 @@ class ConnectivityWatchdogManager(
 			}
 		}
 	}
+
+	private fun getPrefs() = (context.applicationContext as DnsToggleApplication).getPrefs()
 }

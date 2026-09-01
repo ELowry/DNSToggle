@@ -6,12 +6,17 @@ import android.security.keystore.KeyProperties
 import android.util.Base64
 import android.util.Log
 import com.ericlowry.dnstoggle.data.Constants
+import com.ericlowry.dnstoggle.util.EncryptionManager.encrypt
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
+/**
+ * Manager for transparently encrypting and decrypting sensitive user data using the Android Keystore.
+ * Primarily used for storing custom hostnames and network profiles in SharedPreferences.
+ */
 object EncryptionManager {
 
 	private const val TAG = "EncryptionManager"
@@ -28,6 +33,67 @@ object EncryptionManager {
 		} catch (e: Exception) {
 			Log.e(TAG, "AndroidKeyStore initialization failed", e)
 			null
+		}
+	}
+
+	/**
+	 * Encrypts a string using an AES key stored in the Android Keystore.
+	 *
+	 * Blob format: [1 byte: IV size] + [n bytes: IV] + [m bytes: Payload]
+	 *
+	 * @param data The plaintext string to encrypt.
+	 * @return A Base64 encoded string prefixed with [Constants.ENCRYPTION_PREFIX].
+	 */
+	fun encrypt(data: String): String {
+		return try {
+			val key = getKey() ?: return data
+			val cipher = Cipher.getInstance(TRANSFORMATION)
+			cipher.init(Cipher.ENCRYPT_MODE, key)
+			val iv = cipher.iv
+			val encryptedData = cipher.doFinal(data.toByteArray(Charsets.UTF_8))
+
+			val combined = ByteArray(1 + iv.size + encryptedData.size)
+			combined[0] = iv.size.toByte()
+			System.arraycopy(iv, 0, combined, 1, iv.size)
+			System.arraycopy(encryptedData, 0, combined, 1 + iv.size, encryptedData.size)
+
+			Constants.ENCRYPTION_PREFIX + Base64.encodeToString(combined, Base64.NO_WRAP)
+		} catch (e: Exception) {
+			Log.e(TAG, "Encryption failed, falling back to plaintext", e)
+			data
+		}
+	}
+
+	sealed class DecryptResult {
+		data class Success(val data: String) : DecryptResult()
+		object KeyInvalidated : DecryptResult()
+		object Failed : DecryptResult()
+	}
+
+	/**
+	 * Decrypts a string that was previously encrypted by [encrypt].
+	 * Handles both prefixed blobs and legacy unprefixed data.
+	 *
+	 * @param input The Base64 encoded string to decrypt.
+	 * @return A [DecryptResult] containing the plaintext or an error state.
+	 */
+	fun decrypt(input: String): DecryptResult {
+		if (input.isEmpty()) {
+			return DecryptResult.Failed
+		}
+
+		return if (input.startsWith(Constants.ENCRYPTION_PREFIX)) {
+			decryptInternal(input.substring(Constants.ENCRYPTION_PREFIX.length))
+		} else {
+			// START_LEGACY_MIGRATION_CODE: Legacy decryption (no prefix)
+			val result = decryptInternal(input)
+			if (result is DecryptResult.Success || result is DecryptResult.KeyInvalidated) {
+				result
+			} else {
+				// Assume plaintext on failure
+				DecryptResult.Success(input)
+			}
+			// END_LEGACY_MIGRATION_CODE
 		}
 	}
 
@@ -63,66 +129,25 @@ object EncryptionManager {
 		}
 	}
 
-	/**
-	 * Blob format: [1 byte: IV size] + [n bytes: IV] + [m bytes: Payload]
-	 */
-	fun encrypt(data: String): String {
-		return try {
-			val key = getKey() ?: return data
-			val cipher = Cipher.getInstance(TRANSFORMATION)
-			cipher.init(Cipher.ENCRYPT_MODE, key)
-			val iv = cipher.iv
-			val encryptedData = cipher.doFinal(data.toByteArray(Charsets.UTF_8))
-
-			val combined = ByteArray(1 + iv.size + encryptedData.size)
-			combined[0] = iv.size.toByte()
-			System.arraycopy(iv, 0, combined, 1, iv.size)
-			System.arraycopy(encryptedData, 0, combined, 1 + iv.size, encryptedData.size)
-
-			Constants.ENCRYPTION_PREFIX + Base64.encodeToString(combined, Base64.NO_WRAP)
-		} catch (e: Exception) {
-			Log.e(TAG, "Encryption failed, falling back to plaintext", e)
-			data
-		}
-	}
-
-	sealed class DecryptResult {
-		data class Success(val data: String) : DecryptResult()
-		object KeyInvalidated : DecryptResult()
-		object Failed : DecryptResult()
-	}
-
-	fun decrypt(input: String): DecryptResult {
-		if (input.isEmpty()) return DecryptResult.Failed
-
-		return if (input.startsWith(Constants.ENCRYPTION_PREFIX)) {
-			decryptInternal(input.substring(Constants.ENCRYPTION_PREFIX.length))
-		} else {
-			// START_LEGACY_MIGRATION_CODE: Legacy decryption (no prefix)
-			val result = decryptInternal(input)
-			if (result is DecryptResult.Success || result is DecryptResult.KeyInvalidated) {
-				result
-			} else {
-				// Assume plaintext on failure
-				DecryptResult.Success(input)
-			}
-			// END_LEGACY_MIGRATION_CODE
-		}
-	}
-
 	private fun decryptInternal(encryptedBase64: String): DecryptResult {
 		return try {
 			val combined = Base64.decode(encryptedBase64, Base64.NO_WRAP)
-			if (combined.isEmpty()) return DecryptResult.Failed
+			if (combined.isEmpty()) {
+				return DecryptResult.Failed
+			}
 
 			val ivSize = combined[0].toInt()
-			if (ivSize <= 0 || (ivSize > (combined.size - 1))) return DecryptResult.Failed
+			if (ivSize <= 0 || (ivSize > (combined.size - 1))) {
+				return DecryptResult.Failed
+			}
 
 			val iv = ByteArray(ivSize)
 			System.arraycopy(combined, 1, iv, 0, ivSize)
 
 			val encryptedDataSize = combined.size - 1 - ivSize
-			if (encryptedDataSize <= 0) return DecryptResult.Failed
+			if (encryptedDataSize <= 0) {
+				return DecryptResult.Failed
+			}
 
 			val encryptedData = ByteArray(encryptedDataSize)
 			System.arraycopy(combined, 1 + ivSize, encryptedData, 0, encryptedDataSize)

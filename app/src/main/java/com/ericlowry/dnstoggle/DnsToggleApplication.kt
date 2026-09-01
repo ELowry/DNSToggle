@@ -16,9 +16,9 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
-import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import com.ericlowry.dnstoggle.data.Constants
+import com.ericlowry.dnstoggle.data.repository.AppSettingsRepository
 import com.ericlowry.dnstoggle.data.repository.DnsSettingsRepository
 import com.ericlowry.dnstoggle.data.repository.HostnameRepository
 import com.ericlowry.dnstoggle.data.repository.NetworkProfileRepository
@@ -36,6 +36,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
+/**
+ * Main Application class for DNS Toggle.
+ * Handles global state, repository initialization, and system-wide settings observers.
+ */
 class DnsToggleApplication : Application() {
 
 	var detectedSsid: String? = null
@@ -48,11 +52,13 @@ class DnsToggleApplication : Application() {
 
 	private val preferenceChangeListener =
 		SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-			if (key == Constants.PREF_AUTO_SAVE_STATE ||
-				key == Constants.PREF_AUTO_SAVE_HOST ||
-				key == Constants.PREF_VPN_OVERRIDE_ENABLED ||
-				key == Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED
-			) {
+			val monitoringKeys = listOf(
+				Constants.PREF_AUTO_SAVE_STATE,
+				Constants.PREF_AUTO_SAVE_HOST,
+				Constants.PREF_VPN_OVERRIDE_ENABLED,
+				Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED
+			)
+			if (key in monitoringKeys) {
 				updateWifiMonitoringRegistration()
 			}
 			if (key == Constants.PREF_USB_DEBUGGING_TILE_UNLOCKED) {
@@ -114,7 +120,9 @@ class DnsToggleApplication : Application() {
 	override fun onCreate() {
 		super.onCreate()
 		val dynamicOptions = DynamicColorsOptions.Builder()
-			.setPrecondition { _, _ -> shouldApplyDynamicColors() }
+			.setPrecondition { _, _ ->
+				shouldApplyDynamicColors()
+			}
 			.build()
 		DynamicColors.applyToActivitiesIfAvailable(this, dynamicOptions)
 		registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
@@ -139,12 +147,18 @@ class DnsToggleApplication : Application() {
 		})
 
 		SecurityRepository.initialize(this)
+		AppSettingsRepository.initialize(this)
 		VpnRepository.initialize(this)
 		NetworkProfileRepository.initialize(this)
 		HostnameRepository.initialize(this)
 		DnsSettingsRepository.initialize(this)
 		initializeNotificationChannels()
-		initializePreferredDnsMode()
+
+		applicationScope.launch(Dispatchers.IO) {
+			// Warm up AndroidKeyStore and encryption keys
+			EncryptionManager.encrypt("")
+			initializePreferredDnsMode()
+		}
 
 		getPrefs().registerOnSharedPreferenceChangeListener(preferenceChangeListener)
 
@@ -191,55 +205,16 @@ class DnsToggleApplication : Application() {
 		return getSharedPreferences("encrypted_prefs", MODE_PRIVATE)
 	}
 
-	private fun shouldApplyDynamicColors(): Boolean {
-		// Skip for Android TV because of limited support
-		val uiModeManager = getSystemService(UI_MODE_SERVICE) as UiModeManager
-		return uiModeManager.currentModeType != Configuration.UI_MODE_TYPE_TELEVISION
-	}
-
-	private fun initializeNotificationChannels() {
-		val manager = getSystemService(NotificationManager::class.java)
-
-		val statusChannel = NotificationChannel(
-			Constants.CHANNEL_ID_ALERT,
-			getString(R.string.notif_channel_alerts_name),
-			NotificationManager.IMPORTANCE_DEFAULT,
-		).apply {
-			description = getString(R.string.notif_channel_alerts_desc)
-		}
-
-		val serviceChannel = NotificationChannel(
-			Constants.CHANNEL_ID_SERVICE,
-			getString(R.string.notif_channel_service_name),
-			NotificationManager.IMPORTANCE_MIN,
-		).apply {
-			description = getString(R.string.notif_channel_service_desc)
-			setShowBadge(false)
-			enableLights(false)
-			enableVibration(false)
-			lockscreenVisibility = android.app.Notification.VISIBILITY_SECRET
-		}
-
-		manager.createNotificationChannels(listOf(statusChannel, serviceChannel))
-	}
-
-	private fun initializePreferredDnsMode() {
-		val sharedPreferences = getPrefs()
-		if (!sharedPreferences.contains(Constants.PREF_PREFERRED_DNS_MODE)) {
-			val currentMode =
-				Settings.Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
-					?: Constants.DNS_MODE_OPPORTUNISTIC
-			sharedPreferences.edit { putString(Constants.PREF_PREFERRED_DNS_MODE, currentMode) }
-		}
-	}
-
 	fun updateWifiMonitoringRegistration() {
 		applicationScope.launch(Dispatchers.Default) {
 			val serviceIntent = Intent(this@DnsToggleApplication, WifiMonitoringService::class.java)
 
 			if (isWifiMonitoringRequired()) {
 				try {
-					ContextCompat.startForegroundService(this@DnsToggleApplication, serviceIntent)
+					androidx.core.content.ContextCompat.startForegroundService(
+						this@DnsToggleApplication,
+						serviceIntent
+					)
 				} catch (e: Exception) {
 					Log.e("DnsToggleApplication", "Failed to start foreground service", e)
 				}
@@ -254,19 +229,6 @@ class DnsToggleApplication : Application() {
 				ComponentName(this@DnsToggleApplication, DnsToggleService::class.java)
 			)
 		}
-	}
-
-	private fun isWifiMonitoringRequired(): Boolean {
-		val sharedPreferences = getPrefs()
-		val vpnEnabled = sharedPreferences.getBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, false)
-		val autoEnabled = sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_STATE, false) ||
-				sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_HOST, false) ||
-				sharedPreferences.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false)
-
-		val profiles = NetworkProfileRepository.networkProfiles.value
-		val hasNetworkProfiles = !profiles.isNullOrEmpty()
-
-		return vpnEnabled || autoEnabled || hasNetworkProfiles
 	}
 
 	fun updateUsbDebuggingTileAvailability() {
@@ -316,6 +278,63 @@ class DnsToggleApplication : Application() {
 		contentResolver.unregisterContentObserver(dnsObserver)
 		unregisterAdbObserver()
 		getPrefs().unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
+	}
+
+	private fun shouldApplyDynamicColors(): Boolean {
+		// Skip for Android TV because of limited support
+		val uiModeManager = getSystemService(UI_MODE_SERVICE) as UiModeManager
+		return uiModeManager.currentModeType != Configuration.UI_MODE_TYPE_TELEVISION
+	}
+
+	private fun initializeNotificationChannels() {
+		val manager = getSystemService(NotificationManager::class.java)
+
+		val statusChannel = NotificationChannel(
+			Constants.CHANNEL_ID_ALERT,
+			getString(R.string.notif_channel_alerts_name),
+			NotificationManager.IMPORTANCE_DEFAULT,
+		).apply {
+			description = getString(R.string.notif_channel_alerts_desc)
+		}
+
+		val serviceChannel = NotificationChannel(
+			Constants.CHANNEL_ID_SERVICE,
+			getString(R.string.notif_channel_service_name),
+			NotificationManager.IMPORTANCE_MIN,
+		).apply {
+			description = getString(R.string.notif_channel_service_desc)
+			setShowBadge(false)
+			enableLights(false)
+			enableVibration(false)
+			lockscreenVisibility = android.app.Notification.VISIBILITY_SECRET
+		}
+
+		manager.createNotificationChannels(listOf(statusChannel, serviceChannel))
+	}
+
+	private fun initializePreferredDnsMode() {
+		val sharedPreferences = getPrefs()
+		if (!sharedPreferences.contains(Constants.PREF_PREFERRED_DNS_MODE)) {
+			val currentMode =
+				Settings.Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
+					?: Constants.DNS_MODE_OPPORTUNISTIC
+			sharedPreferences.edit {
+				putString(Constants.PREF_PREFERRED_DNS_MODE, currentMode)
+			}
+		}
+	}
+
+	private fun isWifiMonitoringRequired(): Boolean {
+		val sharedPreferences = getPrefs()
+		val vpnEnabled = sharedPreferences.getBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, false)
+		val autoEnabled = sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_STATE, false) ||
+				sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_HOST, false) ||
+				sharedPreferences.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false)
+
+		val profiles = NetworkProfileRepository.networkProfiles.value
+		val hasNetworkProfiles = !profiles.isNullOrEmpty()
+
+		return vpnEnabled || autoEnabled || hasNetworkProfiles
 	}
 
 	private fun registerAdbObserver() {

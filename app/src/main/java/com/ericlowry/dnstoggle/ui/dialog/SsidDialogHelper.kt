@@ -21,6 +21,9 @@ import com.google.android.material.radiobutton.MaterialRadioButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 
+/**
+ * Static helper for building SSID (Network Profile) related Material dialogs.
+ */
 object SsidDialogHelper {
 
 	private data class ProfileOption(
@@ -29,6 +32,9 @@ object SsidDialogHelper {
 		val mode: String? = null
 	)
 
+	/**
+	 * Shows a dialog to add or edit a network-specific DNS profile.
+	 */
 	fun showAddSsidDialog(
 		activity: Activity,
 		existingProfile: NetworkProfile?,
@@ -89,31 +95,53 @@ object SsidDialogHelper {
 			}
 		}
 
-		val switchRow = LinearLayout(activity).apply {
+		val dialogContext = dialogView.context
+
+		val switchRow = LinearLayout(dialogContext).apply {
 			layoutParams = LinearLayout.LayoutParams(
 				ViewGroup.LayoutParams.MATCH_PARENT,
 				ViewGroup.LayoutParams.WRAP_CONTENT
 			)
 			orientation = LinearLayout.HORIZONTAL
 			gravity = android.view.Gravity.CENTER_VERTICAL
-			setPadding(0, 16, 0, 8)
 
-			val textView = TextView(activity).apply {
+			setBackgroundResource(R.drawable.bg_dialog_row_selectable)
+
+			isClickable = true
+			isFocusable = true
+			isFocusableInTouchMode = false
+			descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+
+			val density = dialogContext.resources.displayMetrics.density
+			val paddingH = (4 * density).toInt()
+			val paddingV = (8 * density).toInt()
+			setPadding(paddingH, paddingV, paddingH, paddingV)
+
+			val textView = TextView(dialogContext).apply {
 				layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f)
-				text = activity.getString(R.string.enable_private_dns)
+				text = dialogContext.getString(R.string.enable_private_dns)
 				setTextAppearance(com.google.android.material.R.style.TextAppearance_Material3_BodyLarge)
 			}
-			val materialSwitch = MaterialSwitch(activity).apply {
+
+			val materialSwitch = MaterialSwitch(dialogContext).apply {
 				id = View.generateViewId()
 				isChecked = selectedEnabled
+
+				isClickable = false
+				isFocusable = false
+				isDuplicateParentStateEnabled = true
 			}
 
 			addView(textView)
 			addView(materialSwitch)
 
-			setOnClickListener { materialSwitch.toggle() }
+			setOnClickListener {
+				materialSwitch.toggle()
+			}
 			materialSwitch.setOnCheckedChangeListener { _, isChecked ->
-				if (isUpdatingProgrammatically) return@setOnCheckedChangeListener
+				if (isUpdatingProgrammatically) {
+					return@setOnCheckedChangeListener
+				}
 				selectedEnabled = isChecked
 				selectedMode = if (isChecked) {
 					null
@@ -214,7 +242,12 @@ object SsidDialogHelper {
 			radioContainer.addView(itemView)
 		}
 
-		val totalItems = hostnames.size + 1 + (if (enableStrictOff) 2 else 0)
+		val strictOffCount = if (enableStrictOff) {
+			2
+		} else {
+			0
+		}
+		val totalItems = hostnames.size + 1 + strictOffCount
 		var currentPos = 0
 
 		val defaultLabel = if (globalDefaultHostname != null) {
@@ -255,20 +288,26 @@ object SsidDialogHelper {
 
 		val dialog = MaterialAlertDialogBuilder(activity)
 			.setTitle(
-				if (existingProfile == null) activity.getString(R.string.add_ssid) else activity.getString(
-					R.string.edit_ssid,
-				)
+				if (existingProfile == null) {
+					activity.getString(R.string.add_ssid)
+				} else {
+					activity.getString(
+						R.string.edit_ssid,
+					)
+				}
 			)
 			.setView(dialogView)
 			.setPositiveButton(activity.getString(R.string.ok)) { _, _ ->
 				val newSsidName =
 					inputTextField.text.toString().trim().removePrefix("\"").removeSuffix("\"")
-				if (newSsidName.isNotEmpty()) onSave(
-					newSsidName,
-					selectedEnabled,
-					selectedHostname,
-					selectedMode
-				)
+				if (newSsidName.isNotEmpty()) {
+					onSave(
+						newSsidName,
+						selectedEnabled,
+						selectedHostname,
+						selectedMode
+					)
+				}
 			}
 			.setNegativeButton(activity.getString(R.string.cancel), null)
 			.create()
@@ -284,6 +323,9 @@ object SsidDialogHelper {
 		dialog.show()
 	}
 
+	/**
+	 * Shows an information dialog explaining how Wi-Fi monitoring and VPN overrides work.
+	 */
 	fun showWifiMonitoringInfo(
 		context: Context,
 		isIgnoringBattery: Boolean,
@@ -310,17 +352,25 @@ object SsidDialogHelper {
 		builder.show()
 	}
 
+	/**
+	 * Shows a dialog to select a debounce duration for the connectivity watchdog.
+	 */
 	fun showConnectivityWatchdogDebounceDialog(
 		activity: Activity,
 		currentValue: Int,
 		presets: List<Int>,
 		onValueSelected: (Int) -> Unit
 	) {
-		val options = presets.map { "${it}s" }.toMutableList()
+		val options = presets.map {
+			"${it}s"
+		}.toMutableList()
 		options.add(activity.getString(R.string.connectivity_watchdog_debounce_custom))
 
-		val checkedItem =
-			if (presets.contains(currentValue)) presets.indexOf(currentValue) else options.lastIndex
+		val checkedItem = if (presets.contains(currentValue)) {
+			presets.indexOf(currentValue)
+		} else {
+			options.lastIndex
+		}
 
 		MaterialAlertDialogBuilder(activity)
 			.setTitle(R.string.connectivity_watchdog_debounce_label)

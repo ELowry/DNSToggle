@@ -149,6 +149,27 @@ class MainActivity : AppCompatActivity() {
 		// TEMPORARY INFO - END
 	}
 
+	override fun onResume() {
+		super.onResume()
+		dnsViewModel.refreshSystemSettings()
+		dnsViewModel.refreshCurrentSsid()
+		updateMainPermissionUiState()
+		ssidController.updateUiState(PermissionHelper.hasSsidPermissions(this))
+		vpnController.updateUiState(PermissionHelper.hasNotificationPermission(this))
+	}
+
+	override fun onNewIntent(intent: Intent) {
+		super.onNewIntent(intent)
+		handleIntentExtras(intent)
+	}
+
+	override fun onDestroy() {
+		mainScrollView.viewTreeObserver.removeOnGlobalFocusChangeListener(
+			focusChangeListener
+		)
+		super.onDestroy()
+	}
+
 	private fun setupScrollSpring() {
 		scrollSpring = SpringAnimation(mainScrollView, DynamicAnimation.SCROLL_Y).apply {
 			spring = SpringForce().apply {
@@ -165,13 +186,6 @@ class MainActivity : AppCompatActivity() {
 				}
 			}
 		}
-	}
-
-	override fun onDestroy() {
-		mainScrollView.viewTreeObserver.removeOnGlobalFocusChangeListener(
-			focusChangeListener
-		)
-		super.onDestroy()
 	}
 
 	private fun initControllers() {
@@ -217,20 +231,6 @@ class MainActivity : AppCompatActivity() {
 				})
 			}
 		)
-	}
-
-	override fun onResume() {
-		super.onResume()
-		dnsViewModel.loadSettings()
-		dnsViewModel.refreshCurrentSsid()
-		updateMainPermissionUiState()
-		ssidController.updateUiState(PermissionHelper.hasSsidPermissions(this))
-		vpnController.updateUiState(PermissionHelper.hasNotificationPermission(this))
-	}
-
-	override fun onNewIntent(intent: Intent) {
-		super.onNewIntent(intent)
-		handleIntentExtras(intent)
 	}
 
 	private fun handleIntentExtras(intent: Intent?) {
@@ -397,11 +397,15 @@ class MainActivity : AppCompatActivity() {
 		dnsViewModel.networkProfiles.observe(this) { _ -> updateOverrideStatusUi() }
 
 		dnsViewModel.hasPermissionError.observe(this) { hasError ->
-			if (hasError == true) showInitialPermissionDialog()
+			if (hasError == true) {
+				showInitialPermissionDialog()
+			}
 		}
 
 		dnsViewModel.isKeyInvalidated.observe(this) { invalidated ->
-			if (invalidated == true) showKeyInvalidatedDialog()
+			if (invalidated == true) {
+				showKeyInvalidatedDialog()
+			}
 		}
 
 		updateToolbarTitle()
@@ -437,13 +441,21 @@ class MainActivity : AppCompatActivity() {
 
 		mainScrollView.setOnScrollChangeListener(NestedScrollView.OnScrollChangeListener { _, _, scrollY, _, _ ->
 			val isLifted = scrollY > 0
-			val target = if (isLifted) liftedColor else baseColor
+			val target = if (isLifted) {
+				liftedColor
+			} else {
+				baseColor
+			}
 
 			if (statusBarBackground.tag != target) {
 				statusBarBackground.tag = target
 				animator?.cancel()
 
-				val startColor = if (isLifted) baseColor else liftedColor
+				val startColor = if (isLifted) {
+					baseColor
+				} else {
+					liftedColor
+				}
 
 				animator = android.animation.ValueAnimator.ofArgb(startColor, target).apply {
 					duration = 150
@@ -604,7 +616,9 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun showInitialPermissionDialog() {
-		if (permissionDialog?.isShowing == true) return
+		if (permissionDialog?.isShowing == true) {
+			return
+		}
 		permissionDialog = PermissionDialogHelper.showSecureSettingsPermissionDialog(
 			context = this,
 			packageName = packageName,
@@ -641,7 +655,9 @@ class MainActivity : AppCompatActivity() {
 
 					// Artificial delay to ensure toasts are visible and indicate work
 					val elapsedTime = System.currentTimeMillis() - startTime
-					if (elapsedTime < Constants.UI_ARTIFICIAL_DELAY_MS) delay((Constants.UI_ARTIFICIAL_DELAY_MS - elapsedTime).milliseconds)
+					if (elapsedTime < Constants.UI_ARTIFICIAL_DELAY_MS) {
+						delay((Constants.UI_ARTIFICIAL_DELAY_MS - elapsedTime).milliseconds)
+					}
 
 					updateMainPermissionUiState()
 
@@ -687,7 +703,9 @@ class MainActivity : AppCompatActivity() {
 			}
 			p = p.parent
 		}
-		if (!isDescendant) return
+		if (!isDescendant) {
+			return
+		}
 
 		val rect = android.graphics.Rect()
 		view.getDrawingRect(rect)

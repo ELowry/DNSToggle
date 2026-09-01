@@ -14,11 +14,16 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import org.json.JSONArray
 
+/**
+ * Repository for managing network-specific (SSID) DNS profiles.
+ * Profiles allow automatic DNS switching when connecting to specific Wi-Fi networks.
+ */
 object NetworkProfileRepository {
 	private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 	private lateinit var encryptedPrefs: SharedPreferences
@@ -27,6 +32,9 @@ object NetworkProfileRepository {
 	private val _networkProfiles = MutableStateFlow<List<NetworkProfile>?>(null)
 	val networkProfiles: StateFlow<List<NetworkProfile>?> = _networkProfiles.asStateFlow()
 
+	/**
+	 * Initializes the repository and loads saved profiles.
+	 */
 	fun initialize(context: Context) {
 		val app = context.applicationContext as DnsToggleApplication
 		encryptedPrefs = app.getEncryptedPrefs()
@@ -35,6 +43,9 @@ object NetworkProfileRepository {
 
 	fun loadNetworkProfiles() {
 		scope.launch {
+			SecurityRepository.isInitialized.first {
+				it
+			}
 			// START_LEGACY_MIGRATION_CODE: Local PREF_SSID_BLACKLIST to NetworkProfile migration
 			val legacyBlacklist = encryptedPrefs.getStringSet(Constants.PREF_SSID_BLACKLIST, null)
 			val legacyAutoBlacklist =
@@ -98,6 +109,146 @@ object NetworkProfileRepository {
 		}
 	}
 
+	/**
+	 * Promotes an auto-detected or unsaved profile to a permanent one.
+	 */
+	fun promoteUnsavedProfile(ssid: String) {
+		_networkProfiles.update { current ->
+			val safeCurrent = current ?: emptyList()
+			val index = safeCurrent.indexOfFirst { it.ssid == ssid }
+			if (index == -1 || (!safeCurrent[index].isAutoDetected && !safeCurrent[index].isUnsaved)) {
+				return@update safeCurrent
+			}
+
+			val next = safeCurrent.toMutableList()
+			next[index] = next[index].copy(isAutoDetected = false, isUnsaved = false)
+			saveNetworkProfilesAsync(next)
+			next
+		}
+	}
+
+	/**
+	 * Adds or updates a network profile.
+	 */
+	fun upsertNetworkProfile(
+		ssid: String,
+		isEnabled: Boolean,
+		targetHostname: String? = null,
+		isAutoDetected: Boolean = false,
+		isUnsaved: Boolean = false,
+		preserveExistingHostname: Boolean = false,
+		targetMode: String? = null,
+		preserveExistingMode: Boolean = false
+	) {
+		_networkProfiles.update { current ->
+			val safeCurrent = current ?: emptyList()
+			val index = safeCurrent.indexOfFirst { it.ssid == ssid }
+			val next = safeCurrent.toMutableList()
+
+			val newProfile = if (index != -1) {
+				val existing = safeCurrent[index]
+				existing.copy(
+					isEnabled = isEnabled,
+					targetHostname = if (preserveExistingHostname) {
+						existing.targetHostname
+					} else {
+						targetHostname
+					},
+					targetMode = if (preserveExistingMode) {
+						existing.targetMode
+					} else {
+						targetMode
+					},
+					isAutoDetected = isAutoDetected,
+					isUnsaved = isUnsaved
+				)
+			} else {
+				NetworkProfile(
+					ssid,
+					isEnabled,
+					targetHostname,
+					isAutoDetected,
+					isUnsaved,
+					targetMode
+				)
+			}
+
+			if (index != -1) {
+				next[index] = newProfile
+			} else {
+				next.add(newProfile)
+			}
+			saveNetworkProfilesAsync(next)
+			next
+		}
+	}
+
+	fun removeNetworkProfile(ssid: String) {
+		_networkProfiles.update { current ->
+			val safeCurrent = current ?: emptyList()
+			if (safeCurrent.none { it.ssid == ssid }) {
+				return@update safeCurrent
+			}
+			val next = safeCurrent.filter { it.ssid != ssid }
+			saveNetworkProfilesAsync(next)
+			next
+		}
+	}
+
+	fun updateNetworkProfilesFromBackup(list: List<NetworkProfile>) {
+		_networkProfiles.value = list
+		saveNetworkProfilesAsync(list)
+	}
+
+	fun updateNetworkProfilesOrder(newList: List<NetworkProfile>) {
+		_networkProfiles.value = newList
+		saveNetworkProfilesAsync(newList)
+	}
+
+	fun saveNetworkProfilesAsync(list: List<NetworkProfile>) {
+		scope.launch {
+			val jsonString = json.encodeToString(list)
+			val encrypted = EncryptionManager.encrypt(jsonString)
+			encryptedPrefs.edit { putString(Constants.PREF_NETWORK_PROFILES, encrypted) }
+		}
+	}
+
+	fun sanitizeStrictOffProfiles() {
+		_networkProfiles.update { current ->
+			val safeCurrent = current ?: emptyList()
+			var changed = false
+			val next = safeCurrent.map {
+				if (it.targetMode == Constants.DNS_MODE_OFF) {
+					changed = true
+					it.copy(targetMode = Constants.DNS_MODE_OPPORTUNISTIC)
+				} else {
+					it
+				}
+			}
+			if (changed) {
+				saveNetworkProfilesAsync(next)
+			}
+			next
+		}
+	}
+
+	internal fun updateProfilesOnHostnameRemoval(hostname: String) {
+		_networkProfiles.update { current ->
+			val safeCurrent = current ?: emptyList()
+			val next = safeCurrent.map {
+				if (it.targetHostname == hostname) {
+					it.copy(targetHostname = null)
+				} else {
+					it
+				}
+			}
+			if (next != safeCurrent) {
+				saveNetworkProfilesAsync(next)
+			}
+			next
+		}
+	}
+
 	// START_LEGACY_MIGRATION_CODE: Local PREF_SSID_BLACKLIST to NetworkProfile migration
 	private fun migrateLegacyBlacklist(legacy: Set<String>?, autoDetected: Set<String>?) {
 		val profiles = mutableMapOf<String, NetworkProfile>()
@@ -152,118 +303,4 @@ object NetworkProfileRepository {
 		}
 	}
 	// END_LEGACY_MIGRATION_CODE
-
-	fun promoteUnsavedProfile(ssid: String) {
-		_networkProfiles.update { current ->
-			val safeCurrent = current ?: emptyList()
-			val index = safeCurrent.indexOfFirst { it.ssid == ssid }
-			if (index == -1 || (!safeCurrent[index].isAutoDetected && !safeCurrent[index].isUnsaved)) return@update safeCurrent
-
-			val next = safeCurrent.toMutableList()
-			next[index] = next[index].copy(isAutoDetected = false, isUnsaved = false)
-			saveNetworkProfilesAsync(next)
-			next
-		}
-	}
-
-	fun upsertNetworkProfile(
-		ssid: String,
-		isEnabled: Boolean,
-		targetHostname: String? = null,
-		isAutoDetected: Boolean = false,
-		isUnsaved: Boolean = false,
-		preserveExistingHostname: Boolean = false,
-		targetMode: String? = null,
-		preserveExistingMode: Boolean = false
-	) {
-		_networkProfiles.update { current ->
-			val safeCurrent = current ?: emptyList()
-			val index = safeCurrent.indexOfFirst { it.ssid == ssid }
-			val next = safeCurrent.toMutableList()
-
-			val newProfile = if (index != -1) {
-				val existing = safeCurrent[index]
-				existing.copy(
-					isEnabled = isEnabled,
-					targetHostname = if (preserveExistingHostname) existing.targetHostname else targetHostname,
-					targetMode = if (preserveExistingMode) existing.targetMode else targetMode,
-					isAutoDetected = isAutoDetected,
-					isUnsaved = isUnsaved
-				)
-			} else {
-				NetworkProfile(
-					ssid,
-					isEnabled,
-					targetHostname,
-					isAutoDetected,
-					isUnsaved,
-					targetMode
-				)
-			}
-
-			if (index != -1) next[index] = newProfile else next.add(newProfile)
-			saveNetworkProfilesAsync(next)
-			next
-		}
-	}
-
-	fun removeNetworkProfile(ssid: String) {
-		_networkProfiles.update { current ->
-			val safeCurrent = current ?: emptyList()
-			if (safeCurrent.none { it.ssid == ssid }) return@update safeCurrent
-			val next = safeCurrent.filter { it.ssid != ssid }
-			saveNetworkProfilesAsync(next)
-			next
-		}
-	}
-
-	fun updateNetworkProfilesFromBackup(list: List<NetworkProfile>) {
-		_networkProfiles.value = list
-		saveNetworkProfilesAsync(list)
-	}
-
-	fun updateNetworkProfilesOrder(newList: List<NetworkProfile>) {
-		_networkProfiles.value = newList
-		saveNetworkProfilesAsync(newList)
-	}
-
-	fun saveNetworkProfilesAsync(list: List<NetworkProfile>) {
-		scope.launch {
-			val jsonString = json.encodeToString(list)
-			val encrypted = EncryptionManager.encrypt(jsonString)
-			encryptedPrefs.edit { putString(Constants.PREF_NETWORK_PROFILES, encrypted) }
-		}
-	}
-
-	internal fun updateProfilesOnHostnameRemoval(hostname: String) {
-		_networkProfiles.update { current ->
-			val safeCurrent = current ?: emptyList()
-			val next = safeCurrent.map {
-				if (it.targetHostname == hostname) it.copy(targetHostname = null) else it
-			}
-			if (next != safeCurrent) {
-				saveNetworkProfilesAsync(next)
-			}
-			next
-		}
-	}
-
-	fun sanitizeStrictOffProfiles() {
-		_networkProfiles.update { current ->
-			val safeCurrent = current ?: emptyList()
-			var changed = false
-			val next = safeCurrent.map {
-				if (it.targetMode == Constants.DNS_MODE_OFF) {
-					changed = true
-					it.copy(targetMode = Constants.DNS_MODE_OPPORTUNISTIC)
-				} else {
-					it
-				}
-			}
-			if (changed) {
-				saveNetworkProfilesAsync(next)
-			}
-			next
-		}
-	}
 }

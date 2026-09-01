@@ -50,8 +50,16 @@ object _InfoNoticeHelper {
 			setPadding(padding * 2, padding, padding * 2, padding)
 
 			setOnFocusChangeListener { view, hasFocus ->
-				val scale = if (hasFocus) 1.05f else 1.0f
-				val elevation = if (hasFocus) 8f * activity.resources.displayMetrics.density else 0f
+				val scale = if (hasFocus) {
+					1.05f
+				} else {
+					1.0f
+				}
+				val elevation = if (hasFocus) {
+					8f * activity.resources.displayMetrics.density
+				} else {
+					0f
+				}
 
 				view.animate()
 					.scaleX(scale)
