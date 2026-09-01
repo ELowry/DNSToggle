@@ -361,7 +361,7 @@ class WifiMonitoringService : Service() {
 				}
 
 				// Normal Wi-Fi logic
-				if (currentSsid == null || !NetworkUtils.isValidSsid(currentSsid)) {
+				if (!NetworkUtils.isValidSsid(currentSsid)) {
 					dnsSettleJob?.cancel()
 					isTransitioning = false
 					lastBssid = null
@@ -413,7 +413,7 @@ class WifiMonitoringService : Service() {
 					watchdogManager.cancelDebounce()
 
 					watchdogManager.evaluateConnectivityWatchdog(
-						currentSsid,
+						currentSsid!!,
 						wifiCaps,
 						activeNetworks,
 						cachedDnsMode
@@ -461,13 +461,13 @@ class WifiMonitoringService : Service() {
 								val targetHostname =
 									profile.targetHostname ?: getGlobalPreferredHostname()
 								if (targetHostname != null) {
-									applyHostnameDns(currentSsid, targetHostname, force = true)
+									applyHostnameDns(currentSsid!!, targetHostname, force = true)
 								} else {
 									restorePreferredDnsSync(force = true, isFromSettleJob = true)
 								}
 
 								watchdogManager.evaluateConnectivityWatchdog(
-									currentSsid,
+									currentSsid!!,
 									wifiCaps,
 									activeNetworks,
 									cachedDnsMode
@@ -476,7 +476,7 @@ class WifiMonitoringService : Service() {
 								watchdogManager.cancelAll()
 
 								applyOffDns(
-									currentSsid,
+									currentSsid!!,
 									profile.targetMode,
 									if (profile.isAutoDetected) R.string.notif_connectivity_watchdog_disabled else R.string.notif_dns_disabled_auto,
 									force = true
@@ -512,7 +512,7 @@ class WifiMonitoringService : Service() {
 							watchdogManager.cancelAll()
 
 							watchdogManager.evaluateConnectivityWatchdog(
-								currentSsid,
+								currentSsid!!,
 								wifiCaps,
 								activeNetworks,
 								cachedDnsMode

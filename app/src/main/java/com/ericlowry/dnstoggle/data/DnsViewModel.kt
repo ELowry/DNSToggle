@@ -339,7 +339,7 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 	}
 
 	private fun refreshDisplayList() {
-		val savedHostnames = HostnameRepository.dnsHostnames.value ?: emptyList()
+		val savedHostnames = HostnameRepository.dnsHostnames.value ?: return
 		val currentSpecifier = _privateDnsSpecifier.value
 		val currentMode = _privateDnsMode.value
 

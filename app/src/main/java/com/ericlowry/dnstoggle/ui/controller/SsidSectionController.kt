@@ -9,7 +9,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.ericlowry.dnstoggle.R
@@ -244,28 +243,8 @@ class SsidSectionController(
 	}
 
 	private fun refreshSsidListView(profiles: List<NetworkProfile>?) {
-		val container = activity.findViewById<ViewGroup>(R.id.contentWrapper)
-		val isEmpty = profiles.isNullOrEmpty()
-		val hasPermission = PermissionHelper.hasSsidPermissions(activity)
-
-		val showList = !isEmpty && hasPermission
-		val wasShowing = ssidListContainer.isVisible
-
-		if (isEmpty) {
-			ssidListContainer.itemAnimator = null
-			ssidsAdapter.submitList(emptyList())
-		} else {
-			ssidListContainer.itemAnimator = androidx.recyclerview.widget.DefaultItemAnimator()
-			val items = profiles.sortedByDescending { it.isAutoDetected }
-			ssidsAdapter.submitList(items)
-		}
-
-		if (wasShowing != showList) {
-			androidx.transition.TransitionManager.beginDelayedTransition(container)
-		}
-
-		dividerSsidSettings.setConditionalVisibility(showList, null)
-		ssidListContainer.setConditionalVisibility(showList, null)
+		val items = profiles?.sortedByDescending { it.isAutoDetected } ?: emptyList()
+		ssidsAdapter.submitList(items)
 	}
 
 	fun showAddSsidDialog(existingProfile: NetworkProfile? = null) {
@@ -315,11 +294,8 @@ class SsidSectionController(
 		rowAutoSaveHost.setConditionalVisibility(hasPermission, container)
 		rowConnectivityWatchdogToggle.setConditionalVisibility(hasPermission, container)
 
-		val isEmpty = viewModel.networkProfiles.value.isNullOrEmpty()
-		val showList = hasPermission && !isEmpty
-
-		dividerSsidSettings.setConditionalVisibility(showList, container)
-		ssidListContainer.setConditionalVisibility(showList, container)
+		dividerSsidSettings.setConditionalVisibility(hasPermission, container)
+		ssidListContainer.setConditionalVisibility(hasPermission, container)
 
 		if (hasPermission) {
 			val watchdogEnabled = viewModel.connectivityWatchdogEnabled.value ?: false
