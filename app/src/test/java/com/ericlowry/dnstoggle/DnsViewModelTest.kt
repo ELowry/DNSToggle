@@ -7,6 +7,8 @@ import androidx.core.content.edit
 import androidx.test.core.app.ApplicationProvider
 import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsViewModel
+import com.ericlowry.dnstoggle.data.ReachabilityManager
+import com.ericlowry.dnstoggle.data.repository.AppSettingsRepository
 import com.ericlowry.dnstoggle.data.repository.HostnameRepository
 import com.ericlowry.dnstoggle.data.repository.NetworkProfileRepository
 import com.ericlowry.dnstoggle.data.repository.SecurityRepository
@@ -47,6 +49,7 @@ class DnsViewModelTest {
 		Dispatchers.setMain(testDispatcher)
 		app = ApplicationProvider.getApplicationContext()
 		SecurityRepository.initialize(app)
+		AppSettingsRepository.initialize(app)
 		VpnRepository.initialize(app)
 		NetworkProfileRepository.initialize(app)
 		HostnameRepository.initialize(app)
@@ -86,7 +89,7 @@ class DnsViewModelTest {
 		Settings.Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE, mode)
 		Settings.Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER, specifier)
 
-		viewModel.loadSettings()
+		viewModel.refreshSystemSettings()
 		shadowOf(Looper.getMainLooper()).idle()
 
 		assertEquals(mode, viewModel.privateDnsMode.value)
@@ -105,7 +108,7 @@ class DnsViewModelTest {
 		)
 		Settings.Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER, specifier)
 
-		viewModel.loadSettings()
+		viewModel.refreshSystemSettings()
 		shadowOf(Looper.getMainLooper()).idle()
 
 		val hostnames = viewModel.dnsHostnames.value
@@ -127,7 +130,7 @@ class DnsViewModelTest {
 		shadowOf(Looper.getMainLooper()).idle()
 
 		val reachability = viewModel.dnsReachability.value
-		assertEquals(DnsViewModel.ReachabilityState.IDLE, reachability?.get(hostname))
+		assertEquals(ReachabilityManager.ReachabilityState.IDLE, reachability?.get(hostname))
 	}
 
 	@Test

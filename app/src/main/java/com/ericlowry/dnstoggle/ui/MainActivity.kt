@@ -221,7 +221,7 @@ class MainActivity : AppCompatActivity() {
 
 	override fun onResume() {
 		super.onResume()
-		dnsViewModel.loadSettings()
+		dnsViewModel.refreshSystemSettings()
 		dnsViewModel.refreshCurrentSsid()
 		updateMainPermissionUiState()
 		ssidController.updateUiState(PermissionHelper.hasSsidPermissions(this))

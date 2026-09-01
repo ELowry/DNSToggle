@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.DnsHostname
-import com.ericlowry.dnstoggle.data.DnsViewModel
+import com.ericlowry.dnstoggle.data.ReachabilityManager
 import com.google.android.material.card.MaterialCardView
 import java.util.Collections
 
@@ -34,13 +34,13 @@ class HostnamesAdapter(
 	private val colors: HostnameColors
 ) : ListAdapter<DnsHostname, HostnamesAdapter.ViewHolder>(DnsHostnameDiffCallback()) {
 
-	private var reachabilityMap: Map<String, DnsViewModel.ReachabilityState> = emptyMap()
+	private var reachabilityMap: Map<String, ReachabilityManager.ReachabilityState> = emptyMap()
 	private var activeSpecifier: String? = null
 	private var isToggleChecked: Boolean = false
 	private var globalDefaultHostname: String? = null
 
 	fun updateMetadata(
-		reachability: Map<String, DnsViewModel.ReachabilityState>?,
+		reachability: Map<String, ReachabilityManager.ReachabilityState>?,
 		specifier: String?,
 		isToggled: Boolean,
 		globalDefaultHostname: String? = null
@@ -102,7 +102,8 @@ class HostnamesAdapter(
 		val hostname = dnsEntry.hostname
 
 		if (payloads.size == 1 && payloads.contains("metadata")) {
-			val reachability = reachabilityMap[hostname] ?: DnsViewModel.ReachabilityState.IDLE
+			val reachability =
+				reachabilityMap[hostname] ?: ReachabilityManager.ReachabilityState.IDLE
 			val isActive = (hostname == activeSpecifier) && isToggleChecked
 			updateStatusTextOnly(
 				holder,
@@ -135,7 +136,8 @@ class HostnamesAdapter(
 				holder.tvSecondaryHostname.visibility = View.GONE
 			}
 
-			val reachability = reachabilityMap[hostname] ?: DnsViewModel.ReachabilityState.IDLE
+			val reachability =
+				reachabilityMap[hostname] ?: ReachabilityManager.ReachabilityState.IDLE
 			val isActive = (hostname == activeSpecifier) && isToggleChecked
 
 			if (dnsEntry.isUnsaved) {
@@ -211,7 +213,7 @@ class HostnamesAdapter(
 
 	private fun updateStatusTextOnly(
 		holder: ViewHolder,
-		reachability: DnsViewModel.ReachabilityState,
+		reachability: ReachabilityManager.ReachabilityState,
 		isActive: Boolean,
 		isUnsaved: Boolean,
 		hasFocus: Boolean
@@ -232,17 +234,17 @@ class HostnamesAdapter(
 			holder.tvStatus.visibility = View.VISIBLE
 
 			when (reachability) {
-				DnsViewModel.ReachabilityState.TESTING -> {
+				ReachabilityManager.ReachabilityState.TESTING -> {
 					holder.tvStatus.text = context.getString(R.string.status_testing_dns)
 					holder.tvStatus.setTextColor(colors.textColorSecondary)
 				}
 
-				DnsViewModel.ReachabilityState.REACHABLE -> {
+				ReachabilityManager.ReachabilityState.REACHABLE -> {
 					holder.tvStatus.text = context.getString(R.string.status_active_reachable)
 					holder.tvStatus.setTextColor(colors.colorPrimary)
 				}
 
-				DnsViewModel.ReachabilityState.UNREACHABLE -> {
+				ReachabilityManager.ReachabilityState.UNREACHABLE -> {
 					holder.tvStatus.text = context.getString(R.string.warning_unreachable_dns)
 					holder.tvStatus.setTextColor(colors.warningColor)
 				}
@@ -251,13 +253,13 @@ class HostnamesAdapter(
 			}
 		} else {
 			when (reachability) {
-				DnsViewModel.ReachabilityState.TESTING -> {
+				ReachabilityManager.ReachabilityState.TESTING -> {
 					holder.tvStatus.visibility = View.VISIBLE
 					holder.tvStatus.text = context.getString(R.string.status_testing_dns)
 					holder.tvStatus.setTextColor(colors.textColorSecondary)
 				}
 
-				DnsViewModel.ReachabilityState.UNREACHABLE -> {
+				ReachabilityManager.ReachabilityState.UNREACHABLE -> {
 					holder.tvStatus.visibility = View.VISIBLE
 					holder.tvStatus.text = context.getString(R.string.warning_unreachable_dns)
 					holder.tvStatus.setTextColor(colors.warningColor)

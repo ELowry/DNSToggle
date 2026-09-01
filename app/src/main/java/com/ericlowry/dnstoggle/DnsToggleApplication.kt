@@ -19,6 +19,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import com.ericlowry.dnstoggle.data.Constants
+import com.ericlowry.dnstoggle.data.repository.AppSettingsRepository
 import com.ericlowry.dnstoggle.data.repository.DnsSettingsRepository
 import com.ericlowry.dnstoggle.data.repository.HostnameRepository
 import com.ericlowry.dnstoggle.data.repository.NetworkProfileRepository
@@ -139,6 +140,7 @@ class DnsToggleApplication : Application() {
 		})
 
 		SecurityRepository.initialize(this)
+		AppSettingsRepository.initialize(this)
 		VpnRepository.initialize(this)
 		NetworkProfileRepository.initialize(this)
 		HostnameRepository.initialize(this)
