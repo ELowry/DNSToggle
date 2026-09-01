@@ -20,13 +20,20 @@ fun String.stripSsidQuotes(): String {
 
 object NetworkUtils {
 
+	/**
+	 * Returns true if the given SSID is not null, not empty, and not the placeholder "<unknown ssid>".
+	 */
+	fun isValidSsid(ssid: String?): Boolean {
+		val stripped = ssid?.stripSsidQuotes()
+		return !stripped.isNullOrEmpty() && stripped != "<unknown ssid>"
+	}
+
 	fun getCurrentWifiSsid(context: Context): String? {
 		val application = context.applicationContext as? DnsToggleApplication
 		application?.detectedSsid?.let { return it }
 
-		return getCurrentWifiInfo(context)?.ssid?.stripSsidQuotes()?.let {
-			if (it == "<unknown ssid>" || it.isEmpty()) null else it
-		}
+		val rawSsid = getCurrentWifiInfo(context)?.ssid
+		return if (isValidSsid(rawSsid)) rawSsid?.stripSsidQuotes() else null
 	}
 
 	private fun getCurrentWifiInfo(context: Context): WifiInfo? {

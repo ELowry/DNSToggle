@@ -34,6 +34,7 @@ import com.ericlowry.dnstoggle.data.repository.NetworkProfileRepository
 import com.ericlowry.dnstoggle.data.repository.VpnRepository
 import com.ericlowry.dnstoggle.ui.MainActivity
 import com.ericlowry.dnstoggle.util.EncryptionManager
+import com.ericlowry.dnstoggle.util.NetworkUtils
 import com.ericlowry.dnstoggle.util.NotificationUtils
 import com.ericlowry.dnstoggle.util.stripSsidQuotes
 import kotlinx.coroutines.CoroutineDispatcher
@@ -319,8 +320,7 @@ class WifiMonitoringService : Service() {
 					wifiCaps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
 
 				val app = application as DnsToggleApplication
-				app.detectedSsid =
-					if (currentSsid == "<unknown ssid>" || currentSsid?.isEmpty() == true) null else currentSsid
+				app.detectedSsid = if (NetworkUtils.isValidSsid(wifiInfo?.ssid)) currentSsid else null
 
 				val prefs = getPrefs()
 				val vpnOverrideEnabled =
@@ -360,7 +360,7 @@ class WifiMonitoringService : Service() {
 				}
 
 				// Normal Wi-Fi logic
-				if (currentSsid == null || currentSsid == "<unknown ssid>" || currentSsid.isEmpty()) {
+				if (currentSsid == null || !NetworkUtils.isValidSsid(currentSsid)) {
 					dnsSettleJob?.cancel()
 					isTransitioning = false
 					lastBssid = null
@@ -646,14 +646,14 @@ class WifiMonitoringService : Service() {
 			?: activeCaps?.takeIf { it.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) }
 
 		val currentSsid = wifiCaps?.let { caps ->
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-				(caps.transportInfo as? WifiInfo)?.ssid?.stripSsidQuotes()
+			val rawSsid = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+				(caps.transportInfo as? WifiInfo)?.ssid
 			} else {
 				val wm = getSystemService(WIFI_SERVICE) as WifiManager
-				@Suppress("DEPRECATION") wm.connectionInfo.ssid?.stripSsidQuotes()
+				@Suppress("DEPRECATION") wm.connectionInfo.ssid
 			}
-		}?.takeIf { it != "<unknown ssid>" && it.isNotEmpty() }
-			?: (application as DnsToggleApplication).detectedSsid
+			if (NetworkUtils.isValidSsid(rawSsid)) rawSsid?.stripSsidQuotes() else null
+		} ?: (application as DnsToggleApplication).detectedSsid
 
 		if (force) {
 			val profiles = NetworkProfileRepository.networkProfiles.value ?: emptyList()

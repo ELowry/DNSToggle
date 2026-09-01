@@ -14,6 +14,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -37,6 +38,7 @@ object HostnameRepository {
 
 	fun loadHostnames() {
 		scope.launch {
+			SecurityRepository.isInitialized.first { it }
 			val rawData = encryptedPrefs.all[Constants.PREF_DNS_HOSTNAMES]
 
 			var keyInvalidated = false

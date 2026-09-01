@@ -22,6 +22,7 @@ import com.ericlowry.dnstoggle.data.repository.SecurityRepository
 import com.ericlowry.dnstoggle.data.repository.VpnRepository
 import com.ericlowry.dnstoggle.service.DnsToggleService
 import com.ericlowry.dnstoggle.service.TileServiceCompat
+import com.ericlowry.dnstoggle.util.EncryptionManager
 import com.ericlowry.dnstoggle.util.NetworkUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -193,12 +194,16 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		loadSettings()
 		viewModelScope.launch {
 			NetworkProfileRepository.networkProfiles.collect { list ->
-				list?.let { _networkProfiles.postValue(it) }
+				if (list != null) {
+					_networkProfiles.postValue(list)
+				}
 			}
 		}
 		viewModelScope.launch {
-			HostnameRepository.dnsHostnames.collect {
-				refreshDisplayList()
+			HostnameRepository.dnsHostnames.collect { hostnames ->
+				if (hostnames != null) {
+					refreshDisplayList()
+				}
 			}
 		}
 		viewModelScope.launch {
@@ -206,6 +211,21 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 				if (invalidated) {
 					_isKeyInvalidated.postValue(true)
 				}
+			}
+		}
+		viewModelScope.launch {
+			VpnRepository.vpnOverrideEnabled.collect {
+				_vpnOverrideEnabled.postValue(it)
+			}
+		}
+		viewModelScope.launch {
+			VpnRepository.vpnDnsHostname.collect {
+				_vpnDnsHostname.postValue(it)
+			}
+		}
+		viewModelScope.launch {
+			VpnRepository.vpnDnsMode.collect {
+				_vpnDnsMode.postValue(it)
 			}
 		}
 		sharedPreferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
@@ -248,9 +268,6 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 			val disableDnsTest =
 				sharedPreferences.getBoolean(Constants.PREF_DISABLE_DNS_TEST, false)
 			val showToast = sharedPreferences.getBoolean(Constants.PREF_SHOW_TOAST, true)
-			val vpnOverride = VpnRepository.vpnOverrideEnabled.value
-			val vpnDns = VpnRepository.vpnDnsHostname.value
-			val vpnDnsMode = VpnRepository.vpnDnsMode.value
 			val vpnRemovedWarning =
 				sharedPreferences.getBoolean(Constants.PREF_VPN_HOSTNAME_REMOVED_WARNING, false)
 			val isInVpn = sharedPreferences.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)
@@ -274,9 +291,6 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 				_hideLauncherIcon.value = hideLauncher
 				_disableDnsTest.value = disableDnsTest
 				_showToastEnabled.value = showToast
-				_vpnOverrideEnabled.value = vpnOverride
-				_vpnDnsHostname.value = vpnDns
-				_vpnDnsMode.value = vpnDnsMode
 				_enableStrictOffOption.value = enableStrictOff
 				_defaultOffMode.value = defaultOffMode
 				_vpnHostnameRemovedWarning.value = vpnRemovedWarning
@@ -284,24 +298,6 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 				_activeSsidOverride.value = ssidOverride
 				refreshCurrentSsid()
 				refreshDisplayList()
-			}
-		}
-
-		viewModelScope.launch {
-			VpnRepository.vpnOverrideEnabled.collect {
-				_vpnOverrideEnabled.postValue(it)
-			}
-		}
-
-		viewModelScope.launch {
-			VpnRepository.vpnDnsHostname.collect {
-				_vpnDnsHostname.postValue(it)
-			}
-		}
-
-		viewModelScope.launch {
-			VpnRepository.vpnDnsMode.collect {
-				_vpnDnsMode.postValue(it)
 			}
 		}
 	}
@@ -606,8 +602,8 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		val encryptedPrefs = app.getEncryptedPrefs()
 		val encryptedHostname = encryptedPrefs.getString(Constants.PREF_LAST_USED_HOSTNAME, null)
 		val lastUsed = encryptedHostname?.let {
-			when (val result = com.ericlowry.dnstoggle.util.EncryptionManager.decrypt(it)) {
-				is com.ericlowry.dnstoggle.util.EncryptionManager.DecryptResult.Success -> result.data
+			when (val result = EncryptionManager.decrypt(it)) {
+				is EncryptionManager.DecryptResult.Success -> result.data
 				else -> null
 			}
 		}

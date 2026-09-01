@@ -144,7 +144,12 @@ class DnsToggleApplication : Application() {
 		HostnameRepository.initialize(this)
 		DnsSettingsRepository.initialize(this)
 		initializeNotificationChannels()
-		initializePreferredDnsMode()
+
+		applicationScope.launch(Dispatchers.IO) {
+			// Warm up AndroidKeyStore and encryption keys
+			EncryptionManager.encrypt("")
+			initializePreferredDnsMode()
+		}
 
 		getPrefs().registerOnSharedPreferenceChangeListener(preferenceChangeListener)
 

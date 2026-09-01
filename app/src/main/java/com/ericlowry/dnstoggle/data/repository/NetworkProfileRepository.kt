@@ -14,6 +14,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
@@ -35,6 +36,7 @@ object NetworkProfileRepository {
 
 	fun loadNetworkProfiles() {
 		scope.launch {
+			SecurityRepository.isInitialized.first { it }
 			// START_LEGACY_MIGRATION_CODE: Local PREF_SSID_BLACKLIST to NetworkProfile migration
 			val legacyBlacklist = encryptedPrefs.getStringSet(Constants.PREF_SSID_BLACKLIST, null)
 			val legacyAutoBlacklist =
