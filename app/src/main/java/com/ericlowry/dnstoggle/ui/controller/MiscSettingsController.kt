@@ -142,7 +142,9 @@ class MiscSettingsController(
 		}
 
 		rowDefaultOffMode.setOnClickListener {
-			if (!switchEnableStrictOff.isChecked) return@setOnClickListener
+			if (!switchEnableStrictOff.isChecked) {
+				return@setOnClickListener
+			}
 
 			val options = arrayOf(
 				activity.getString(R.string.mode_automatic),
@@ -279,16 +281,26 @@ class MiscSettingsController(
 		val language = locale.language
 		val country = locale.country
 
-		val fullLocale = if (country.isNotEmpty()) "$language-$country" else language
+		val fullLocale = if (country.isNotEmpty()) {
+			"$language-$country"
+		} else {
+			language
+		}
 		val fullPath = "$fullLocale/changelogs/$versionCode.txt"
 
-		if (assetExists(fullPath)) return fullPath
+		if (assetExists(fullPath)) {
+			return fullPath
+		}
 
 		val langPath = "$language/changelogs/$versionCode.txt"
-		if (assetExists(langPath)) return langPath
+		if (assetExists(langPath)) {
+			return langPath
+		}
 
 		val defaultPath = "en-US/changelogs/$versionCode.txt"
-		if (assetExists(defaultPath)) return defaultPath
+		if (assetExists(defaultPath)) {
+			return defaultPath
+		}
 
 		return null
 	}

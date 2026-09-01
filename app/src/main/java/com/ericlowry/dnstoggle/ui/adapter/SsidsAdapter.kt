@@ -49,17 +49,6 @@ class SsidsAdapter(
 		submitList(mutableList)
 	}
 
-	class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-		val card: MaterialCardView = view as MaterialCardView
-		val ssidInfoContainer: View = view.findViewById(R.id.ssidInfoContainer)
-		val tvSsidName: TextView = view.findViewById(R.id.tvSsidName)
-		val tvSsidLabel: TextView = view.findViewById(R.id.tvSsidLabel)
-		val btnEdit: View = view.findViewById(R.id.btnEditSsid)
-		val btnDelete: View = view.findViewById(R.id.btnDeleteSsid)
-		val btnConfirm: View = view.findViewById(R.id.btnSaveSsid)
-		val unsavedBorder: View = view.findViewById(R.id.unsavedBorder)
-	}
-
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 		val view = LayoutInflater.from(parent.context).inflate(R.layout.item_ssid, parent, false)
 		return ViewHolder(view)
@@ -86,7 +75,9 @@ class SsidsAdapter(
 			}
 
 			val hostnameLabel =
-				hostnames.find { it.hostname == item.targetHostname }?.getDisplayName()
+				hostnames.find {
+					it.hostname == item.targetHostname
+				}?.getDisplayName()
 			val baseHostString = hostnameLabel ?: item.targetHostname
 			?: context.getString(R.string.default_dns_label)
 
@@ -113,8 +104,11 @@ class SsidsAdapter(
 
 			if (item.isEnabled || isActive) {
 				holder.card.setCardBackgroundColor(colors.colorSurfaceContainer)
-				holder.card.cardElevation =
-					if (isActive && !isTransient) (2 * context.resources.displayMetrics.density) else 0f
+				holder.card.cardElevation = if (isActive && !isTransient) {
+					2 * context.resources.displayMetrics.density
+				} else {
+					0f
+				}
 			} else {
 				holder.card.setCardBackgroundColor(colors.colorSurface)
 				holder.card.cardElevation = 0f
@@ -123,20 +117,49 @@ class SsidsAdapter(
 			updateCardStroke(holder, item, isActive, holder.ssidInfoContainer.hasFocus())
 
 			holder.btnEdit.visibility = View.VISIBLE
-			holder.btnConfirm.visibility = if (isTransient) View.VISIBLE else View.GONE
-			holder.unsavedBorder.visibility = if (isTransient) View.VISIBLE else View.GONE
+			holder.btnConfirm.visibility = if (isTransient) {
+				View.VISIBLE
+			} else {
+				View.GONE
+			}
+			holder.unsavedBorder.visibility = if (isTransient) {
+				View.VISIBLE
+			} else {
+				View.GONE
+			}
 
-			holder.card.setOnClickListener { onToggleClick(item) }
-			holder.ssidInfoContainer.setOnClickListener { onToggleClick(item) }
+			holder.card.setOnClickListener {
+				onToggleClick(item)
+			}
+			holder.ssidInfoContainer.setOnClickListener {
+				onToggleClick(item)
+			}
 
 			holder.ssidInfoContainer.setOnFocusChangeListener { _, hasFocus ->
 				updateCardStroke(holder, item, isActive, hasFocus)
 			}
 
-			holder.btnEdit.setOnClickListener { onEditClick(item) }
-			holder.btnDelete.setOnClickListener { onDeleteClick(item) }
-			holder.btnConfirm.setOnClickListener { onConfirmClick(item) }
+			holder.btnEdit.setOnClickListener {
+				onEditClick(item)
+			}
+			holder.btnDelete.setOnClickListener {
+				onDeleteClick(item)
+			}
+			holder.btnConfirm.setOnClickListener {
+				onConfirmClick(item)
+			}
 		}
+	}
+
+	class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+		val card: MaterialCardView = view as MaterialCardView
+		val ssidInfoContainer: View = view.findViewById(R.id.ssidInfoContainer)
+		val tvSsidName: TextView = view.findViewById(R.id.tvSsidName)
+		val tvSsidLabel: TextView = view.findViewById(R.id.tvSsidLabel)
+		val btnEdit: View = view.findViewById(R.id.btnEditSsid)
+		val btnDelete: View = view.findViewById(R.id.btnDeleteSsid)
+		val btnConfirm: View = view.findViewById(R.id.btnSaveSsid)
+		val unsavedBorder: View = view.findViewById(R.id.unsavedBorder)
 	}
 
 	private fun updateCardStroke(

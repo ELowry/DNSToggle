@@ -28,17 +28,13 @@ class DnsToggleService : TileService() {
 
 	private val serviceScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-	private fun getPrefs(): SharedPreferences {
-		return (application as DnsToggleApplication).getPrefs()
-	}
-
-	override fun onDestroy() {
-		serviceScope.cancel()
-		super.onDestroy()
-	}
-
 	override fun onTileAdded() {
 		super.onTileAdded()
+		updateTileFromSystemSettings()
+	}
+
+	override fun onStartListening() {
+		super.onStartListening()
 		updateTileFromSystemSettings()
 	}
 
@@ -48,9 +44,10 @@ class DnsToggleService : TileService() {
 		serviceScope.launch(Dispatchers.IO) {
 			if (checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) != PackageManager.PERMISSION_GRANTED) {
 				// Attempt root grant
-				if ((attemptSecureSettingsGrant(this@DnsToggleService)) &&
-					(checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED)
-				) {
+				val grantSuccess = attemptSecureSettingsGrant(this@DnsToggleService)
+				val hasPermission =
+					checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) == PackageManager.PERMISSION_GRANTED
+				if (grantSuccess && hasPermission) {
 					// Success
 				} else {
 					// Failed or missing root
@@ -74,7 +71,12 @@ class DnsToggleService : TileService() {
 			withContext(Dispatchers.Main) {
 				when (result) {
 					is DnsManager.ToggleResult.Success -> {
-						updateTileState(if (isEnabling) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE)
+						val tileState = if (isEnabling) {
+							Tile.STATE_ACTIVE
+						} else {
+							Tile.STATE_INACTIVE
+						}
+						updateTileState(tileState)
 					}
 
 					is DnsManager.ToggleResult.MissingHostname -> {
@@ -98,16 +100,19 @@ class DnsToggleService : TileService() {
 		}
 	}
 
-	override fun onStartListening() {
-		super.onStartListening()
-		updateTileFromSystemSettings()
+	override fun onDestroy() {
+		serviceScope.cancel()
+		super.onDestroy()
 	}
 
 	private fun updateTileFromSystemSettings() {
 		try {
 			val currentMode = Global.getString(contentResolver, Constants.SETTINGS_PRIVATE_DNS_MODE)
-			val tileState =
-				if (currentMode == Constants.DNS_MODE_HOSTNAME) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
+			val tileState = if (currentMode == Constants.DNS_MODE_HOSTNAME) {
+				Tile.STATE_ACTIVE
+			} else {
+				Tile.STATE_INACTIVE
+			}
 			updateTileState(tileState)
 		} catch (_: SecurityException) {
 			// Keep the tile clickable so the user can be prompted for permissions
@@ -178,7 +183,9 @@ class DnsToggleService : TileService() {
 	) {
 		val intent = Intent(this, MainActivity::class.java).apply {
 			flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-			if (showPermissionDialog) putExtra("show_permission_dialog", true)
+			if (showPermissionDialog) {
+				putExtra("show_permission_dialog", true)
+			}
 			if (focusDnsInput) {
 				putExtra(MainActivity.EXTRA_FOCUS_DNS_INPUT, true)
 				putExtra(MainActivity.EXTRA_ENABLE_DNS_AFTER_SAVE, true)
@@ -190,5 +197,9 @@ class DnsToggleService : TileService() {
 
 	private fun showPermissionRequiredDialog() {
 		launchMainActivity(showPermissionDialog = true)
+	}
+
+	private fun getPrefs(): SharedPreferences {
+		return (application as DnsToggleApplication).getPrefs()
 	}
 }

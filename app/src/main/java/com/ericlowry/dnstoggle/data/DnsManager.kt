@@ -26,6 +26,18 @@ object DnsManager {
 		data object Error : ToggleResult()
 	}
 
+	/**
+	 * Toggles the system-wide Private DNS setting.
+	 *
+	 * @param context The application or activity context.
+	 * @param enabled Whether to enable Private DNS (hostname mode) or disable it.
+	 * @param targetHostname The hostname to apply when enabling. If null, falls back to last used.
+	 * @param targetMode The mode to apply when disabling (off or opportunistic).
+	 * @param isInteractiveMainUi Whether the call originated from the main UI (affects toast display).
+	 * @param forceFeedback Whether to force showing a status notification or toast.
+	 * @param isFromTile Whether the call originated from the Quick Settings tile.
+	 * @return A [ToggleResult] indicating the outcome of the operation.
+	 */
 	fun togglePrivateDns(
 		context: Context,
 		enabled: Boolean,
@@ -54,8 +66,13 @@ object DnsManager {
 				if (encryptedHostname != null) {
 					effectiveHostname =
 						when (val result = EncryptionManager.decrypt(encryptedHostname)) {
-							is EncryptionManager.DecryptResult.Success -> result.data
-							else -> null
+							is EncryptionManager.DecryptResult.Success -> {
+								result.data
+							}
+
+							else -> {
+								null
+							}
 						}
 				}
 			}
@@ -77,7 +94,11 @@ object DnsManager {
 			Constants.DNS_MODE_OPPORTUNISTIC
 		) ?: Constants.DNS_MODE_OPPORTUNISTIC
 
-		val newMode = if (enabled) Constants.DNS_MODE_HOSTNAME else (targetMode ?: offMode)
+		val newMode = if (enabled) {
+			Constants.DNS_MODE_HOSTNAME
+		} else {
+			targetMode ?: offMode
+		}
 		val currentSsid = NetworkUtils.getCurrentWifiSsid(context)
 		val isInVpn = sharedPreferences.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)
 
@@ -104,8 +125,11 @@ object DnsManager {
 
 			if (previousMode == newMode) {
 				// Forced flip to bypass netd caching.
-				val dummyMode =
-					if (newMode == Constants.DNS_MODE_OFF) Constants.DNS_MODE_OPPORTUNISTIC else Constants.DNS_MODE_OFF
+				val dummyMode = if (newMode == Constants.DNS_MODE_OFF) {
+					Constants.DNS_MODE_OPPORTUNISTIC
+				} else {
+					Constants.DNS_MODE_OFF
+				}
 				Settings.Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE, dummyMode)
 			}
 
@@ -124,11 +148,18 @@ object DnsManager {
 			val autoSaveHost = sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_HOST, false)
 
 			val isExplicitHostChange = targetHostname != null
-			val shouldInterceptForProfile =
-				if (isExplicitHostChange) autoSaveHost else autoSaveState
+			val shouldInterceptForProfile = if (isExplicitHostChange) {
+				autoSaveHost
+			} else {
+				autoSaveState
+			}
 
 			if (shouldInterceptForProfile) {
-				val targetHost = if (enabled && autoSaveHost) effectiveHostname else null
+				val targetHost = if (enabled && autoSaveHost) {
+					effectiveHostname
+				} else {
+					null
+				}
 				val existingProfile =
 					NetworkProfileRepository.networkProfiles.value?.find { it.ssid == currentSsid }
 
@@ -139,7 +170,11 @@ object DnsManager {
 					isAutoDetected = false,
 					isUnsaved = existingProfile == null,
 					preserveExistingHostname = !enabled,
-					targetMode = if (!enabled) targetMode else null,
+					targetMode = if (!enabled) {
+						targetMode
+					} else {
+						null
+					},
 					preserveExistingMode = enabled
 				)
 
@@ -148,8 +183,11 @@ object DnsManager {
 						true
 					)
 				) {
-					val messageRes =
-						if (enabled) R.string.notif_ssid_removed else R.string.notif_ssid_added
+					val messageRes = if (enabled) {
+						R.string.notif_ssid_removed
+					} else {
+						R.string.notif_ssid_added
+					}
 					NotificationUtils.showStatusNotification(
 						context,
 						context.getString(messageRes, currentSsid)
@@ -201,8 +239,13 @@ object DnsManager {
 					}
 				} else if (previousMode == Constants.DNS_MODE_HOSTNAME) {
 					val label = when (newMode) {
-						Constants.DNS_MODE_OFF -> context.getString(R.string.off_strict_label)
-						else -> context.getString(R.string.off_automatic_label)
+						Constants.DNS_MODE_OFF -> {
+							context.getString(R.string.off_strict_label)
+						}
+
+						else -> {
+							context.getString(R.string.off_automatic_label)
+						}
 					}
 					Toast.makeText(
 						context,

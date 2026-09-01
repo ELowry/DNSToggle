@@ -11,16 +11,27 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 
+/**
+ * Static helper for building generic Material dialogs used across the app.
+ */
 object CommonDialogHelper {
 
+	/**
+	 * Shows a standard deletion confirmation dialog.
+	 */
 	fun showDeleteConfirmation(context: Context, messageResId: Int, onConfirm: () -> Unit) {
 		MaterialAlertDialogBuilder(context)
 			.setMessage(context.getString(messageResId))
-			.setPositiveButton(context.getString(R.string.ok)) { _, _ -> onConfirm() }
+			.setPositiveButton(context.getString(R.string.ok)) { _, _ ->
+				onConfirm()
+			}
 			.setNegativeButton(context.getString(R.string.cancel), null)
 			.show()
 	}
 
+	/**
+	 * Shows a dialog with a single text input field.
+	 */
 	fun showTextInputDialog(
 		activity: Activity,
 		titleResId: Int,
@@ -60,6 +71,9 @@ object CommonDialogHelper {
 		dialog.show()
 	}
 
+	/**
+	 * Shows a dialog with a numeric input field and range validation.
+	 */
 	fun showNumberInputDialog(
 		activity: Activity,
 		titleResId: Int,
@@ -114,11 +128,16 @@ object CommonDialogHelper {
 		dialog.show()
 	}
 
+	/**
+	 * Shows an alert informing the user that encryption keys have been invalidated (e.g. by new biometric entry).
+	 */
 	fun showKeyInvalidatedDialog(context: Context, onDismiss: () -> Unit) {
 		MaterialAlertDialogBuilder(context)
 			.setTitle(R.string.keystore_error_title)
 			.setMessage(R.string.keystore_error_message)
-			.setPositiveButton(R.string.ok) { _, _ -> onDismiss() }
+			.setPositiveButton(R.string.ok) { _, _ ->
+				onDismiss()
+			}
 			.setCancelable(false)
 			.show()
 	}

@@ -17,7 +17,9 @@ object RootUtils {
 	 */
 	fun isAvailable(): Boolean {
 		for (path in Constants.ROOT_SU_BINARY_PATHS) {
-			if (java.io.File(path).exists()) return true
+			if (java.io.File(path).exists()) {
+				return true
+			}
 		}
 		return false
 	}

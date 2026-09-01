@@ -153,22 +153,32 @@ object AppSettingsRepository {
 		sharedPreferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
 	}
 
-	fun setAutoSaveState(enabled: Boolean) =
-		sharedPreferences.edit { putBoolean(Constants.PREF_AUTO_SAVE_STATE, enabled) }
+	fun setAutoSaveState(enabled: Boolean) {
+		sharedPreferences.edit {
+			putBoolean(Constants.PREF_AUTO_SAVE_STATE, enabled)
+		}
+	}
 
-	fun setAutoSaveHost(enabled: Boolean) =
-		sharedPreferences.edit { putBoolean(Constants.PREF_AUTO_SAVE_HOST, enabled) }
+	fun setAutoSaveHost(enabled: Boolean) {
+		sharedPreferences.edit {
+			putBoolean(Constants.PREF_AUTO_SAVE_HOST, enabled)
+		}
+	}
 
-	fun setConnectivityWatchdogEnabled(enabled: Boolean) =
-		sharedPreferences.edit { putBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, enabled) }
+	fun setConnectivityWatchdogEnabled(enabled: Boolean) {
+		sharedPreferences.edit {
+			putBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, enabled)
+		}
+	}
 
-	fun setConnectivityWatchdogDebounceSeconds(seconds: Int) =
+	fun setConnectivityWatchdogDebounceSeconds(seconds: Int) {
 		sharedPreferences.edit {
 			putInt(
 				Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
 				seconds
 			)
 		}
+	}
 
 	fun setConnectivityWatchdogProbeTargets(targets: String) {
 		val sanitized = targets.split(",")
@@ -187,14 +197,23 @@ object AppSettingsRepository {
 		}
 	}
 
-	fun setHideLauncherIcon(hidden: Boolean) =
-		sharedPreferences.edit { putBoolean(Constants.PREF_HIDE_LAUNCHER_ICON, hidden) }
+	fun setHideLauncherIcon(hidden: Boolean) {
+		sharedPreferences.edit {
+			putBoolean(Constants.PREF_HIDE_LAUNCHER_ICON, hidden)
+		}
+	}
 
-	fun setDisableDnsTest(disabled: Boolean) =
-		sharedPreferences.edit { putBoolean(Constants.PREF_DISABLE_DNS_TEST, disabled) }
+	fun setDisableDnsTest(disabled: Boolean) {
+		sharedPreferences.edit {
+			putBoolean(Constants.PREF_DISABLE_DNS_TEST, disabled)
+		}
+	}
 
-	fun setShowToast(enabled: Boolean) =
-		sharedPreferences.edit { putBoolean(Constants.PREF_SHOW_TOAST, enabled) }
+	fun setShowToast(enabled: Boolean) {
+		sharedPreferences.edit {
+			putBoolean(Constants.PREF_SHOW_TOAST, enabled)
+		}
+	}
 
 	fun setEnableStrictOffOption(enabled: Boolean) {
 		sharedPreferences.edit { putBoolean(Constants.PREF_ENABLE_STRICT_OFF_OPTION, enabled) }
@@ -207,9 +226,15 @@ object AppSettingsRepository {
 		}
 	}
 
-	fun setDefaultOffMode(mode: String) =
-		sharedPreferences.edit { putString(Constants.PREF_DEFAULT_OFF_MODE, mode) }
+	fun setDefaultOffMode(mode: String) {
+		sharedPreferences.edit {
+			putString(Constants.PREF_DEFAULT_OFF_MODE, mode)
+		}
+	}
 
-	fun dismissVpnHostnameWarning() =
-		sharedPreferences.edit { remove(Constants.PREF_VPN_HOSTNAME_REMOVED_WARNING) }
+	fun dismissVpnHostnameWarning() {
+		sharedPreferences.edit {
+			remove(Constants.PREF_VPN_HOSTNAME_REMOVED_WARNING)
+		}
+	}
 }

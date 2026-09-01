@@ -54,7 +54,9 @@ object VpnRepository {
 						// START_LEGACY_MIGRATION_CODE: Purge legacy "off" or "opportunistic" strings saved in the hostname slot
 						val decryptedHostname = result.data
 						if (decryptedHostname == Constants.DNS_MODE_OFF || decryptedHostname == Constants.DNS_MODE_OPPORTUNISTIC) {
-							encryptedPrefs.edit { remove(Constants.PREF_VPN_DNS_HOSTNAME) }
+							encryptedPrefs.edit {
+								remove(Constants.PREF_VPN_DNS_HOSTNAME)
+							}
 							null
 						} else {
 							decryptedHostname

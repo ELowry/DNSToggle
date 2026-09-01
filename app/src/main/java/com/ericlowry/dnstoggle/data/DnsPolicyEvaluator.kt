@@ -214,7 +214,11 @@ object DnsPolicyEvaluator {
 									watchdogManager,
 									currentSsid!!,
 									profile.targetMode,
-									if (profile.isAutoDetected) R.string.notif_connectivity_watchdog_disabled else R.string.notif_dns_disabled_auto
+									if (profile.isAutoDetected) {
+										R.string.notif_connectivity_watchdog_disabled
+									} else {
+										R.string.notif_dns_disabled_auto
+									}
 								)
 								watchdogManager.maybeRetryAutoDetectedSsid(
 									currentSsid,
@@ -311,11 +315,16 @@ object DnsPolicyEvaluator {
 		val currentSsid = app.detectedSsid
 
 		val profiles = NetworkProfileRepository.networkProfiles.value ?: emptyList()
-		val hasActiveProfileOverride = currentSsid != null &&
-				profiles.find { it.ssid == currentSsid }?.isEnabled == true
+		val currentProfile = profiles.find {
+			it.ssid == currentSsid
+		}
+		val hasActiveProfileOverride = currentSsid != null && currentProfile?.isEnabled == true
 
-		if ((isInVpnOverride && vpnOverrideEnabled) ||
-			(isVpnActive && vpnOverrideEnabled) ||
+		val vpnActiveOverride = isInVpnOverride && vpnOverrideEnabled
+		val vpnActiveTransport = isVpnActive && vpnOverrideEnabled
+
+		if (vpnActiveOverride ||
+			vpnActiveTransport ||
 			activeSsidOverride != null ||
 			hasActiveProfileOverride
 		) {
@@ -346,11 +355,14 @@ object DnsPolicyEvaluator {
 					Constants.DNS_MODE_OPPORTUNISTIC
 				) ?: Constants.DNS_MODE_OPPORTUNISTIC
 				updateDnsSetting(context, offMode, null)
+				val label = if (offMode == Constants.DNS_MODE_OFF) {
+					context.getString(R.string.off_strict_label)
+				} else {
+					context.getString(R.string.off_automatic_label)
+				}
 				dispatchStatusNotification(
 					context,
-					context.getString(R.string.keystore_error_title) + ": " + (if (offMode == Constants.DNS_MODE_OFF) context.getString(
-						R.string.off_strict_label
-					) else context.getString(R.string.off_automatic_label))
+					context.getString(R.string.keystore_error_title) + ": " + label
 				)
 			}
 		} else {
@@ -447,8 +459,11 @@ object DnsPolicyEvaluator {
 			}
 
 			// Force a dummy flip to bypass netd caching
-			val dummyMode =
-				if (newMode == Constants.DNS_MODE_OFF) Constants.DNS_MODE_OPPORTUNISTIC else Constants.DNS_MODE_OFF
+			val dummyMode = if (newMode == Constants.DNS_MODE_OFF) {
+				Constants.DNS_MODE_OPPORTUNISTIC
+			} else {
+				Constants.DNS_MODE_OFF
+			}
 			Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE, dummyMode)
 			Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_MODE, newMode)
 
@@ -477,8 +492,13 @@ object DnsPolicyEvaluator {
 		val encryptedHostname = encryptedPrefs.getString(Constants.PREF_LAST_USED_HOSTNAME, null)
 		return encryptedHostname?.let {
 			when (val result = EncryptionManager.decrypt(it)) {
-				is EncryptionManager.DecryptResult.Success -> result.data
-				else -> null
+				is EncryptionManager.DecryptResult.Success -> {
+					result.data
+				}
+
+				else -> {
+					null
+				}
 			}
 		} ?: Global.getString(context.contentResolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER)
 	}

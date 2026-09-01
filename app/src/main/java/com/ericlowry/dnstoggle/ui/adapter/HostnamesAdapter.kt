@@ -58,35 +58,6 @@ class HostnamesAdapter(
 		submitList(mutableList)
 	}
 
-	class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-		val card: MaterialCardView = view as MaterialCardView
-		val hostnameInfoContainer: View = view.findViewById(R.id.hostnameInfoContainer)
-		val tvHostname: TextView = view.findViewById(R.id.tvHostname)
-		val tvDefaultBadge: TextView = view.findViewById(R.id.tvDefaultBadge)
-		val tvSecondaryHostname: TextView = view.findViewById(R.id.tvSecondaryHostname)
-		val tvStatus: TextView = view.findViewById(R.id.tvStatus)
-		val btnEdit: View = view.findViewById(R.id.btnEditHostname)
-		val btnDelete: View = view.findViewById(R.id.btnDeleteHostname)
-		val btnAdd: View = view.findViewById(R.id.btnAddHostnameInPlace)
-		val unsavedBorder: View = view.findViewById(R.id.unsavedBorder)
-	}
-
-	private fun triggerSaveAnimation(holder: ViewHolder) {
-		val card = holder.card
-
-		val pulseColor = colors.colorSecondaryContainer
-		val surfaceColor = colors.colorSurfaceContainer
-
-		val colorAnim = ValueAnimator.ofArgb(surfaceColor, pulseColor, surfaceColor)
-		colorAnim.addUpdateListener { animator ->
-			card.setCardBackgroundColor(animator.animatedValue as Int)
-		}
-		colorAnim.duration = 600
-		colorAnim.interpolator = AccelerateDecelerateInterpolator()
-
-		colorAnim.start()
-	}
-
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 		val view =
 			LayoutInflater.from(parent.context).inflate(R.layout.item_hostname, parent, false)
@@ -171,8 +142,11 @@ class HostnamesAdapter(
 				}
 			}
 
-			holder.tvDefaultBadge.visibility =
-				if (hostname == globalDefaultHostname) View.VISIBLE else View.GONE
+			holder.tvDefaultBadge.visibility = if (hostname == globalDefaultHostname) {
+				View.VISIBLE
+			} else {
+				View.GONE
+			}
 
 			updateStatusTextOnly(
 				holder,
@@ -183,14 +157,20 @@ class HostnamesAdapter(
 			)
 
 			holder.btnDelete.isEnabled = currentList.size > 1
-			holder.btnDelete.alpha = if (currentList.size > 1) 1.0f else 0.5f
+			holder.btnDelete.alpha = if (currentList.size > 1) {
+				1.0f
+			} else {
+				0.5f
+			}
 
 			holder.btnEdit.setOnClickListener { editCallback(hostname) }
 			holder.btnDelete.setOnClickListener { deleteCallback(hostname) }
 			holder.btnAdd.setOnClickListener { addInPlaceCallback(hostname) }
 
 			val mainClickListener = View.OnClickListener {
-				if (!isActive) clickCallback(hostname)
+				if (!isActive) {
+					clickCallback(hostname)
+				}
 			}
 			holder.itemView.setOnClickListener(mainClickListener)
 
@@ -209,6 +189,19 @@ class HostnamesAdapter(
 				}
 			}
 		}
+	}
+
+	class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+		val card: MaterialCardView = view as MaterialCardView
+		val hostnameInfoContainer: View = view.findViewById(R.id.hostnameInfoContainer)
+		val tvHostname: TextView = view.findViewById(R.id.tvHostname)
+		val tvDefaultBadge: TextView = view.findViewById(R.id.tvDefaultBadge)
+		val tvSecondaryHostname: TextView = view.findViewById(R.id.tvSecondaryHostname)
+		val tvStatus: TextView = view.findViewById(R.id.tvStatus)
+		val btnEdit: View = view.findViewById(R.id.btnEditHostname)
+		val btnDelete: View = view.findViewById(R.id.btnDeleteHostname)
+		val btnAdd: View = view.findViewById(R.id.btnAddHostnameInPlace)
+		val unsavedBorder: View = view.findViewById(R.id.unsavedBorder)
 	}
 
 	private fun updateStatusTextOnly(
@@ -249,7 +242,9 @@ class HostnamesAdapter(
 					holder.tvStatus.setTextColor(colors.warningColor)
 				}
 
-				else -> holder.tvStatus.visibility = View.GONE
+				else -> {
+					holder.tvStatus.visibility = View.GONE
+				}
 			}
 		} else {
 			when (reachability) {
@@ -265,9 +260,27 @@ class HostnamesAdapter(
 					holder.tvStatus.setTextColor(colors.warningColor)
 				}
 
-				else -> holder.tvStatus.visibility = View.GONE
+				else -> {
+					holder.tvStatus.visibility = View.GONE
+				}
 			}
 		}
+	}
+
+	private fun triggerSaveAnimation(holder: ViewHolder) {
+		val card = holder.card
+
+		val pulseColor = colors.colorSecondaryContainer
+		val surfaceColor = colors.colorSurfaceContainer
+
+		val colorAnim = ValueAnimator.ofArgb(surfaceColor, pulseColor, surfaceColor)
+		colorAnim.addUpdateListener { animator ->
+			card.setCardBackgroundColor(animator.animatedValue as Int)
+		}
+		colorAnim.duration = 600
+		colorAnim.interpolator = AccelerateDecelerateInterpolator()
+
+		colorAnim.start()
 	}
 }
 

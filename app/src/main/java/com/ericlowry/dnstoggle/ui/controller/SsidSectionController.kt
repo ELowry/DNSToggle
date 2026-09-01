@@ -136,6 +136,53 @@ class SsidSectionController(
 		}
 	}
 
+	fun showAddSsidDialog(existingProfile: NetworkProfile? = null) {
+		val suggestedSsid = if (existingProfile == null) {
+			NetworkUtils.getCurrentWifiSsid(activity)
+		} else {
+			null
+		}
+		SsidDialogHelper.showAddSsidDialog(
+			activity = activity,
+			existingProfile = existingProfile,
+			suggestedSsid = suggestedSsid,
+			globalDefaultHostname = viewModel.getGlobalPreferredHostname(),
+			hostnames = viewModel.dnsHostnames.value ?: emptyList(),
+			enableStrictOff = viewModel.enableStrictOffOption.value ?: false,
+			defaultOffMode = viewModel.defaultOffMode.value ?: Constants.DNS_MODE_OPPORTUNISTIC
+		) { ssid, isEnabled, targetHostname, targetMode ->
+			viewModel.saveNetworkProfile(
+				existingProfile?.ssid,
+				ssid,
+				isEnabled,
+				targetHostname,
+				targetMode
+			)
+		}
+	}
+
+	fun updateUiState(hasPermission: Boolean) {
+		val container = activity.findViewById<ViewGroup>(R.id.contentWrapper)
+
+		permissionNoticeText.setConditionalVisibility(!hasPermission, container)
+		btnGrantPermission.setConditionalVisibility(!hasPermission, container)
+
+		addSsidButton.setConditionalVisibility(hasPermission, container)
+		rowAutoSaveState.setConditionalVisibility(hasPermission, container)
+		rowAutoSaveHost.setConditionalVisibility(hasPermission, container)
+		rowConnectivityWatchdogToggle.setConditionalVisibility(hasPermission, container)
+
+		dividerSsidSettings.setConditionalVisibility(hasPermission, container)
+		ssidListContainer.setConditionalVisibility(hasPermission, container)
+
+		if (hasPermission) {
+			val watchdogEnabled = viewModel.connectivityWatchdogEnabled.value ?: false
+			layoutWatchdogSubset.setConditionalVisibility(watchdogEnabled, container)
+		} else {
+			layoutWatchdogSubset.setConditionalVisibility(false, container)
+		}
+	}
+
 	private fun setupSsidsRecyclerView() {
 		val colors = SsidColors(
 			colorSurface = MaterialColors.getColor(
@@ -247,28 +294,6 @@ class SsidSectionController(
 		ssidsAdapter.submitList(items)
 	}
 
-	fun showAddSsidDialog(existingProfile: NetworkProfile? = null) {
-		val suggestedSsid =
-			if (existingProfile == null) NetworkUtils.getCurrentWifiSsid(activity) else null
-		SsidDialogHelper.showAddSsidDialog(
-			activity = activity,
-			existingProfile = existingProfile,
-			suggestedSsid = suggestedSsid,
-			globalDefaultHostname = viewModel.getGlobalPreferredHostname(),
-			hostnames = viewModel.dnsHostnames.value ?: emptyList(),
-			enableStrictOff = viewModel.enableStrictOffOption.value ?: false,
-			defaultOffMode = viewModel.defaultOffMode.value ?: Constants.DNS_MODE_OPPORTUNISTIC
-		) { ssid, isEnabled, targetHostname, targetMode ->
-			viewModel.saveNetworkProfile(
-				existingProfile?.ssid,
-				ssid,
-				isEnabled,
-				targetHostname,
-				targetMode
-			)
-		}
-	}
-
 	private fun showDeleteConfirmDialog(ssidToDelete: String) {
 		CommonDialogHelper.showDeleteConfirmation(activity, R.string.delete_ssid_confirm) {
 			viewModel.removeNetworkProfile(ssidToDelete)
@@ -280,28 +305,6 @@ class SsidSectionController(
 		val isIgnoringBattery = powerManager.isIgnoringBatteryOptimizations(activity.packageName)
 		SsidDialogHelper.showWifiMonitoringInfo(activity, isIgnoringBattery) {
 			onRequestIgnoreBattery()
-		}
-	}
-
-	fun updateUiState(hasPermission: Boolean) {
-		val container = activity.findViewById<ViewGroup>(R.id.contentWrapper)
-
-		permissionNoticeText.setConditionalVisibility(!hasPermission, container)
-		btnGrantPermission.setConditionalVisibility(!hasPermission, container)
-
-		addSsidButton.setConditionalVisibility(hasPermission, container)
-		rowAutoSaveState.setConditionalVisibility(hasPermission, container)
-		rowAutoSaveHost.setConditionalVisibility(hasPermission, container)
-		rowConnectivityWatchdogToggle.setConditionalVisibility(hasPermission, container)
-
-		dividerSsidSettings.setConditionalVisibility(hasPermission, container)
-		ssidListContainer.setConditionalVisibility(hasPermission, container)
-
-		if (hasPermission) {
-			val watchdogEnabled = viewModel.connectivityWatchdogEnabled.value ?: false
-			layoutWatchdogSubset.setConditionalVisibility(watchdogEnabled, container)
-		} else {
-			layoutWatchdogSubset.setConditionalVisibility(false, container)
 		}
 	}
 }

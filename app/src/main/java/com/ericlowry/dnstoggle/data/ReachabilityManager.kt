@@ -43,7 +43,12 @@ object ReachabilityManager {
 			val isReachable = NetworkUtils.isHostReachable(hostname, 853)
 
 			_reachabilityStates.update {
-				it + (hostname to (if (isReachable) ReachabilityState.REACHABLE else ReachabilityState.UNREACHABLE))
+				val state = if (isReachable) {
+					ReachabilityState.REACHABLE
+				} else {
+					ReachabilityState.UNREACHABLE
+				}
+				it + (hostname to state)
 			}
 		}
 		reachabilityJobs[hostname] = job

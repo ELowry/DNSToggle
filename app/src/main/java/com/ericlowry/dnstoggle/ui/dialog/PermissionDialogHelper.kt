@@ -77,9 +77,17 @@ object PermissionDialogHelper {
 		val rootAvailable = RootUtils.isAvailable()
 
 		val btnTextRes = when {
-			shizukuAvailable -> R.string.grant_via_shizuku
-			rootAvailable -> R.string.grant_via_root
-			else -> R.string.grant_auto_fallback
+			shizukuAvailable -> {
+				R.string.grant_via_shizuku
+			}
+
+			rootAvailable -> {
+				R.string.grant_via_root
+			}
+
+			else -> {
+				R.string.grant_auto_fallback
+			}
 		}
 		builder.setPositiveButton(btnTextRes, null) // Set null to override later
 

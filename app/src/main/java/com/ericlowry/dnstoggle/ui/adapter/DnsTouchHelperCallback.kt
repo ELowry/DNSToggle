@@ -46,7 +46,9 @@ class DnsTouchHelperCallback(
 		val toPos = target.bindingAdapterPosition
 
 		val targetItem = adapter.currentList.getOrNull(toPos)
-		if (targetItem?.isUnsaved == true) return false
+		if (targetItem?.isUnsaved == true) {
+			return false
+		}
 
 		adapter.moveItem(fromPos, toPos)
 		return true

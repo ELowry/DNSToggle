@@ -12,6 +12,10 @@ import com.ericlowry.dnstoggle.util.NetworkUtils
 import kotlinx.serialization.json.Json
 import org.json.JSONObject
 
+/**
+ * Repository for bulk export and import of application configuration.
+ * Handles JSON serialization and data migration for backups.
+ */
 object DnsSettingsRepository {
 	private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 	private lateinit var sharedPreferences: SharedPreferences
@@ -21,6 +25,10 @@ object DnsSettingsRepository {
 		sharedPreferences = app.getPrefs()
 	}
 
+	/**
+	 * Exports the current application configuration to a JSON string.
+	 * Includes hostnames, network profiles, and general settings.
+	 */
 	fun exportConfigToJson(): String {
 		val backupConfig = BackupConfig(
 			hostnames = HostnameRepository.dnsHostnames.value ?: emptyList(),
@@ -48,6 +56,12 @@ object DnsSettingsRepository {
 		return json.encodeToString(backupConfig)
 	}
 
+	/**
+	 * Imports application configuration from a JSON string.
+	 *
+	 * @param jsonString The JSON representation of the configuration.
+	 * @return True if the import was successful, false otherwise.
+	 */
 	fun importConfigFromJson(jsonString: String): Boolean {
 		return try {
 			val config = json.decodeFromString<BackupConfig>(jsonString)

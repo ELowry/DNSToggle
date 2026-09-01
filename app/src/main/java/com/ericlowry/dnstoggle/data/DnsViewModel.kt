@@ -214,6 +214,10 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		}
 	}
 
+	override fun onCleared() {
+		getApplication<Application>().contentResolver.unregisterContentObserver(dnsSettingsObserver)
+	}
+
 	/**
 	 * Reloads the current system-wide Private DNS settings.
 	 */
@@ -267,41 +271,6 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 			targetHostname = targetHostname,
 			targetMode = targetMode
 		)
-	}
-
-	private fun refreshDisplayList() {
-		val savedHostnames = HostnameRepository.dnsHostnames.value ?: return
-		val currentSpecifier = _privateDnsSpecifier.value
-		val currentMode = _privateDnsMode.value
-
-		val displayList = savedHostnames.toMutableList()
-
-		if (!currentSpecifier.isNullOrEmpty()) {
-			if (savedHostnames.none { it.hostname == currentSpecifier }) {
-				val isTrulyActive = currentMode == Constants.DNS_MODE_HOSTNAME
-				val labelRes =
-					if (isTrulyActive) R.string.unsaved_active_label else R.string.unsaved_inactive_label
-
-				displayList.add(
-					0,
-					DnsHostname(
-						hostname = currentSpecifier,
-						label = getApplication<Application>().getString(labelRes),
-						isUnsaved = true
-					)
-				)
-			}
-		}
-
-		_dnsHostnames.postValue(displayList)
-
-		val disableTest = AppSettingsRepository.disableDnsTest.value
-		displayList.forEach { dnsEntry ->
-			val hostname = dnsEntry.hostname
-			if (NetworkUtils.isValidDnsHostname(hostname)) {
-				ReachabilityManager.testHost(hostname, disableTest)
-			}
-		}
 	}
 
 	fun removeNetworkProfile(ssid: String) {
@@ -431,7 +400,9 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 				else -> null
 			}
 		}
-		if (!lastUsed.isNullOrEmpty()) return lastUsed
+		if (!lastUsed.isNullOrEmpty()) {
+			return lastUsed
+		}
 
 		return Settings.Global.getString(
 			app.contentResolver,
@@ -439,7 +410,41 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		)
 	}
 
-	override fun onCleared() {
-		getApplication<Application>().contentResolver.unregisterContentObserver(dnsSettingsObserver)
+	private fun refreshDisplayList() {
+		val savedHostnames = HostnameRepository.dnsHostnames.value ?: return
+		val currentSpecifier = _privateDnsSpecifier.value
+		val currentMode = _privateDnsMode.value
+
+		val displayList = savedHostnames.toMutableList()
+
+		if (!currentSpecifier.isNullOrEmpty()) {
+			if (savedHostnames.none { it.hostname == currentSpecifier }) {
+				val isTrulyActive = currentMode == Constants.DNS_MODE_HOSTNAME
+				val labelRes = if (isTrulyActive) {
+					R.string.unsaved_active_label
+				} else {
+					R.string.unsaved_inactive_label
+				}
+
+				displayList.add(
+					0,
+					DnsHostname(
+						hostname = currentSpecifier,
+						label = getApplication<Application>().getString(labelRes),
+						isUnsaved = true
+					)
+				)
+			}
+		}
+
+		_dnsHostnames.postValue(displayList)
+
+		val disableTest = AppSettingsRepository.disableDnsTest.value
+		displayList.forEach { dnsEntry ->
+			val hostname = dnsEntry.hostname
+			if (NetworkUtils.isValidDnsHostname(hostname)) {
+				ReachabilityManager.testHost(hostname, disableTest)
+			}
+		}
 	}
 }

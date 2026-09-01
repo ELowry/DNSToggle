@@ -39,18 +39,25 @@ object SecurityRepository {
 				if (key in keysToMigrate) {
 					encryptedPrefs.edit {
 						when (value) {
-							is String -> putString(
-								key,
-								com.ericlowry.dnstoggle.util.EncryptionManager.encrypt(value)
-							)
+							is String -> {
+								putString(
+									key,
+									com.ericlowry.dnstoggle.util.EncryptionManager.encrypt(value)
+								)
+							}
 
-							is Set<*> -> @Suppress("UNCHECKED_CAST") putStringSet(
-								key,
-								value as Set<String>
-							)
+							is Set<*> -> {
+								@Suppress("UNCHECKED_CAST")
+								putStringSet(
+									key,
+									value as Set<String>
+								)
+							}
 						}
 					}
-					sharedPreferences.edit { remove(key) }
+					sharedPreferences.edit {
+						remove(key)
+					}
 				}
 			}
 

@@ -20,7 +20,9 @@ object ConnectivityWatchdog {
 			)
 		}
 	): Boolean {
-		if (!isNetworkReachable()) return false
+		if (!isNetworkReachable()) {
+			return false
+		}
 		return !isDnsHostReachable()
 	}
 

@@ -25,6 +25,10 @@ import java.util.concurrent.ConcurrentHashMap
  */
 class NetworkStateTracker(private val context: Context) {
 
+	companion object {
+		private const val TAG = "NetworkStateTracker"
+	}
+
 	private val connectivityManager =
 		context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 	private val activeNetworks = ConcurrentHashMap<Network, NetworkCapabilities>()
@@ -37,10 +41,6 @@ class NetworkStateTracker(private val context: Context) {
 	 * Returns a snapshot of currently active networks and their capabilities.
 	 */
 	fun getActiveNetworks(): Map<Network, NetworkCapabilities> = activeNetworks.toMap()
-
-	companion object {
-		private const val TAG = "NetworkStateTracker"
-	}
 
 	/**
 	 * Registers the network callback to start tracking connectivity changes.
@@ -64,7 +64,11 @@ class NetworkStateTracker(private val context: Context) {
 		}
 
 		networkCallback = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-			val flags = if (hasLocationPermission) NetworkCallback.FLAG_INCLUDE_LOCATION_INFO else 0
+			val flags = if (hasLocationPermission) {
+				NetworkCallback.FLAG_INCLUDE_LOCATION_INFO
+			} else {
+				0
+			}
 			object : NetworkCallback(flags) {
 				override fun onCapabilitiesChanged(network: Network, caps: NetworkCapabilities) {
 					val oldCaps = activeNetworks[network]
@@ -121,9 +125,6 @@ class NetworkStateTracker(private val context: Context) {
 		networkCallback = null
 	}
 
-	/**
-	 * Internal mapping for noisy connectivity updates.
-	 */
 	private fun hasMeaningfulChange(
 		oldCaps: NetworkCapabilities?,
 		newCaps: NetworkCapabilities
@@ -168,9 +169,13 @@ class NetworkStateTracker(private val context: Context) {
 
 	private fun updateState() {
 		val allCaps = activeNetworks.values
-		val isVpnActive = allCaps.any { it.hasTransport(NetworkCapabilities.TRANSPORT_VPN) }
+		val isVpnActive = allCaps.any {
+			it.hasTransport(NetworkCapabilities.TRANSPORT_VPN)
+		}
 		val wifiEntry =
-			activeNetworks.entries.find { it.value.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) }
+			activeNetworks.entries.find {
+				it.value.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
+			}
 		val wifiCaps = wifiEntry?.value
 
 		val hasLocationPermission =

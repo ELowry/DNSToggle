@@ -9,8 +9,14 @@ import androidx.transition.TransitionManager
  * Hides a view if it should be disabled or and reveals it using animation when a container is provided when enabled.
  */
 fun View.setConditionalVisibility(isVisible: Boolean, container: ViewGroup? = null) {
-	val targetVisibility = if (isVisible) View.VISIBLE else View.GONE
-	if (visibility == targetVisibility) return
+	val targetVisibility = if (isVisible) {
+		View.VISIBLE
+	} else {
+		View.GONE
+	}
+	if (visibility == targetVisibility) {
+		return
+	}
 
 	if (container != null) {
 		val transition = AutoTransition().apply {
@@ -27,5 +33,9 @@ fun View.setConditionalVisibility(isVisible: Boolean, container: ViewGroup? = nu
  */
 fun View.setDimmedEnabled(enabled: Boolean) {
 	isEnabled = enabled
-	alpha = if (enabled) 1.0f else 0.5f
+	alpha = if (enabled) {
+		1.0f
+	} else {
+		0.5f
+	}
 }

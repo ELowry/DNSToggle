@@ -31,7 +31,9 @@ class MainPermissionHandler(
 		} else {
 			onSsidPermissionChanged(allGranted)
 			onRegistrationUpdateRequired()
-			if (allGranted) checkNotificationPermission()
+			if (allGranted) {
+				checkNotificationPermission()
+			}
 		}
 	}
 

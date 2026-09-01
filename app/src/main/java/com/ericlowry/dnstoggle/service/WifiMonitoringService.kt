@@ -53,11 +53,13 @@ class WifiMonitoringService : Service() {
 
 	private val preferenceChangeListener =
 		SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-			if (key == Constants.PREF_VPN_OVERRIDE_ENABLED ||
-				key == Constants.PREF_VPN_DNS_HOSTNAME ||
-				key == Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED ||
-				key == Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS
-			) {
+			val policyKeys = listOf(
+				Constants.PREF_VPN_OVERRIDE_ENABLED,
+				Constants.PREF_VPN_DNS_HOSTNAME,
+				Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED,
+				Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS
+			)
+			if (key in policyKeys) {
 				DnsPolicyEvaluator.evaluate(
 					this,
 					serviceScope,

@@ -18,22 +18,16 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import rikka.shizuku.Shizuku
 import kotlin.coroutines.resume
 
+/**
+ * Utility for interacting with the Shizuku API to perform elevated operations.
+ */
 object ShizukuUtils {
 	private const val TAG = "ShizukuUtils"
 	private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-	private fun userServiceArgs(context: Context): Shizuku.UserServiceArgs =
-		Shizuku.UserServiceArgs(
-			ComponentName(
-				context.packageName,
-				ShizukuUserService::class.java.name
-			)
-		)
-			.daemon(false)
-			.processNameSuffix("shizuku")
-			.debuggable(BuildConfig.DEBUG)
-			.version(BuildConfig.VERSION_CODE)
-
+	/**
+	 * Returns true if Shizuku is installed and running on the device.
+	 */
 	fun isAvailable(): Boolean {
 		return try {
 			Shizuku.pingBinder() && !Shizuku.isPreV11()
@@ -42,6 +36,9 @@ object ShizukuUtils {
 		}
 	}
 
+	/**
+	 * Returns true if the user has granted this app permission to use Shizuku.
+	 */
 	fun hasPermission(): Boolean {
 		return try {
 			Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
@@ -50,32 +47,19 @@ object ShizukuUtils {
 		}
 	}
 
-	private suspend fun requestPermission(): Boolean {
-		if (hasPermission()) return true
-		return suspendCancellableCoroutine { cont ->
-			val listener = object : Shizuku.OnRequestPermissionResultListener {
-				override fun onRequestPermissionResult(requestCode: Int, grantResult: Int) {
-					if (requestCode != Constants.REQUEST_CODE_SHIZUKU_PERMISSION) return
-					Shizuku.removeRequestPermissionResultListener(this)
-					if (cont.isActive) {
-						cont.resume(grantResult == PackageManager.PERMISSION_GRANTED)
-					}
-				}
-			}
-			Shizuku.addRequestPermissionResultListener(listener)
-			cont.invokeOnCancellation { Shizuku.removeRequestPermissionResultListener(listener) }
-			try {
-				Shizuku.requestPermission(Constants.REQUEST_CODE_SHIZUKU_PERMISSION)
-			} catch (e: Throwable) {
-				Shizuku.removeRequestPermissionResultListener(listener)
-				if (cont.isActive) cont.resume(false)
-			}
-		}
-	}
-
+	/**
+	 * Attempts to grant WRITE_SECURE_SETTINGS permission to this app using Shizuku's privileged user service.
+	 *
+	 * @param context The application or activity context.
+	 * @return True if the permission was successfully granted.
+	 */
 	suspend fun grantSecureSettingsPermission(context: Context): Boolean {
-		if (!isAvailable()) return false
-		if (!requestPermission()) return false
+		if (!isAvailable()) {
+			return false
+		}
+		if (!requestPermission()) {
+			return false
+		}
 
 		val args = userServiceArgs(context)
 		return suspendCancellableCoroutine { cont ->
@@ -96,7 +80,9 @@ object ShizukuUtils {
 						} finally {
 							Shizuku.unbindUserService(args, connection, true)
 						}
-						if (cont.isActive) cont.resume(granted)
+						if (cont.isActive) {
+							cont.resume(granted)
+						}
 					}
 				}
 
@@ -112,17 +98,67 @@ object ShizukuUtils {
 				Shizuku.bindUserService(args, connection)
 			} catch (e: Throwable) {
 				Log.e(TAG, "Failed to bind Shizuku user service", e)
-				if (cont.isActive) cont.resume(false)
+				if (cont.isActive) {
+					cont.resume(false)
+				}
+			}
+		}
+	}
+
+	private fun userServiceArgs(context: Context): Shizuku.UserServiceArgs =
+		Shizuku.UserServiceArgs(
+			ComponentName(
+				context.packageName,
+				ShizukuUserService::class.java.name
+			)
+		)
+			.daemon(false)
+			.processNameSuffix("shizuku")
+			.debuggable(BuildConfig.DEBUG)
+			.version(BuildConfig.VERSION_CODE)
+
+	private suspend fun requestPermission(): Boolean {
+		if (hasPermission()) {
+			return true
+		}
+		return suspendCancellableCoroutine { cont ->
+			val listener = object : Shizuku.OnRequestPermissionResultListener {
+				override fun onRequestPermissionResult(requestCode: Int, grantResult: Int) {
+					if (requestCode != Constants.REQUEST_CODE_SHIZUKU_PERMISSION) {
+						return
+					}
+					Shizuku.removeRequestPermissionResultListener(this)
+					if (cont.isActive) {
+						cont.resume(grantResult == PackageManager.PERMISSION_GRANTED)
+					}
+				}
+			}
+			Shizuku.addRequestPermissionResultListener(listener)
+			cont.invokeOnCancellation { Shizuku.removeRequestPermissionResultListener(listener) }
+			try {
+				Shizuku.requestPermission(Constants.REQUEST_CODE_SHIZUKU_PERMISSION)
+			} catch (e: Throwable) {
+				Shizuku.removeRequestPermissionResultListener(listener)
+				if (cont.isActive) {
+					cont.resume(false)
+				}
 			}
 		}
 	}
 }
 
+/**
+ * High-level helper that attempts to grant WRITE_SECURE_SETTINGS using all available methods.
+ * Fallback chain: Shizuku -> Root.
+ *
+ * @param context The application or activity context.
+ * @return True if the permission was granted by any method.
+ */
 suspend fun attemptSecureSettingsGrant(context: Context): Boolean {
-	if (ShizukuUtils.isAvailable() && ShizukuUtils.grantSecureSettingsPermission(
-			context
-		)
-	) {
+	val shizukuSuccess = ShizukuUtils.isAvailable() && ShizukuUtils.grantSecureSettingsPermission(
+		context
+	)
+	if (shizukuSuccess) {
 		return true
 	}
 	// Always try root as the final fallback, even if detection failed (handles hidden root)

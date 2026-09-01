@@ -15,8 +15,14 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 
+/**
+ * Static helper for building backup and restore related Material dialogs.
+ */
 object BackupDialogHelper {
 
+	/**
+	 * Shows a password entry dialog for encrypting or decrypting a backup.
+	 */
 	fun showPasswordDialog(
 		activity: Activity,
 		titleResId: Int,
@@ -54,13 +60,19 @@ object BackupDialogHelper {
 				}
 				onPasswordEntered(password)
 			}
-			.setNegativeButton(R.string.cancel) { _, _ -> onCancel?.invoke() }
+			.setNegativeButton(R.string.cancel) { _, _ ->
+				onCancel?.invoke()
+			}
 
-		messageResId?.let { builder.setMessage(it) }
+		messageResId?.let {
+			builder.setMessage(it)
+		}
 
 		val dialog = builder.create()
 
-		dialog.setOnCancelListener { onCancel?.invoke() }
+		dialog.setOnCancelListener {
+			onCancel?.invoke()
+		}
 
 		dialog.setOnShowListener {
 			val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
@@ -108,15 +120,23 @@ object BackupDialogHelper {
 		dialog.show()
 	}
 
+	/**
+	 * Shows a simple confirmation dialog before importing a configuration backup.
+	 */
 	fun showImportConfirmationDialog(context: Context, onConfirm: () -> Unit) {
 		MaterialAlertDialogBuilder(context)
 			.setTitle(R.string.import_config)
 			.setMessage(R.string.import_confirmation_message)
-			.setPositiveButton(R.string.import_action) { _, _ -> onConfirm() }
+			.setPositiveButton(R.string.import_action) { _, _ ->
+				onConfirm()
+			}
 			.setNegativeButton(R.string.cancel, null)
 			.show()
 	}
 
+	/**
+	 * Shows a dialog to rename the application as it appears in the system (Tile label).
+	 */
 	fun showRenameAppDialog(
 		activity: Activity,
 		currentAppName: String?,
@@ -144,10 +164,14 @@ object BackupDialogHelper {
 			.setView(dialogView)
 			.setPositiveButton(activity.getString(R.string.ok)) { d, _ ->
 				val newAppName = inputTextField.text.toString().trim()
-				if (newAppName.isNotEmpty()) onSave(newAppName)
+				if (newAppName.isNotEmpty()) {
+					onSave(newAppName)
+				}
 				d.dismiss()
 			}
-			.setNegativeButton(activity.getString(R.string.cancel)) { d, _ -> d.cancel() }
+			.setNegativeButton(activity.getString(R.string.cancel)) { d, _ ->
+				d.cancel()
+			}
 			.create()
 
 		dialog.setOnShowListener {

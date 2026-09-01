@@ -46,7 +46,9 @@ class SsidTouchHelperCallback(
 		val toPos = target.bindingAdapterPosition
 
 		val targetItem = adapter.currentList.getOrNull(toPos)
-		if (targetItem?.isAutoDetected == true) return false
+		if (targetItem?.isAutoDetected == true) {
+			return false
+		}
 
 		adapter.moveItem(fromPos, toPos)
 		return true
