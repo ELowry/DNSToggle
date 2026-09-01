@@ -320,7 +320,8 @@ class WifiMonitoringService : Service() {
 					wifiCaps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
 
 				val app = application as DnsToggleApplication
-				app.detectedSsid = if (NetworkUtils.isValidSsid(wifiInfo?.ssid)) currentSsid else null
+				app.detectedSsid =
+					if (NetworkUtils.isValidSsid(wifiInfo?.ssid)) currentSsid else null
 
 				val prefs = getPrefs()
 				val vpnOverrideEnabled =

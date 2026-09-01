@@ -12,7 +12,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import androidx.transition.TransitionManager
 import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsViewModel
@@ -250,22 +249,23 @@ class SsidSectionController(
 		val hasPermission = PermissionHelper.hasSsidPermissions(activity)
 
 		val showList = !isEmpty && hasPermission
-
 		val wasShowing = ssidListContainer.isVisible
-		if (wasShowing != showList) {
-			TransitionManager.beginDelayedTransition(container)
-		}
-
-		dividerSsidSettings.setConditionalVisibility(showList, container)
-		ssidListContainer.setConditionalVisibility(showList, container)
 
 		if (isEmpty) {
+			ssidListContainer.itemAnimator = null
 			ssidsAdapter.submitList(emptyList())
-			return
+		} else {
+			ssidListContainer.itemAnimator = androidx.recyclerview.widget.DefaultItemAnimator()
+			val items = profiles.sortedByDescending { it.isAutoDetected }
+			ssidsAdapter.submitList(items)
 		}
 
-		val items = profiles.sortedByDescending { it.isAutoDetected }
-		ssidsAdapter.submitList(items)
+		if (wasShowing != showList) {
+			androidx.transition.TransitionManager.beginDelayedTransition(container)
+		}
+
+		dividerSsidSettings.setConditionalVisibility(showList, null)
+		ssidListContainer.setConditionalVisibility(showList, null)
 	}
 
 	fun showAddSsidDialog(existingProfile: NetworkProfile? = null) {
