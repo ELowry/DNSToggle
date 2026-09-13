@@ -38,4 +38,4 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-kotlinx-serialization-plugin = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.4.10" }
+kotlinx-serialization-plugin = { id = "org.jetbrains.kotlin.plugin.serialization", version = "2.4.20" }
