@@ -37,8 +37,8 @@ android {
 		applicationId = "com.ericlowry.dnstoggle"
 		minSdk = 28
 		targetSdk = 37
-		versionCode = 27
-		versionName = "2.2.0"
+		versionCode = 28
+		versionName = "3.0.0"
 
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 	}
@@ -110,6 +110,7 @@ dependencies {
 	implementation(libs.shizuku.api)
 	implementation(libs.shizuku.provider)
 	implementation(libs.androidx.dynamicanimation)
+	implementation(libs.androidx.biometric)
 	testImplementation(libs.junit)
 	testImplementation(libs.robolectric)
 	testImplementation(libs.kotlinx.coroutines.test)

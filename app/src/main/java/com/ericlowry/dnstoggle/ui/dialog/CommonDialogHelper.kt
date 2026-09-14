@@ -1,13 +1,21 @@
 package com.ericlowry.dnstoggle.ui.dialog
 
 import android.app.Activity
+import android.app.Dialog
 import android.content.Context
 import android.text.InputType
 import android.view.LayoutInflater
+import android.view.View
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import com.ericlowry.dnstoggle.R
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.listitem.ListItemCardView
+import com.google.android.material.listitem.ListItemLayout
+import com.google.android.material.radiobutton.MaterialRadioButton
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 
@@ -140,5 +148,62 @@ object CommonDialogHelper {
 			}
 			.setCancelable(false)
 			.show()
+	}
+
+	/**
+	 * Shows an expressive selection dialog with card-style items.
+	 */
+	fun showExpressiveSelectionDialog(
+		activity: Activity,
+		title: String,
+		options: List<String>,
+		selectedIndices: Set<Int>,
+		onItemSelected: (Int) -> Unit
+	) {
+		val dialogView = LayoutInflater.from(activity).inflate(
+			R.layout.dialog_dns_selection,
+			activity.findViewById(android.R.id.content),
+			false
+		)
+
+		val dialog = Dialog(activity)
+		dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+		dialog.setContentView(dialogView)
+
+		dialogView.findViewById<TextView>(R.id.tvPopupTitle).text = title
+		dialogView.findViewById<TextView>(R.id.tvSsidContext).visibility = View.GONE
+
+		val listContainer = dialogView.findViewById<LinearLayout>(R.id.dnsListContainer)
+		val btnCancel = dialogView.findViewById<MaterialButton>(R.id.btnSettings)
+		btnCancel.text = activity.getString(R.string.cancel)
+		btnCancel.setOnClickListener { dialog.dismiss() }
+
+		options.forEachIndexed { index, optionText ->
+			val itemView = LayoutInflater.from(activity).inflate(
+				R.layout.item_dns_selection,
+				listContainer,
+				false
+			)
+			val listItemLayout = itemView as ListItemLayout
+			val cardView = itemView.findViewById<ListItemCardView>(R.id.listItemCard)
+			val radio = itemView.findViewById<MaterialRadioButton>(R.id.radioDns)
+
+			itemView.findViewById<TextView>(R.id.tvHostname).text = optionText
+			itemView.findViewById<TextView>(R.id.tvSecondaryHostname).visibility = View.GONE
+			itemView.findViewById<TextView>(R.id.tvOverrideBadge).visibility = View.GONE
+
+			val isSelected = selectedIndices.contains(index)
+			cardView.isChecked = isSelected
+			radio.isChecked = isSelected
+
+			listItemLayout.updateAppearance(index, options.size)
+			cardView.setOnClickListener {
+				onItemSelected(index)
+				dialog.dismiss()
+			}
+			listContainer.addView(itemView)
+		}
+
+		dialog.show()
 	}
 }

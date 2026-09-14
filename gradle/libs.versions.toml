@@ -16,6 +16,7 @@ arch-core = "2.2.0"
 shizuku = "13.1.5"
 dynamicanimation = "1.1.0"
 kotlinx-serialization = "1.11.0"
+biometric = "1.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -34,6 +35,7 @@ androidx-arch-core-testing = { group = "androidx.arch.core", name = "core-testin
 shizuku-api = { group = "dev.rikka.shizuku", name = "api", version.ref = "shizuku" }
 shizuku-provider = { group = "dev.rikka.shizuku", name = "provider", version.ref = "shizuku" }
 androidx-dynamicanimation = { group = "androidx.dynamicanimation", name = "dynamicanimation", version.ref = "dynamicanimation" }
+androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 [plugins]

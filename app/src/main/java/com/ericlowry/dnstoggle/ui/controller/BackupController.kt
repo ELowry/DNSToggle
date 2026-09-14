@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.edit
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
 import com.ericlowry.dnstoggle.DnsToggleApplication
 import com.ericlowry.dnstoggle.R
@@ -20,6 +21,7 @@ import com.ericlowry.dnstoggle.data.repository.DnsSettingsRepository
 import com.ericlowry.dnstoggle.service.DnsToggleService
 import com.ericlowry.dnstoggle.service.TileServiceCompat
 import com.ericlowry.dnstoggle.ui.dialog.BackupDialogHelper
+import com.ericlowry.dnstoggle.util.AuthManager
 import com.ericlowry.dnstoggle.util.BackupManager
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.button.MaterialButton
@@ -94,7 +96,20 @@ class BackupController(
 	}
 
 	fun startImport() {
-		importLauncher.launch(arrayOf("*/*"))
+		val mode = viewModel.authMode.value ?: Constants.AuthMode.NONE
+		if (mode == Constants.AuthMode.ACTION_ONLY || mode == Constants.AuthMode.ALWAYS) {
+			AuthManager.promptAuthentication(
+				activity = activity as FragmentActivity,
+				title = activity.getString(R.string.auth_prompt_title),
+				subtitle = activity.getString(R.string.auth_prompt_settings_subtitle),
+				onSuccess = { importLauncher.launch(arrayOf("*/*")) },
+				onError = { _, errString ->
+					Toast.makeText(activity, errString, Toast.LENGTH_SHORT).show()
+				}
+			)
+		} else {
+			importLauncher.launch(arrayOf("*/*"))
+		}
 	}
 
 	fun processImportUri(uri: Uri) {

@@ -18,6 +18,8 @@ import com.ericlowry.dnstoggle.DnsToggleApplication
 import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsViewModel
+import com.ericlowry.dnstoggle.ui.dialog.CommonDialogHelper
+import com.ericlowry.dnstoggle.util.AuthManager
 import com.ericlowry.dnstoggle.util.setConditionalVisibility
 import com.ericlowry.dnstoggle.util.setDimmedEnabled
 import com.google.android.material.materialswitch.MaterialSwitch
@@ -30,6 +32,8 @@ class MiscSettingsController(
 ) {
 	private lateinit var switchShowToast: MaterialSwitch
 	private lateinit var rowShowToast: View
+	private lateinit var rowAuthMode: View
+	private lateinit var tvAuthModeSummary: TextView
 	private lateinit var switchEnableStrictOff: MaterialSwitch
 	private lateinit var rowEnableStrictOff: View
 	private lateinit var tvDefaultOffModeValue: TextView
@@ -60,6 +64,8 @@ class MiscSettingsController(
 		tvDefaultOffModeValue: TextView,
 		rowDefaultOffMode: View,
 		layoutStrictOffSubset: View,
+		rowAuthMode: View,
+		tvAuthModeSummary: TextView,
 		switchHideLauncher: MaterialSwitch,
 		rowHideLauncher: View,
 		rowUsbDebuggingTile: View,
@@ -73,6 +79,8 @@ class MiscSettingsController(
 		this.tvDefaultOffModeValue = tvDefaultOffModeValue
 		this.rowDefaultOffMode = rowDefaultOffMode
 		this.layoutStrictOffSubset = layoutStrictOffSubset
+		this.rowAuthMode = rowAuthMode
+		this.tvAuthModeSummary = tvAuthModeSummary
 		this.switchHideLauncher = switchHideLauncher
 		this.rowHideLauncher = rowHideLauncher
 		this.tvHideLauncherSummary = activity.findViewById(R.id.tvHideLauncherSummary)
@@ -99,12 +107,32 @@ class MiscSettingsController(
 
 			updateLauncherComponentState(isHidden = false)
 			viewModel.setHideLauncherIcon(false)
+
+			// Disable Auth Mode for TVs
+			rowAuthMode.setDimmedEnabled(false)
+			rowAuthMode.isClickable = false
+			tvAuthModeSummary.text = activity.getString(R.string.hide_launcher_icon_tv_summary)
+			viewModel.setAuthMode(Constants.AuthMode.NONE)
 		}
 	}
 
 	fun observeViewModel() {
 		viewModel.showToastEnabled.observe(activity) { enabled ->
 			switchShowToast.isChecked = enabled
+		}
+
+		viewModel.authMode.observe(activity) { mode ->
+			if (isTvDevice) {
+				tvAuthModeSummary.text = activity.getString(R.string.hide_launcher_icon_tv_summary)
+				return@observe
+			}
+
+			tvAuthModeSummary.text = when (mode) {
+				Constants.AuthMode.NONE -> activity.getString(R.string.auth_mode_summary_none)
+				Constants.AuthMode.ACTION_ONLY -> activity.getString(R.string.auth_mode_summary_action)
+				Constants.AuthMode.ALWAYS -> activity.getString(R.string.auth_mode_summary_always)
+				else -> activity.getString(R.string.auth_mode_summary_none)
+			}
 		}
 
 		viewModel.enableStrictOffOption.observe(activity) { enabled ->
@@ -136,6 +164,10 @@ class MiscSettingsController(
 			viewModel.setShowToast(isChecked)
 		}
 
+		rowAuthMode.setOnClickListener {
+			showAuthModeDialog()
+		}
+
 		rowEnableStrictOff.setOnClickListener { switchEnableStrictOff.toggle() }
 		switchEnableStrictOff.setOnCheckedChangeListener { _, isChecked ->
 			viewModel.setEnableStrictOffOption(isChecked)
@@ -146,7 +178,7 @@ class MiscSettingsController(
 				return@setOnClickListener
 			}
 
-			val options = arrayOf(
+			val options = listOf(
 				activity.getString(R.string.mode_automatic),
 				activity.getString(R.string.mode_disabled)
 			)
@@ -154,16 +186,16 @@ class MiscSettingsController(
 				Constants.DNS_MODE_OPPORTUNISTIC,
 				Constants.DNS_MODE_OFF
 			)
-			val checkedItem = modes.indexOf(viewModel.defaultOffMode.value)
+			val checkedIndex = modes.indexOf(viewModel.defaultOffMode.value)
 
-			com.google.android.material.dialog.MaterialAlertDialogBuilder(activity)
-				.setTitle(R.string.default_off_mode_title)
-				.setSingleChoiceItems(options, checkedItem) { dialog, which ->
-					viewModel.setDefaultOffMode(modes[which])
-					dialog.dismiss()
-				}
-				.setNegativeButton(R.string.cancel, null)
-				.show()
+			CommonDialogHelper.showExpressiveSelectionDialog(
+				activity = activity,
+				title = activity.getString(R.string.default_off_mode_title),
+				options = options,
+				selectedIndices = setOf(checkedIndex)
+			) { index ->
+				viewModel.setDefaultOffMode(modes[index])
+			}
 		}
 
 		rowHideLauncher.setOnClickListener { switchHideLauncher.toggle() }
@@ -363,6 +395,44 @@ class MiscSettingsController(
 				componentName,
 				newState,
 				PackageManager.DONT_KILL_APP
+			)
+		}
+	}
+
+	private fun showAuthModeDialog() {
+		val options = listOf(
+			activity.getString(R.string.auth_mode_summary_none),
+			activity.getString(R.string.auth_mode_summary_action),
+			activity.getString(R.string.auth_mode_summary_always)
+		)
+		val modes = arrayOf(
+			Constants.AuthMode.NONE,
+			Constants.AuthMode.ACTION_ONLY,
+			Constants.AuthMode.ALWAYS
+		)
+		val checkedIndex = modes.indexOf(viewModel.authMode.value)
+
+		CommonDialogHelper.showExpressiveSelectionDialog(
+			activity = activity,
+			title = activity.getString(R.string.auth_mode_title),
+			options = options,
+			selectedIndices = setOf(checkedIndex)
+		) { index ->
+			val selectedMode = modes[index]
+			if (selectedMode == viewModel.authMode.value) {
+				return@showExpressiveSelectionDialog
+			}
+
+			AuthManager.promptAuthentication(
+				activity = activity,
+				title = activity.getString(R.string.auth_prompt_title),
+				subtitle = activity.getString(R.string.auth_prompt_settings_subtitle),
+				onSuccess = {
+					viewModel.setAuthMode(selectedMode)
+				},
+				onError = { _, errString ->
+					Toast.makeText(activity, errString, Toast.LENGTH_SHORT).show()
+				}
 			)
 		}
 	}

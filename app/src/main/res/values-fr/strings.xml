@@ -6,14 +6,17 @@
 	<string name="whats_new_version_format">Nouveau dans la v%s</string>
 	<string name="github">GitHub (code source)</string>
 	<string name="support">Obtenir de l\'aide</string>
+
 	<!-- Global -->
 	<string name="ok">OK</string>
 	<string name="cancel">Annuler</string>
+	<string name="retry">Réessayer</string>
 	<string name="close">Fermer</string>
 	<string name="settings">Paramètres</string>
 	<string name="on_label">Activé</string>
 	<string name="off_label">Désactivé</string>
 	<string name="menu_content_description">Plus d\'options</string>
+
 	<!-- Permissions & ADB Setup -->
 	<string name="permission_required">Autorisation requise</string>
 	<string name="permission_message">Pour utiliser ce bouton, accordez l\'accès aux paramètres via Root, Shizuku, ou exécutez cette commande ADB sur votre PC avec le débogage USB activé:</string>
@@ -33,10 +36,11 @@
 	<string name="main_permission_message">L\'application requiert une autorisation spéciale pour modifier les paramètres DNS privés.</string>
 	<string name="btn_fix_permission">Fixer</string>
 	<string name="open_settings">Ouvrir les paramètres</string>
+
 	<!-- Main UI - DNS Management -->
 	<string name="private_dns">DNS privé</string>
 	<string name="disable_dns_test">Ignorer le test de connexion</string>
-	<string name="disable_dns_test_summary">Activez ceci uniquement si votre DNS fonctionne, mais que l\'app l\'affiche comme injoignable.</string>
+	<string name="disable_dns_test_summary">Activez ceci uniquement si votre DNS fonctionne, mais que l\'application l\'affiche comme injoignable.</string>
 	<string name="custom_dns_provider">Fournisseur(s) DNS personnalisé</string>
 	<string name="add_hostname">Ajouter une adresse</string>
 	<string name="add_hostname_desc">Enregistrer cette adresse active</string>
@@ -46,9 +50,11 @@
 	<string name="delete_hostname_confirm">Supprimer cette adresse?</string>
 	<string name="error_empty_dns_host">L\'adresse DNS ne peut pas être vide</string>
 	<string name="error_invalid_dns_host">Format d\'adresse DNS non valide</string>
+
 	<!-- Main UI - Status -->
 	<string name="status_testing_dns">Test de connexion…</string>
 	<string name="unsaved_active_label">Actif (non enregistré)</string>
+	<string name="unsaved_inactive_label">Inactif (non enregistré)</string>
 	<string name="status_active_reachable">Actif et joignable</string>
 	<string name="default_dns_label">Par défaut</string>
 	<string name="default_badge">PAR DÉFAUT</string>
@@ -59,11 +65,12 @@
 	<string name="status_override_ssid_profile">Override SSID actif: %1$s est défini sur %2$s</string>
 	<string name="off_profile_format">Désactivé (%s)</string>
 	<string name="enable_private_dns">Activer le DNS privé</string>
+
 	<!-- Main UI - Wi-Fi Profiles & Monitoring -->
 	<string name="wifi_profiles_title">Profils Wi-Fi</string>
 	<string name="wifi_profiles_summary">Définissez des règles DNS privées spécifiques ou des contournements pour chaque réseau Wi-Fi.</string>
 	<string name="wifi_monitoring_info_title">Info surveillance SSID</string>
-	<string name="wifi_monitoring_info_text">Pour l\'automatisation, l\'app surveille les changements de réseau. L\'impact batterie est minimal, mais le système peut afficher une activité en arrière-plan.</string>
+	<string name="wifi_monitoring_info_text">Pour l\'automatisation, l\'application surveille les changements de réseau. L\'impact batterie est minimal, mais le système peut afficher une activité en arrière-plan.</string>
 	<string name="battery_optimization_explanation">Certains appareils arrêtent la surveillance pour économiser la batterie. Si l\'automatisation s\'arrête, désactivez les restrictions pour cette app.</string>
 	<string name="ignore_battery_optimizations">Désactiver les restrictions de batterie</string>
 	<string name="auto_save_state_title">Auto-enregistrement d\'état (on/off)</string>
@@ -73,7 +80,7 @@
 	<string name="profile_dns_section_header">Fournisseur DNS</string>
 	<string name="default_dns_with_host_format">Par défaut (%s)</string>
 	<string name="connectivity_watchdog_toggle">Bloquer DNS privé sur les réseaux incompatibles</string>
-	<string name="connectivity_watchdog_info_text">Si le DNS privé échoue, mais qu\'Internet est disponible, l\'app désactive le DNS privé sur ce réseau pour restaurer la connexion.</string>
+	<string name="connectivity_watchdog_info_text">Si le DNS privé échoue, mais qu\'Internet est disponible, l\'application désactive le DNS privé sur ce réseau pour restaurer la connexion.</string>
 	<string name="connectivity_watchdog_debounce_label">Délai avant désactivation</string>
 	<string name="connectivity_watchdog_targets_label">Serveurs de test</string>
 	<string name="connectivity_watchdog_targets_title">Serveurs de test de connectivité</string>
@@ -94,6 +101,7 @@
 	<string name="ssid_hint">SSID (Nom du Wi-Fi)</string>
 	<string name="ssid_saved">Profil Wi-Fi enregistré</string>
 	<string name="delete_ssid_confirm">Supprimer ce profil Wi-Fi?</string>
+
 	<!-- Main UI - VPN Override -->
 	<string name="vpn_override_title">Override VPN</string>
 	<string name="vpn_override_summary">Changer auto le DNS privé lorsqu\'un VPN est connecté.</string>
@@ -101,6 +109,7 @@
 	<string name="vpn_dns_label">DNS sous VPN</string>
 	<string name="vpn_permission_notice">L\'autorisation de notifications est requise pour l\'automatisation.</string>
 	<string name="vpn_hostname_removed_warning">L\'adresse DNS utilisée pour le VPN a été supprimée. L\'override VPN a été désactivé.</string>
+
 	<!-- Main UI - Full Off Support -->
 	<string name="strict_off_mode_title">Autoriser la désactivation complète du DNS privé</string>
 	<string name="strict_off_mode_summary">Permet de choisir si le DNS privé doit être complètement désactivé ou en mode automatique lorsqu\'il est désactivé par DNS Toggle.</string>
@@ -110,13 +119,23 @@
 	<string name="off_automatic_label">Désactivé (automatique)</string>
 	<string name="mode_automatic">Automatique</string>
 	<string name="mode_disabled">Désactivé</string>
+
 	<!-- Main UI - General Options -->
 	<string name="options_title">Options</string>
 	<string name="show_toast_notif">Notifications toast d\'état</string>
 	<string name="show_toast_notif_summary">Afficher un toast lors des changements de mode de DNS privé.</string>
+	<string name="auth_mode_title">Nécessiter l\'authentification</string>
+	<string name="auth_mode_summary_none">Jamais</string>
+	<string name="auth_mode_summary_action">Lors d\'un changement de DNS</string>
+	<string name="auth_mode_summary_always">À chaque utilisation de l\'applicaiton</string>
+	<string name="auth_prompt_title">Authentification de l\'application</string>
+	<string name="auth_prompt_settings_subtitle">Veuillez vous authentifier afin de modifier les paramètres de l\'appareil</string>
+	<string name="auth_prompt_action_subtitle">Veuillez vous authentifier afin de modifier les paramères DNS de l\'appareil</string>
+	<string name="auth_prompt_unlock_subtitle">Veuillez vous authentifier afin de déverrouiller l\'application</string>
 	<string name="hide_launcher_icon">Masquer l\'icône de l\'application</string>
-	<string name="hide_launcher_icon_summary">Une fois activée, l\'app sera masquée de votre lanceur. Accédez aux réglages via un appui long sur la tuile. Note: certains appareils ne masquent pas entièrement l\'icône.</string>
+	<string name="hide_launcher_icon_summary">Une fois activée, l\'application sera masquée de votre lanceur. Accédez aux réglages via un appui long sur la tuile. Note: certains appareils ne masquent pas entièrement l\'icône.</string>
 	<string name="hide_launcher_icon_tv_summary">Cette fonctionnalité est indisponible sur Android TV.</string>
+
 	<!-- Main UI - USB Debugging Tile -->
 	<string name="usb_debugging">Débogage USB</string>
 	<string name="show_usb_debugging_tile">Tuile de débogage USB</string>
@@ -127,14 +146,23 @@
 		<item quantity="other">Cliquez encore %1$d fois pour activer la tuile.</item>
 	</plurals>
 	<string name="usb_debugging_tile_enabled">Tuile de débogage USB disponible!</string>
+
 	<!-- Menu Actions -->
 	<string name="rename_app">Renommer l\'application</string>
 	<string name="rename_app_message">Choisissez un nom personnalisé pour l\'icône et la tuile des paramètres rapides.</string>
 	<string name="export_config">Exporter la configuration</string>
 	<string name="import_config">Importer une configuration</string>
+
 	<!-- Security -->
 	<string name="keystore_error_title">Réinitialisation de sécurité</string>
 	<string name="keystore_error_message">Suite à un changement de sécurité (ex: verrouillage écran), vos profils ont été réinitialisés pour protéger vos données. Veuillez rajouter vos réseaux.</string>
+	<string name="biometricErrorNoHardware">Aucun système d\'authentification détecté sur cet appareil.</string>
+	<string name="biometricErrorHwUnavailable">Le système d\'authentification est actuellement indisponible.</string>
+	<string name="biometricErrorNoneEnrolled">Aucune système d\'authentification n\'est actif.</string>
+	<string name="biometricErrorSecurityUpdateRequired">Une mise à jour de sécurité est requise pour l\'authentification.</string>
+	<string name="biometricErrorUnsupported">Le système d\'authentification n\'est pas prise en charge sur cette version d\'Android.</string>
+	<string name="biometricErrorDefault">Authentification indisponible (Code d\'erreur : %1$d)</string>
+
 	<!-- Backup/Restore -->
 	<string name="export">Exporter</string>
 	<string name="export_password_description">Saisissez un mot de passe pour chiffrer la sauvegarde. Il sera requis pour la restauration.</string>
@@ -148,6 +176,7 @@
 	<string name="import_failed_password">Déchiffrement échoué. Mot de passe incorrect ou fichier corrompu.</string>
 	<string name="error_password_length">Le mot de passe doit comporter au moins 4 caractères</string>
 	<string name="warning_location_disabled">Automatisation Wi-Fi desactivée: la permission de localisation est requise.</string>
+
 	<!-- Feedback & Notifications -->
 	<string name="notif_channel_alerts_name">Alertes d\'automatisation</string>
 	<string name="notif_channel_alerts_desc">Notifications lors des changements auto ou déclenchement de profils Wi-Fi.</string>
@@ -167,10 +196,10 @@
 	<string name="qs_shadowed_warning">Paramètres globaux.\nOverride %s actif.</string>
 	<string name="badge_wifi_override">OVERRIDE</string>
 	<string name="hostname_saved">Adresse enregistrée</string>
+
 	<!-- App Shortcuts -->
 	<string name="shortcut_toggle_short">Activer/Désactiver le DNS</string>
 	<string name="shortcut_toggle_long">Activer/désactiver le DNS privé</string>
 	<string name="shortcut_select_short">Options DNS</string>
 	<string name="shortcut_select_long">Choisir une adresse DNS privée</string>
-	<string name="unsaved_inactive_label">Inactif (non enregistré)</string>
 </resources>

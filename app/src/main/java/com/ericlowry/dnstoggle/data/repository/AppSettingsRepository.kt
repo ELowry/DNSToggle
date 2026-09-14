@@ -6,13 +6,9 @@ import android.util.Patterns
 import androidx.core.content.edit
 import com.ericlowry.dnstoggle.DnsToggleApplication
 import com.ericlowry.dnstoggle.data.Constants
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 /**
  * Repository for general application settings and preferences.
@@ -20,7 +16,6 @@ import kotlinx.coroutines.launch
  */
 object AppSettingsRepository {
 	private lateinit var sharedPreferences: SharedPreferences
-	private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
 	private val _autoSaveStateEnabled = MutableStateFlow(false)
 	val autoSaveStateEnabled: StateFlow<Boolean> = _autoSaveStateEnabled.asStateFlow()
@@ -49,6 +44,9 @@ object AppSettingsRepository {
 
 	private val _showToastEnabled = MutableStateFlow(true)
 	val showToastEnabled: StateFlow<Boolean> = _showToastEnabled.asStateFlow()
+
+	private val _authMode = MutableStateFlow(Constants.AuthMode.NONE)
+	val authMode: StateFlow<Constants.AuthMode> = _authMode.asStateFlow()
 
 	private val _enableStrictOffOption = MutableStateFlow(false)
 	val enableStrictOffOption: StateFlow<Boolean> = _enableStrictOffOption.asStateFlow()
@@ -81,6 +79,15 @@ object AppSettingsRepository {
 					prefs.getBoolean(key, false)
 
 				Constants.PREF_SHOW_TOAST -> _showToastEnabled.value = prefs.getBoolean(key, true)
+				Constants.PREF_AUTH_MODE -> {
+					val modeName = prefs.getString(key, Constants.AuthMode.NONE.name)
+					_authMode.value = try {
+						Constants.AuthMode.valueOf(modeName ?: Constants.AuthMode.NONE.name)
+					} catch (e: Exception) {
+						Constants.AuthMode.NONE
+					}
+				}
+
 				Constants.PREF_IS_IN_VPN_OVERRIDE -> _isInVpnOverride.value =
 					prefs.getBoolean(key, false)
 
@@ -116,39 +123,46 @@ object AppSettingsRepository {
 		val app = context.applicationContext as DnsToggleApplication
 		sharedPreferences = app.getPrefs()
 
-		scope.launch {
-			_autoSaveStateEnabled.value =
-				sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_STATE, false)
-			_autoSaveHostEnabled.value =
-				sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_HOST, false)
-			_connectivityWatchdogEnabled.value =
-				sharedPreferences.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false)
-			_connectivityWatchdogDebounceSeconds.value = sharedPreferences.getInt(
-				Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
-				Constants.CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS
-			)
-			_connectivityWatchdogProbeTargets.value = sharedPreferences.getString(
-				Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS,
-				Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
-			) ?: Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
-			_hideLauncherIcon.value =
-				sharedPreferences.getBoolean(Constants.PREF_HIDE_LAUNCHER_ICON, false)
-			_disableDnsTest.value =
-				sharedPreferences.getBoolean(Constants.PREF_DISABLE_DNS_TEST, false)
-			_showToastEnabled.value = sharedPreferences.getBoolean(Constants.PREF_SHOW_TOAST, true)
-			_enableStrictOffOption.value =
-				sharedPreferences.getBoolean(Constants.PREF_ENABLE_STRICT_OFF_OPTION, false)
-			_defaultOffMode.value = sharedPreferences.getString(
-				Constants.PREF_DEFAULT_OFF_MODE,
-				Constants.DNS_MODE_OPPORTUNISTIC
-			) ?: Constants.DNS_MODE_OPPORTUNISTIC
-			_vpnHostnameRemovedWarning.value =
-				sharedPreferences.getBoolean(Constants.PREF_VPN_HOSTNAME_REMOVED_WARNING, false)
-			_isInVpnOverride.value =
-				sharedPreferences.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)
-			_activeSsidOverride.value =
-				sharedPreferences.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null)
+		// Synchronous initial load for critical settings to avoid race conditions during app startup
+		_autoSaveStateEnabled.value =
+			sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_STATE, false)
+		_autoSaveHostEnabled.value =
+			sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_HOST, false)
+		_connectivityWatchdogEnabled.value =
+			sharedPreferences.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false)
+		_connectivityWatchdogDebounceSeconds.value = sharedPreferences.getInt(
+			Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
+			Constants.CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS
+		)
+		_connectivityWatchdogProbeTargets.value = sharedPreferences.getString(
+			Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS,
+			Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
+		) ?: Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
+		_hideLauncherIcon.value =
+			sharedPreferences.getBoolean(Constants.PREF_HIDE_LAUNCHER_ICON, false)
+		_disableDnsTest.value = sharedPreferences.getBoolean(Constants.PREF_DISABLE_DNS_TEST, false)
+		_showToastEnabled.value = sharedPreferences.getBoolean(Constants.PREF_SHOW_TOAST, true)
+
+		val authModeName =
+			sharedPreferences.getString(Constants.PREF_AUTH_MODE, Constants.AuthMode.NONE.name)
+		_authMode.value = try {
+			Constants.AuthMode.valueOf(authModeName ?: Constants.AuthMode.NONE.name)
+		} catch (e: Exception) {
+			Constants.AuthMode.NONE
 		}
+
+		_enableStrictOffOption.value =
+			sharedPreferences.getBoolean(Constants.PREF_ENABLE_STRICT_OFF_OPTION, false)
+		_defaultOffMode.value = sharedPreferences.getString(
+			Constants.PREF_DEFAULT_OFF_MODE,
+			Constants.DNS_MODE_OPPORTUNISTIC
+		) ?: Constants.DNS_MODE_OPPORTUNISTIC
+		_vpnHostnameRemovedWarning.value =
+			sharedPreferences.getBoolean(Constants.PREF_VPN_HOSTNAME_REMOVED_WARNING, false)
+		_isInVpnOverride.value =
+			sharedPreferences.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)
+		_activeSsidOverride.value =
+			sharedPreferences.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null)
 
 		sharedPreferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
 	}
@@ -212,6 +226,12 @@ object AppSettingsRepository {
 	fun setShowToast(enabled: Boolean) {
 		sharedPreferences.edit {
 			putBoolean(Constants.PREF_SHOW_TOAST, enabled)
+		}
+	}
+
+	fun setAuthMode(mode: Constants.AuthMode) {
+		sharedPreferences.edit {
+			putString(Constants.PREF_AUTH_MODE, mode.name)
 		}
 	}
 

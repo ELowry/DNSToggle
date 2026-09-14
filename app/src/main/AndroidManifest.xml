@@ -137,6 +137,13 @@
 			android:taskAffinity=""
 			android:theme="@android:style/Theme.NoDisplay" />
 
+		<activity
+			android:name=".ui.QsAuthActivity"
+			android:excludeFromRecents="true"
+			android:exported="false"
+			android:taskAffinity=""
+			android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
 		<activity-alias
 			android:name=".LauncherActivity"
 			android:enabled="true"

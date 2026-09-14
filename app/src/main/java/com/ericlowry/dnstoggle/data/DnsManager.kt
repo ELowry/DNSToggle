@@ -223,8 +223,8 @@ object DnsManager {
 				if (enabled) {
 					if (previousMode != Constants.DNS_MODE_HOSTNAME) {
 						Toast.makeText(
-							context,
-							"${context.getString(R.string.private_dns)}: ${context.getString(R.string.on_label)}",
+							app,
+							"${app.getString(R.string.private_dns)}: ${app.getString(R.string.on_label)}",
 							Toast.LENGTH_SHORT
 						).show()
 					} else if (previousHostname != effectiveHostname) {
@@ -232,24 +232,24 @@ object DnsManager {
 							HostnameRepository.dnsHostnames.value?.find { it.hostname == effectiveHostname }
 								?.getDisplayName() ?: effectiveHostname
 						Toast.makeText(
-							context,
-							context.getString(R.string.toast_dns_changed, displayName),
+							app,
+							app.getString(R.string.toast_dns_changed, displayName),
 							Toast.LENGTH_SHORT
 						).show()
 					}
 				} else if (previousMode == Constants.DNS_MODE_HOSTNAME) {
 					val label = when (newMode) {
 						Constants.DNS_MODE_OFF -> {
-							context.getString(R.string.off_strict_label)
+							app.getString(R.string.off_strict_label)
 						}
 
 						else -> {
-							context.getString(R.string.off_automatic_label)
+							app.getString(R.string.off_automatic_label)
 						}
 					}
 					Toast.makeText(
-						context,
-						"${context.getString(R.string.private_dns)}: $label",
+						app,
+						"${app.getString(R.string.private_dns)}: $label",
 						Toast.LENGTH_SHORT
 					).show()
 				}

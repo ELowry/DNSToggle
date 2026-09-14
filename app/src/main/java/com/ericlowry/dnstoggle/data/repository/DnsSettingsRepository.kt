@@ -1,7 +1,9 @@
 package com.ericlowry.dnstoggle.data.repository
 
+import android.app.UiModeManager
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.util.Log
 import androidx.core.content.edit
 import com.ericlowry.dnstoggle.DnsToggleApplication
@@ -19,9 +21,11 @@ import org.json.JSONObject
 object DnsSettingsRepository {
 	private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 	private lateinit var sharedPreferences: SharedPreferences
+	private lateinit var appContext: Context
 
 	fun initialize(context: Context) {
-		val app = context.applicationContext as DnsToggleApplication
+		appContext = context.applicationContext
+		val app = appContext as DnsToggleApplication
 		sharedPreferences = app.getPrefs()
 	}
 
@@ -66,6 +70,14 @@ object DnsSettingsRepository {
 		return try {
 			val config = json.decodeFromString<BackupConfig>(jsonString)
 
+			val isTvDevice =
+				(appContext.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager).currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
+			val safeHideLauncherIcon = if (isTvDevice) {
+				false
+			} else {
+				config.hideLauncherIcon
+			}
+
 			if (config.hostnames.isNotEmpty()) {
 				val validHostnames =
 					config.hostnames.filter { NetworkUtils.isValidDnsHostname(it.hostname) }
@@ -102,7 +114,7 @@ object DnsSettingsRepository {
 				putBoolean(Constants.PREF_AUTO_SAVE_STATE, config.autoSaveState)
 				putBoolean(Constants.PREF_AUTO_SAVE_HOST, config.autoSaveHost)
 				putBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, config.vpnOverride)
-				putBoolean(Constants.PREF_HIDE_LAUNCHER_ICON, config.hideLauncherIcon)
+				putBoolean(Constants.PREF_HIDE_LAUNCHER_ICON, safeHideLauncherIcon)
 				putBoolean(Constants.PREF_DISABLE_DNS_TEST, config.disableDnsTest)
 				putBoolean(Constants.PREF_SHOW_TOAST, config.showToast)
 				putBoolean(Constants.PREF_ENABLE_STRICT_OFF_OPTION, config.enableStrictOff)
