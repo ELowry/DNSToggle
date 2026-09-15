@@ -21,6 +21,7 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.biometric.BiometricManager
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -46,7 +47,9 @@ import com.ericlowry.dnstoggle.ui.controller.VpnSectionController
 import com.ericlowry.dnstoggle.ui.dialog.CommonDialogHelper
 import com.ericlowry.dnstoggle.ui.dialog.PermissionDialogHelper
 import com.ericlowry.dnstoggle.ui.dialog.SsidDialogHelper
-import com.ericlowry.dnstoggle.ui.dialog._InfoNoticeHelper // TEMPORARY INFO
+//import com.ericlowry.dnstoggle.ui.dialog._InfoNoticeHelper // TEMPORARY INFO
+import com.ericlowry.dnstoggle.util.AuthManager
+import com.ericlowry.dnstoggle.util.LogoThemingUtil
 import com.ericlowry.dnstoggle.util.PermissionHelper
 import com.ericlowry.dnstoggle.util.RootUtils
 import com.ericlowry.dnstoggle.util.ShizukuUtils
@@ -84,6 +87,8 @@ class MainActivity : AppCompatActivity() {
 	private lateinit var cardOverrideStatus: MaterialCardView
 	private lateinit var tvOverrideStatus: TextView
 	private lateinit var mainScrollView: NestedScrollView
+	private lateinit var layoutAuthLock: ViewGroup
+	private lateinit var btnRetryAuth: Button
 
 	private var permissionDialog: AlertDialog? = null
 	private var scrollSpring: SpringAnimation? = null
@@ -138,14 +143,14 @@ class MainActivity : AppCompatActivity() {
 		setupScrollSpring()
 
 		// TEMPORARY INFO
-		_InfoNoticeHelper.showOnceOnStartup(this)
-		val contentWrapper =
-			findViewById<androidx.constraintlayout.widget.ConstraintLayout>(R.id.contentWrapper)
-		_InfoNoticeHelper.injectNoticeButton(
-			this,
-			contentWrapper,
-			R.id.cardMainPermissionLayout
-		)
+//		_InfoNoticeHelper.showOnceOnStartup(this)
+//		val contentWrapper =
+//			findViewById<androidx.constraintlayout.widget.ConstraintLayout>(R.id.contentWrapper)
+//		_InfoNoticeHelper.injectNoticeButton(
+//			this,
+//			contentWrapper,
+//			R.id.cardMainPermissionLayout
+//		)
 		// TEMPORARY INFO - END
 	}
 
@@ -156,11 +161,22 @@ class MainActivity : AppCompatActivity() {
 		updateMainPermissionUiState()
 		ssidController.updateUiState(PermissionHelper.hasSsidPermissions(this))
 		vpnController.updateUiState(PermissionHelper.hasNotificationPermission(this))
+
+		if (dnsViewModel.authMode.value == Constants.AuthMode.ALWAYS && !dnsViewModel.isUnlockedForSession) {
+			showAuthLock()
+		}
 	}
 
 	override fun onNewIntent(intent: Intent) {
 		super.onNewIntent(intent)
 		handleIntentExtras(intent)
+	}
+
+	override fun onStop() {
+		super.onStop()
+		if (!isChangingConfigurations) {
+			dnsViewModel.isUnlockedForSession = false
+		}
 	}
 
 	override fun onDestroy() {
@@ -234,6 +250,10 @@ class MainActivity : AppCompatActivity() {
 	}
 
 	private fun handleIntentExtras(intent: Intent?) {
+		if (AuthManager.consumeTemporaryAuth()) {
+			dnsViewModel.isUnlockedForSession = true
+		}
+
 		if (intent?.getBooleanExtra("show_permission_dialog", false) == true &&
 			!PermissionHelper.hasSecureSettingsPermission(this)
 		) {
@@ -297,8 +317,19 @@ class MainActivity : AppCompatActivity() {
 		val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
 		setSupportActionBar(toolbar)
 
-		val accentColor = MaterialColors.getColor(toolbar, android.R.attr.colorPrimary)
-		toolbar.logo?.setTint(accentColor)
+		val specialColors = LogoThemingUtil.getTodayColors()
+
+		if (specialColors != null) {
+			val themedDrawable = LogoThemingUtil.getThemedLogo(this, specialColors)
+			if (themedDrawable != null) {
+				toolbar.logo = themedDrawable
+				toolbar.logo?.setTintList(null) // Strip tint to reveal the gradient
+			}
+		} else {
+			toolbar.setLogo(R.drawable.ic_qs_dns)
+			val accentColor = MaterialColors.getColor(toolbar, android.R.attr.colorPrimary)
+			toolbar.logo?.setTint(accentColor)
+		}
 
 		// Hide toolbar on scroll for height-constrained device
 		val isHeightConstrained = resources.configuration.screenHeightDp < 600
@@ -318,6 +349,8 @@ class MainActivity : AppCompatActivity() {
 		btnFixMainPermission = findViewById(R.id.btnFixMainPermission)
 		cardOverrideStatus = findViewById(R.id.cardOverrideStatus)
 		tvOverrideStatus = findViewById(R.id.tvOverrideStatus)
+		layoutAuthLock = findViewById(R.id.layoutAuthLock)
+		btnRetryAuth = findViewById(R.id.btnRetryAuth)
 
 		dnsController.initialize(
 			rowPrivateDns = findViewById(R.id.rowPrivateDns),
@@ -369,6 +402,8 @@ class MainActivity : AppCompatActivity() {
 			tvDefaultOffModeValue = findViewById(R.id.tvDefaultOffModeValue),
 			rowDefaultOffMode = findViewById(R.id.rowDefaultOffMode),
 			layoutStrictOffSubset = findViewById(R.id.layoutStrictOffSubset),
+			rowAuthMode = findViewById(R.id.rowAuthMode),
+			tvAuthModeSummary = findViewById(R.id.tvAuthModeSummary),
 			switchHideLauncher = findViewById(R.id.switchHideLauncher),
 			rowHideLauncher = findViewById(R.id.rowHideLauncher),
 			rowUsbDebuggingTile = findViewById(R.id.rowUsbDebuggingTileLayout),
@@ -416,6 +451,10 @@ class MainActivity : AppCompatActivity() {
 
 		btnFixMainPermission.setOnClickListener {
 			showInitialPermissionDialog()
+		}
+
+		btnRetryAuth.setOnClickListener {
+			showAuthLock()
 		}
 	}
 
@@ -688,6 +727,41 @@ class MainActivity : AppCompatActivity() {
 		} catch (e: Exception) {
 			Log.e(TAG, "Failed to open URL", e)
 		}
+	}
+
+	private fun showAuthLock() {
+		layoutAuthLock.visibility = View.VISIBLE
+		btnRetryAuth.visibility = View.GONE
+		mainScrollView.importantForAccessibility =
+			View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+
+		AuthManager.promptAuthentication(
+			activity = this,
+			title = getString(R.string.auth_prompt_title),
+			subtitle = getString(R.string.auth_prompt_unlock_subtitle),
+			onSuccess = {
+				dnsViewModel.isUnlockedForSession = true
+				layoutAuthLock.visibility = View.GONE
+				mainScrollView.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
+			},
+			onError = { errorCode, _ ->
+				if (errorCode == BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED ||
+					errorCode == BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE
+				) {
+					// Unlock session temporarily without altering saved AuthMode preference
+					dnsViewModel.isUnlockedForSession = true
+					layoutAuthLock.visibility = View.GONE
+					mainScrollView.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
+					Toast.makeText(
+						this,
+						getString(R.string.biometricErrorNoneEnrolled),
+						Toast.LENGTH_LONG
+					).show()
+				} else {
+					btnRetryAuth.visibility = View.VISIBLE
+				}
+			}
+		)
 	}
 
 	private fun smoothScrollToCenter(view: View) {

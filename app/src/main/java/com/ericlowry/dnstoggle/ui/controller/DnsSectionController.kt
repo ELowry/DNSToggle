@@ -15,6 +15,7 @@ import com.ericlowry.dnstoggle.ui.adapter.HostnameColors
 import com.ericlowry.dnstoggle.ui.adapter.HostnamesAdapter
 import com.ericlowry.dnstoggle.ui.dialog.CommonDialogHelper
 import com.ericlowry.dnstoggle.ui.dialog.DnsDialogHelper
+import com.ericlowry.dnstoggle.util.AuthManager
 import com.ericlowry.dnstoggle.util.NetworkUtils
 import com.ericlowry.dnstoggle.util.PermissionHelper
 import com.google.android.material.color.MaterialColors
@@ -167,14 +168,31 @@ class DnsSectionController(
 	private fun setupDnsToggle() {
 		rowPrivateDns.setOnClickListener {
 			val isChecked = !dnsToggleSwitch.isChecked
-			dnsToggleSwitch.isChecked = isChecked
 
-			if (PermissionHelper.hasSecureSettingsPermission(activity)) {
-				viewModel.togglePrivateDns(isChecked)
-				onRequestTileUpdate()
+			val performToggle = {
+				dnsToggleSwitch.isChecked = isChecked
+				if (PermissionHelper.hasSecureSettingsPermission(activity)) {
+					viewModel.togglePrivateDns(isChecked)
+					onRequestTileUpdate()
+				} else {
+					dnsToggleSwitch.isChecked = !isChecked
+					onShowInitialPermissionDialog()
+				}
+			}
+
+			val authMode = viewModel.authMode.value ?: Constants.AuthMode.NONE
+			if (authMode == Constants.AuthMode.ACTION_ONLY || authMode == Constants.AuthMode.ALWAYS) {
+				AuthManager.promptAuthentication(
+					activity = activity,
+					title = activity.getString(R.string.auth_prompt_title),
+					subtitle = activity.getString(R.string.auth_prompt_action_subtitle),
+					onSuccess = { performToggle() },
+					onError = { _, errString ->
+						Toast.makeText(activity, errString, Toast.LENGTH_SHORT).show()
+					}
+				)
 			} else {
-				dnsToggleSwitch.isChecked = !isChecked
-				onShowInitialPermissionDialog()
+				performToggle()
 			}
 		}
 	}
@@ -214,7 +232,24 @@ class DnsSectionController(
 				showDeleteHostnameConfirmDialog(hostname)
 			},
 			onItemClick = { hostname ->
-				viewModel.togglePrivateDns(true, hostname)
+				val performItemClick = {
+					viewModel.togglePrivateDns(true, hostname)
+				}
+
+				val authMode = viewModel.authMode.value ?: Constants.AuthMode.NONE
+				if (authMode == Constants.AuthMode.ACTION_ONLY || authMode == Constants.AuthMode.ALWAYS) {
+					AuthManager.promptAuthentication(
+						activity = activity,
+						title = activity.getString(R.string.auth_prompt_title),
+						subtitle = activity.getString(R.string.auth_prompt_action_subtitle),
+						onSuccess = { performItemClick() },
+						onError = { _, errString ->
+							Toast.makeText(activity, errString, Toast.LENGTH_SHORT).show()
+						}
+					)
+				} else {
+					performItemClick()
+				}
 			},
 			onAddInPlaceClick = { hostname ->
 				viewModel.addHostname(hostname)

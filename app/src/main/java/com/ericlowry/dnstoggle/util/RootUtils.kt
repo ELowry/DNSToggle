@@ -40,6 +40,9 @@ object RootUtils {
 				os.writeBytes("exit\n")
 				os.flush()
 
+				process.inputStream.bufferedReader().use { it.readText() }
+				process.errorStream.bufferedReader().use { it.readText() }
+
 				process.waitFor() == 0
 			} catch (e: Exception) {
 				Log.e(TAG, "Failed to grant secure settings permission via root", e)

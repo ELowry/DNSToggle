@@ -13,6 +13,7 @@ import android.view.WindowManager
 import android.view.animation.AccelerateInterpolator
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -22,9 +23,11 @@ import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsHostname
 import com.ericlowry.dnstoggle.data.DnsManager
+import com.ericlowry.dnstoggle.data.repository.AppSettingsRepository
 import com.ericlowry.dnstoggle.data.repository.HostnameRepository
 import com.ericlowry.dnstoggle.data.repository.NetworkProfileRepository
 import com.ericlowry.dnstoggle.service.UsbDebuggingTileService
+import com.ericlowry.dnstoggle.util.AuthManager
 import com.ericlowry.dnstoggle.util.EncryptionManager
 import com.ericlowry.dnstoggle.util.NetworkUtils
 import com.google.android.material.button.MaterialButton
@@ -36,8 +39,38 @@ import kotlinx.coroutines.launch
 
 class DnsSelectionActivity : AppCompatActivity() {
 
+	private var isAuthPassed = false
+
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+
+		val authMode = AppSettingsRepository.authMode.value
+		isAuthPassed = AuthManager.consumeTemporaryAuth()
+
+		if (authMode == Constants.AuthMode.ALWAYS && !isAuthPassed) {
+			val authIntent = Intent(this, QsAuthActivity::class.java).apply {
+				action = Constants.ACTION_SELECT_DNS
+				flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+					intent.getParcelableExtra(
+						Intent.EXTRA_COMPONENT_NAME,
+						ComponentName::class.java
+					)?.let {
+						putExtra(Intent.EXTRA_COMPONENT_NAME, it)
+					}
+				} else {
+					@Suppress("DEPRECATION")
+					intent.getParcelableExtra<ComponentName>(Intent.EXTRA_COMPONENT_NAME)
+						?.let {
+							putExtra(Intent.EXTRA_COMPONENT_NAME, it)
+						}
+				}
+			}
+			startActivity(authIntent)
+			finish()
+			return
+		}
 
 		val component = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 			intent.getParcelableExtra(Intent.EXTRA_COMPONENT_NAME, ComponentName::class.java)
@@ -172,12 +205,32 @@ class DnsSelectionActivity : AppCompatActivity() {
 		fun selectOption(selectedIndex: Int, onSelected: () -> Unit) {
 			listContainer.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
 
-			updateSelectionVisuals(listContainer, selectedIndex)
+			val performSelection = {
+				updateSelectionVisuals(listContainer, selectedIndex)
 
-			listContainer.postDelayed({
-				onSelected()
-				finish()
-			}, 250)
+				listContainer.postDelayed({
+					onSelected()
+					finish()
+				}, 250)
+			}
+
+			val mode = AppSettingsRepository.authMode.value
+			val alreadyAuth = isAuthPassed
+
+			if ((mode == Constants.AuthMode.ACTION_ONLY || mode == Constants.AuthMode.ALWAYS) && !alreadyAuth) {
+				AuthManager.promptAuthentication(
+					activity = this@DnsSelectionActivity,
+					title = getString(R.string.auth_prompt_title),
+					subtitle = getString(R.string.auth_prompt_action_subtitle),
+					onSuccess = { performSelection() },
+					onError = { _, errString ->
+						Toast.makeText(this@DnsSelectionActivity, errString, Toast.LENGTH_SHORT)
+							.show()
+					}
+				)
+			} else {
+				performSelection()
+			}
 		}
 
 		val globalFallbackHostname = getGlobalFallbackHostname()
@@ -408,7 +461,11 @@ class DnsSelectionActivity : AppCompatActivity() {
 		}
 
 		btnSettings.setOnClickListener {
-			startActivity(Intent(this, MainActivity::class.java))
+			if (isAuthPassed) {
+				AuthManager.grantTemporaryAuth()
+			}
+			val intent = Intent(this, MainActivity::class.java)
+			startActivity(intent)
 			finish()
 		}
 	}

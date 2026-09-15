@@ -10,6 +10,7 @@
 	<!-- Global -->
 	<string name="ok">OK</string>
 	<string name="cancel">Cancel</string>
+	<string name="retry">Retry</string>
 	<string name="close">Close</string>
 	<string name="settings">Settings</string>
 	<string name="on_label">On</string>
@@ -123,6 +124,14 @@
 	<string name="options_title">Options</string>
 	<string name="show_toast_notif">Show status toast notifications</string>
 	<string name="show_toast_notif_summary">Show a status notification when Private DNS is toggled via the Quick Settings tile.</string>
+	<string name="auth_mode_title">Require Authentication</string>
+	<string name="auth_mode_summary_none">Off</string>
+	<string name="auth_mode_summary_action">When toggling DNS</string>
+	<string name="auth_mode_summary_always">App open &amp; toggling</string>
+	<string name="auth_prompt_title">App Authentication</string>
+	<string name="auth_prompt_settings_subtitle">Verify identity to change system settings</string>
+	<string name="auth_prompt_action_subtitle">Verify identity to change device DNS settings</string>
+	<string name="auth_prompt_unlock_subtitle">Verify identity to unlock app</string>
 	<string name="hide_launcher_icon">Hide app icon</string>
 	<string name="hide_launcher_icon_summary">When enabled, the app will be hidden from your app drawer. You can still access settings by long-pressing the Quick Settings tile. Note: on some launchers this option may not fully hide the icon.</string>
 	<string name="hide_launcher_icon_tv_summary">This feature is unavailable due to Android TV limitations.</string>
@@ -146,6 +155,12 @@
 	<!-- Security -->
 	<string name="keystore_error_title">Security Reset</string>
 	<string name="keystore_error_message">Due to a change in your device\'s security settings (like changing your screen lock), your Wi-Fi profiles were reset to protect your data. You will need to re-add your saved networks.</string>
+	<string name="biometricErrorNoHardware">No biometric hardware detected on this device.</string>
+	<string name="biometricErrorHwUnavailable">Biometric hardware is currently unavailable.</string>
+	<string name="biometricErrorNoneEnrolled">No biometrics or device credentials enrolled.</string>
+	<string name="biometricErrorSecurityUpdateRequired">A security update is required for biometric authentication.</string>
+	<string name="biometricErrorUnsupported">Biometric authentication is not supported on this version of Android.</string>
+	<string name="biometricErrorDefault">Authentication unavailable (Error code: %1$d)</string>
 
 	<!-- Backup/Restore -->
 	<string name="export">Export</string>

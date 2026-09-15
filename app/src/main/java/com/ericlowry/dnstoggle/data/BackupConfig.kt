@@ -16,5 +16,9 @@ data class BackupConfig(
 	val showToast: Boolean = false,
 	@SerialName("eso") val enableStrictOff: Boolean = false,
 	@SerialName("dom") val defaultOffMode: String = Constants.DNS_MODE_OPPORTUNISTIC,
-	@SerialName("vdm") val vpnDnsMode: String = Constants.DNS_MODE_OPPORTUNISTIC
+	@SerialName("vdm") val vpnDnsMode: String = Constants.DNS_MODE_OPPORTUNISTIC,
+	@SerialName("am") val authMode: Constants.AuthMode = Constants.AuthMode.NONE,
+	@SerialName("cwe") val watchdogEnabled: Boolean = false,
+	@SerialName("cwd") val watchdogDebounceSeconds: Int = Constants.CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS,
+	@SerialName("cwt") val watchdogProbeTargets: String = Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
 )

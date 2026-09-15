@@ -17,8 +17,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
-import org.json.JSONArray
 
 /**
  * Repository for managing the list of saved DNS hostnames.
@@ -29,6 +30,7 @@ object HostnameRepository {
 	private lateinit var sharedPreferences: SharedPreferences
 	private lateinit var encryptedPrefs: SharedPreferences
 	private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+	private val saveMutex = Mutex()
 
 	private val _dnsHostnames = MutableStateFlow<List<DnsHostname>?>(null)
 	val dnsHostnames: StateFlow<List<DnsHostname>?> = _dnsHostnames.asStateFlow()
@@ -51,78 +53,14 @@ object HostnameRepository {
 			var keyInvalidated = false
 			var resultList = mutableListOf<DnsHostname>()
 
-			// START_LEGACY_MIGRATION_CODE: Legacy StringSet to JSON Array hostname migration
-			var migratedFormat = false
-			val needsPrefixMigration = (rawData is String) && !rawData.startsWith("enc:")
-			if (rawData is Set<*>) {
-				@Suppress("UNCHECKED_CAST")
-				val encryptedSet = rawData as? Set<String> ?: emptySet()
-				encryptedSet.forEach {
-					when (val result = EncryptionManager.decrypt(it)) {
-						is EncryptionManager.DecryptResult.Success -> {
-							val entry = result.data
-							if (entry.startsWith("j:")) {
-								try {
-									resultList.add(
-										json.decodeFromString<DnsHostname>(
-											entry.substring(
-												2
-											)
-										)
-									)
-								} catch (_: Exception) {
-									resultList.add(DnsHostname(hostname = entry))
-								}
-							} else {
-								resultList.add(DnsHostname(hostname = entry))
-							}
-						}
-
-						is EncryptionManager.DecryptResult.KeyInvalidated -> keyInvalidated = true
-						else -> {}
-					}
-				}
-				resultList.sortWith { a, b ->
-					String.CASE_INSENSITIVE_ORDER.compare(
-						a.getDisplayName(),
-						b.getDisplayName()
-					)
-				}
-				if (resultList.isNotEmpty() && !keyInvalidated) {
-					saveHostnamesAsync(resultList)
-				}
-			}
-			// END_LEGACY_MIGRATION_CODE
-
 			if (rawData is String) {
 				when (val result = EncryptionManager.decrypt(rawData)) {
 					is EncryptionManager.DecryptResult.Success -> {
 						try {
 							resultList =
 								json.decodeFromString<MutableList<DnsHostname>>(result.data)
-						} catch (_: Exception) {
-							// START_LEGACY_MIGRATION_CODE: JSONArray of strings to List<DnsHostname> migration
-							try {
-								val jsonArray = JSONArray(result.data)
-								migratedFormat = true
-								for (i in 0 until jsonArray.length()) {
-									val entry = jsonArray.getString(i)
-									if (entry.startsWith("j:")) {
-										resultList.add(
-											json.decodeFromString<DnsHostname>(
-												entry.substring(
-													2
-												)
-											)
-										)
-									} else {
-										resultList.add(DnsHostname(hostname = entry))
-									}
-								}
-							} catch (e2: Exception) {
-								Log.e("HostnameRepository", "Failed to parse hostnames JSON", e2)
-							}
-							// END_LEGACY_MIGRATION_CODE
+						} catch (e: Exception) {
+							Log.e("HostnameRepository", "Failed to parse hostnames JSON", e)
 						}
 					}
 
@@ -141,12 +79,6 @@ object HostnameRepository {
 			}
 
 			_dnsHostnames.value = resultList
-
-			// START_LEGACY_MIGRATION_CODE: Legacy StringSet to JSON Array hostname migration
-			if ((migratedFormat || needsPrefixMigration) && resultList.isNotEmpty()) {
-				saveHostnamesAsync(resultList)
-			}
-			// END_LEGACY_MIGRATION_CODE
 		}
 	}
 
@@ -235,9 +167,11 @@ object HostnameRepository {
 
 	fun saveHostnamesAsync(list: List<DnsHostname>) {
 		scope.launch {
-			val jsonString = json.encodeToString(list)
-			val encrypted = EncryptionManager.encrypt(jsonString)
-			encryptedPrefs.edit { putString(Constants.PREF_DNS_HOSTNAMES, encrypted) }
+			saveMutex.withLock {
+				val jsonString = json.encodeToString(list)
+				val encrypted = EncryptionManager.encrypt(jsonString)
+				encryptedPrefs.edit { putString(Constants.PREF_DNS_HOSTNAMES, encrypted) }
+			}
 		}
 	}
 }

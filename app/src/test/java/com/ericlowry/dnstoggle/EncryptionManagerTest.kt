@@ -22,27 +22,6 @@ class EncryptionManagerTest {
 	}
 
 	@Test
-	fun decrypt_handlesLegacyData() {
-		// Fallback for app version <1.6, stripped of prefix
-		val original = "legacy_data"
-		val encryptedWithPrefix = EncryptionManager.encrypt(original)
-		val legacyEncrypted = encryptedWithPrefix.removePrefix("enc:")
-
-		val result = EncryptionManager.decrypt(legacyEncrypted)
-		assertTrue(result is EncryptionManager.DecryptResult.Success)
-		assertEquals(original, (result as EncryptionManager.DecryptResult.Success).data)
-	}
-
-	@Test
-	fun decrypt_fallsBackToPlaintext() {
-		val plaintext = "not_encrypted_hostname"
-		val result = EncryptionManager.decrypt(plaintext)
-
-		assertTrue(result is EncryptionManager.DecryptResult.Success)
-		assertEquals(plaintext, (result as EncryptionManager.DecryptResult.Success).data)
-	}
-
-	@Test
 	fun decrypt_handlesEmptyString() {
 		val result = EncryptionManager.decrypt("")
 		assertEquals(EncryptionManager.DecryptResult.Failed, result)

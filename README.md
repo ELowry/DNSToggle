@@ -50,6 +50,8 @@ By long-pressing the Quick Settings tile, you can access the configuration menu 
     > _Note: For security, your encrypted hostnames and Wi-Fi profiles are excluded from cloud backups and must be transferred manually._
 - **Dynamic Tile Labeling**:  
   Rename the Quick Settings tile.
+- **App Authentication**:  
+  Optionally require biometric or device credential authentication when manually toggling Private DNS or opening the app.
 - **Hide App Icon**:  
   Optionally hide the app from your launcher drawer to keep your home screen clean.
 - **USB Debugging Tile**:  
@@ -83,10 +85,10 @@ If you encounter issues not covered here, please [open a support ticket](https:/
   This usually means the permission was not granted correctly. See the warning above.
 - **Custom DNS is marked as "Unreachable"**:  
   Some strict DNS providers block automatic connection tests. If you are certain the address is correct, you can enable the `Skip connection test` option.
-- **"Unknown SSID" or Automation fails**:  
-  - Ensure **Location Permissions** are set to "Allow all the time". Android requires this to identify Wi-Fi networks in the background.
-  - Active **VPNs** or "Private DNS" settings on some devices can mask the SSID.
-  - Some devices aggressively kill background apps. If automation stops working, you may need to disable `Battery Optimizations` or enable `Autostart` for DNS Toggle in your system settings.
+- **"Unknown SSID" or Automation fails**:
+    - Ensure **Location Permissions** are set to "Allow all the time". Android requires this to identify Wi-Fi networks in the background.
+    - Active **VPNs** or "Private DNS" settings on some devices can mask the SSID.
+    - Some devices aggressively kill background apps. If automation stops working, you may need to disable `Battery Optimizations` or enable `Autostart` for DNS Toggle in your system settings.
 
 ## Permissions
 

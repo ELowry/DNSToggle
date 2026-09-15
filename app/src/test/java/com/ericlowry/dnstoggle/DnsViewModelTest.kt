@@ -48,7 +48,7 @@ class DnsViewModelTest {
 	fun setup() {
 		Dispatchers.setMain(testDispatcher)
 		app = ApplicationProvider.getApplicationContext()
-		SecurityRepository.initialize(app)
+		SecurityRepository.initialize()
 		AppSettingsRepository.initialize(app)
 		VpnRepository.initialize(app)
 		NetworkProfileRepository.initialize(app)
