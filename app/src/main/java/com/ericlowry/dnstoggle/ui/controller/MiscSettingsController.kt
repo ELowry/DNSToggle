@@ -14,6 +14,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
+import androidx.lifecycle.lifecycleScope
 import com.ericlowry.dnstoggle.DnsToggleApplication
 import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.Constants
@@ -23,6 +24,9 @@ import com.ericlowry.dnstoggle.util.AuthManager
 import com.ericlowry.dnstoggle.util.setConditionalVisibility
 import com.ericlowry.dnstoggle.util.setDimmedEnabled
 import com.google.android.material.materialswitch.MaterialSwitch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MiscSettingsController(
 	private val activity: AppCompatActivity,
@@ -297,14 +301,18 @@ class MiscSettingsController(
 		val pInfo = activity.packageManager.getPackageInfo(activity.packageName, 0)
 		val versionCode = pInfo.longVersionCode
 
-		val changelogPath = findChangelogPath(versionCode)
-		if (changelogPath != null) {
-			btnWhatsNew.setConditionalVisibility(true)
-			btnWhatsNew.setOnClickListener {
-				showChangelogDialog(changelogPath)
+		activity.lifecycleScope.launch(Dispatchers.IO) {
+			val changelogPath = findChangelogPath(versionCode)
+			withContext(Dispatchers.Main) {
+				if (changelogPath != null) {
+					btnWhatsNew.setConditionalVisibility(true)
+					btnWhatsNew.setOnClickListener {
+						showChangelogDialog(changelogPath)
+					}
+				} else {
+					btnWhatsNew.setConditionalVisibility(false)
+				}
 			}
-		} else {
-			btnWhatsNew.setConditionalVisibility(false)
 		}
 	}
 

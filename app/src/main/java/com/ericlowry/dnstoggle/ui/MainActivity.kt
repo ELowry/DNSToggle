@@ -49,6 +49,7 @@ import com.ericlowry.dnstoggle.ui.dialog.PermissionDialogHelper
 import com.ericlowry.dnstoggle.ui.dialog.SsidDialogHelper
 //import com.ericlowry.dnstoggle.ui.dialog._InfoNoticeHelper // TEMPORARY INFO
 import com.ericlowry.dnstoggle.util.AuthManager
+import com.ericlowry.dnstoggle.util.LogoThemingUtil
 import com.ericlowry.dnstoggle.util.PermissionHelper
 import com.ericlowry.dnstoggle.util.RootUtils
 import com.ericlowry.dnstoggle.util.ShizukuUtils
@@ -316,8 +317,19 @@ class MainActivity : AppCompatActivity() {
 		val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
 		setSupportActionBar(toolbar)
 
-		val accentColor = MaterialColors.getColor(toolbar, android.R.attr.colorPrimary)
-		toolbar.logo?.setTint(accentColor)
+		val specialColors = LogoThemingUtil.getTodayColors()
+
+		if (specialColors != null) {
+			val themedDrawable = LogoThemingUtil.getThemedLogo(this, specialColors)
+			if (themedDrawable != null) {
+				toolbar.logo = themedDrawable
+				toolbar.logo?.setTintList(null) // Strip tint to reveal the gradient
+			}
+		} else {
+			toolbar.setLogo(R.drawable.ic_qs_dns)
+			val accentColor = MaterialColors.getColor(toolbar, android.R.attr.colorPrimary)
+			toolbar.logo?.setTint(accentColor)
+		}
 
 		// Hide toolbar on scroll for height-constrained device
 		val isHeightConstrained = resources.configuration.screenHeightDp < 600
@@ -720,6 +732,8 @@ class MainActivity : AppCompatActivity() {
 	private fun showAuthLock() {
 		layoutAuthLock.visibility = View.VISIBLE
 		btnRetryAuth.visibility = View.GONE
+		mainScrollView.importantForAccessibility =
+			View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
 
 		AuthManager.promptAuthentication(
 			activity = this,
@@ -728,6 +742,7 @@ class MainActivity : AppCompatActivity() {
 			onSuccess = {
 				dnsViewModel.isUnlockedForSession = true
 				layoutAuthLock.visibility = View.GONE
+				mainScrollView.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
 			},
 			onError = { errorCode, _ ->
 				if (errorCode == BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED ||
@@ -736,6 +751,7 @@ class MainActivity : AppCompatActivity() {
 					// Unlock session temporarily without altering saved AuthMode preference
 					dnsViewModel.isUnlockedForSession = true
 					layoutAuthLock.visibility = View.GONE
+					mainScrollView.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
 					Toast.makeText(
 						this,
 						getString(R.string.biometricErrorNoneEnrolled),

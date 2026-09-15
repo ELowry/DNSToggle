@@ -99,6 +99,16 @@ androidComponents {
 	}
 }
 
+tasks.configureEach {
+	if (name.startsWith("assemble")) {
+		val variantName = name.removePrefix("assemble")
+		if (variantName.isNotEmpty()) {
+			val testTaskName = "test${variantName}UnitTest"
+			dependsOn(tasks.matching { it.name == testTaskName })
+		}
+	}
+}
+
 dependencies {
 	implementation(libs.androidx.core.ktx)
 	implementation(libs.kotlinx.serialization.json)

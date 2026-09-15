@@ -9,10 +9,8 @@ import androidx.core.content.edit
 import com.ericlowry.dnstoggle.DnsToggleApplication
 import com.ericlowry.dnstoggle.data.BackupConfig
 import com.ericlowry.dnstoggle.data.Constants
-import com.ericlowry.dnstoggle.data.NetworkProfile
 import com.ericlowry.dnstoggle.util.NetworkUtils
 import kotlinx.serialization.json.Json
-import org.json.JSONObject
 
 /**
  * Repository for bulk export and import of application configuration.
@@ -55,7 +53,20 @@ object DnsSettingsRepository {
 			defaultOffMode = sharedPreferences.getString(
 				Constants.PREF_DEFAULT_OFF_MODE,
 				Constants.DNS_MODE_OPPORTUNISTIC
-			) ?: Constants.DNS_MODE_OPPORTUNISTIC
+			) ?: Constants.DNS_MODE_OPPORTUNISTIC,
+			authMode = AppSettingsRepository.getStoredAuthMode(),
+			watchdogEnabled = sharedPreferences.getBoolean(
+				Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED,
+				false
+			),
+			watchdogDebounceSeconds = sharedPreferences.getInt(
+				Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
+				Constants.CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS
+			),
+			watchdogProbeTargets = sharedPreferences.getString(
+				Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS,
+				Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
+			) ?: Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
 		)
 		return json.encodeToString(backupConfig)
 	}
@@ -86,29 +97,10 @@ object DnsSettingsRepository {
 
 			if (config.networkProfiles.isNotEmpty()) {
 				NetworkProfileRepository.updateNetworkProfilesFromBackup(config.networkProfiles)
-			} else {
-				// START_LEGACY_MIGRATION_CODE: Legacy flat array JSON backup import
-				try {
-					val rawJson = JSONObject(jsonString)
-					if (rawJson.has("blacklist")) {
-						val blacklistArray = rawJson.getJSONArray("blacklist")
-						val importedProfiles = mutableListOf<NetworkProfile>()
-						for (i in 0 until blacklistArray.length()) {
-							importedProfiles.add(
-								NetworkProfile(
-									ssid = blacklistArray.getString(i),
-									isEnabled = false,
-									targetHostname = null,
-									isAutoDetected = false
-								)
-							)
-						}
-						NetworkProfileRepository.updateNetworkProfilesFromBackup(importedProfiles)
-					}
-				} catch (_: Exception) {
-				}
-				// END_LEGACY_MIGRATION_CODE
 			}
+
+			val currentStoredAuthMode = AppSettingsRepository.getStoredAuthMode()
+			val importedAuthMode = config.authMode
 
 			sharedPreferences.edit {
 				putBoolean(Constants.PREF_AUTO_SAVE_STATE, config.autoSaveState)
@@ -119,6 +111,20 @@ object DnsSettingsRepository {
 				putBoolean(Constants.PREF_SHOW_TOAST, config.showToast)
 				putBoolean(Constants.PREF_ENABLE_STRICT_OFF_OPTION, config.enableStrictOff)
 				putString(Constants.PREF_DEFAULT_OFF_MODE, config.defaultOffMode)
+
+				if (importedAuthMode.ordinal > currentStoredAuthMode.ordinal) {
+					putString(Constants.PREF_AUTH_MODE, importedAuthMode.name)
+				}
+
+				putBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, config.watchdogEnabled)
+				putInt(
+					Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
+					config.watchdogDebounceSeconds
+				)
+				putString(
+					Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS,
+					config.watchdogProbeTargets
+				)
 			}
 			VpnRepository.updateVpnOverrideEnabled(config.vpnOverride)
 

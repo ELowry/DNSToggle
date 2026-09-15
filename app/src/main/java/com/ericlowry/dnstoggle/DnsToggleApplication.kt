@@ -16,6 +16,7 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.repository.AppSettingsRepository
@@ -146,7 +147,7 @@ class DnsToggleApplication : Application() {
 			override fun onActivityDestroyed(activity: Activity) {}
 		})
 
-		SecurityRepository.initialize(this)
+		SecurityRepository.initialize()
 		AppSettingsRepository.initialize(this)
 		VpnRepository.initialize(this)
 		NetworkProfileRepository.initialize(this)
@@ -206,29 +207,27 @@ class DnsToggleApplication : Application() {
 	}
 
 	fun updateWifiMonitoringRegistration() {
-		applicationScope.launch(Dispatchers.Default) {
-			val serviceIntent = Intent(this@DnsToggleApplication, WifiMonitoringService::class.java)
+		val serviceIntent = Intent(this@DnsToggleApplication, WifiMonitoringService::class.java)
 
-			if (isWifiMonitoringRequired()) {
-				try {
-					androidx.core.content.ContextCompat.startForegroundService(
-						this@DnsToggleApplication,
-						serviceIntent
-					)
-				} catch (e: Exception) {
-					Log.e("DnsToggleApplication", "Failed to start foreground service", e)
-				}
-			} else {
-				stopService(serviceIntent)
-				detectedSsid = null
+		if (isWifiMonitoringRequired()) {
+			try {
+				ContextCompat.startForegroundService(
+					this@DnsToggleApplication,
+					serviceIntent
+				)
+			} catch (e: Exception) {
+				Log.e("DnsToggleApplication", "Failed to start foreground service", e)
 			}
-
-			// Tile resync
-			TileServiceCompat.requestListeningState(
-				this@DnsToggleApplication,
-				ComponentName(this@DnsToggleApplication, DnsToggleService::class.java)
-			)
+		} else {
+			stopService(serviceIntent)
+			detectedSsid = null
 		}
+
+		// Tile resync
+		TileServiceCompat.requestListeningState(
+			this@DnsToggleApplication,
+			ComponentName(this@DnsToggleApplication, DnsToggleService::class.java)
+		)
 	}
 
 	fun updateUsbDebuggingTileAvailability() {

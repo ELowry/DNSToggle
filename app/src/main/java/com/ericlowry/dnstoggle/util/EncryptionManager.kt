@@ -12,6 +12,7 @@ import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
+import javax.crypto.spec.SecretKeySpec
 
 /**
  * Manager for transparently encrypting and decrypting sensitive user data using the Android Keystore.
@@ -30,11 +31,13 @@ object EncryptionManager {
 			KeyStore.getInstance("AndroidKeyStore").apply {
 				load(null)
 			}
-		} catch (e: Exception) {
-			Log.e(TAG, "AndroidKeyStore initialization failed", e)
+		} catch (_: Exception) {
+			Log.w(TAG, "AndroidKeyStore not available, falling back to default provider")
 			null
 		}
 	}
+
+	private var dummyKey: SecretKey? = null
 
 	/**
 	 * Encrypts a string using an AES key stored in the Android Keystore.
@@ -46,7 +49,7 @@ object EncryptionManager {
 	 */
 	fun encrypt(data: String): String {
 		return try {
-			val key = getKey() ?: return data
+			val key = getKey() ?: throw Exception("KeyStore and dummy key unavailable")
 			val cipher = Cipher.getInstance(TRANSFORMATION)
 			cipher.init(Cipher.ENCRYPT_MODE, key)
 			val iv = cipher.iv
@@ -59,7 +62,7 @@ object EncryptionManager {
 
 			Constants.ENCRYPTION_PREFIX + Base64.encodeToString(combined, Base64.NO_WRAP)
 		} catch (e: Exception) {
-			Log.e(TAG, "Encryption failed, falling back to plaintext", e)
+			Log.e(TAG, "Encryption failed", e)
 			data
 		}
 	}
@@ -72,7 +75,6 @@ object EncryptionManager {
 
 	/**
 	 * Decrypts a string that was previously encrypted by [encrypt].
-	 * Handles both prefixed blobs and legacy unprefixed data.
 	 *
 	 * @param input The Base64 encoded string to decrypt.
 	 * @return A [DecryptResult] containing the plaintext or an error state.
@@ -85,30 +87,34 @@ object EncryptionManager {
 		return if (input.startsWith(Constants.ENCRYPTION_PREFIX)) {
 			decryptInternal(input.substring(Constants.ENCRYPTION_PREFIX.length))
 		} else {
-			// START_LEGACY_MIGRATION_CODE: Legacy decryption (no prefix)
-			val result = decryptInternal(input)
-			if (result is DecryptResult.Success || result is DecryptResult.KeyInvalidated) {
-				result
-			} else {
-				// Assume plaintext on failure
-				DecryptResult.Success(input)
-			}
-			// END_LEGACY_MIGRATION_CODE
+			DecryptResult.Failed
 		}
 	}
 
 	private fun getKey(): SecretKey? {
-		val ks = keyStore ?: return null
-		return try {
-			val existingKey =
-				ks.getEntry(Constants.ENCRYPTION_KEY_ALIAS, null) as? KeyStore.SecretKeyEntry
-			existingKey?.secretKey ?: createKey()
-		} catch (_: Exception) {
-			createKey()
+		val ks = keyStore
+		return if (ks != null) {
+			try {
+				val existingKey =
+					ks.getEntry(Constants.ENCRYPTION_KEY_ALIAS, null) as? KeyStore.SecretKeyEntry
+				existingKey?.secretKey ?: createKeyInAndroidKeyStore()
+			} catch (_: Exception) {
+				createKeyInAndroidKeyStore()
+			}
+		} else {
+			if (dummyKey == null) {
+				try {
+					// Fallback to a plain AES key for environments without AndroidKeyStore (e.g. unit tests)
+					dummyKey = SecretKeySpec(ByteArray(32), "AES")
+				} catch (_: Exception) {
+					Log.e(TAG, "Failed to create dummy key")
+				}
+			}
+			dummyKey
 		}
 	}
 
-	private fun createKey(): SecretKey? {
+	private fun createKeyInAndroidKeyStore(): SecretKey? {
 		return try {
 			KeyGenerator.getInstance(ALGORITHM, "AndroidKeyStore").apply {
 				init(

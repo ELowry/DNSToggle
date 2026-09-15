@@ -139,7 +139,7 @@ class WifiMonitoringService : Service() {
 		prefs.unregisterOnSharedPreferenceChangeListener(preferenceChangeListener)
 
 		if (prefs.getBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)) {
-			prefs.edit(true) { putBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false) }
+			prefs.edit { putBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false) }
 		}
 		if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != null) {
 			DnsPolicyEvaluator.restorePreferredDns(
@@ -147,7 +147,7 @@ class WifiMonitoringService : Service() {
 				watchdogManager,
 				immediate = true
 			)
-			prefs.edit(true) { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) }
+			prefs.edit { putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) }
 		}
 
 		app.detectedSsid = null

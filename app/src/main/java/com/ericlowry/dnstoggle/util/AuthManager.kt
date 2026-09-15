@@ -1,6 +1,7 @@
 package com.ericlowry.dnstoggle.util
 
 import android.content.Context
+import android.os.SystemClock
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.core.content.ContextCompat
@@ -17,11 +18,11 @@ object AuthManager {
 	private const val AUTH_EXPIRATION_MS = 2000L
 
 	fun grantTemporaryAuth() {
-		temporaryAuthTimestamp = System.currentTimeMillis()
+		temporaryAuthTimestamp = SystemClock.elapsedRealtime()
 	}
 
 	fun consumeTemporaryAuth(): Boolean {
-		val currentTime = System.currentTimeMillis()
+		val currentTime = SystemClock.elapsedRealtime()
 		val isValid =
 			(temporaryAuthTimestamp > 0) && (currentTime - temporaryAuthTimestamp <= AUTH_EXPIRATION_MS)
 		temporaryAuthTimestamp = 0L // Consume immediately

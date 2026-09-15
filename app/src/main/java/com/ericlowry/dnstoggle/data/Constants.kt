@@ -10,11 +10,6 @@ object Constants {
 	const val DNS_MODE_HOSTNAME = "hostname"
 	const val DNS_MODE_OFF = "off"
 
-	// START_LEGACY_MIGRATION_CODE: Old shared preference keys
-	const val PREF_SSID_BLACKLIST = "ssid_blacklist"
-	const val PREF_SSID_AUTO_DETECTED_BLACKLIST = "ssid_auto_detected_blacklist"
-	// END_LEGACY_MIGRATION_CODE
-
 	// Shared Preferences Keys
 	const val PREF_NETWORK_PROFILES = "network_profiles"
 	const val PREF_AUTO_SAVE_STATE = "pref_auto_save_state"

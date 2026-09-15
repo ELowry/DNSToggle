@@ -1,3 +1,3 @@
 - Ajout d'une option pour nécessiter l'authentification pour modifier les paramètres de l'appareil ou ouvrir l'application.
 
-ATTENTION: cette version n'est pas enièrement compatible avec des versions plus anciennes de DNS Toggle. Assurez-vous d'avoir exporté les paramètres de l'application en version `2.2.0` si vous mettez l'application à jour depuis une version plus ancienne.
+ATTENTION: cette version n'est pas entièrement compatible avec des versions plus anciennes de DNS Toggle. Assurez-vous d'avoir exporté les paramètres de l'application en version `2.2.0` si vous mettez l'application à jour depuis une version plus ancienne.

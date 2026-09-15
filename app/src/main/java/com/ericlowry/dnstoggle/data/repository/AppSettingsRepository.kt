@@ -1,7 +1,9 @@
 package com.ericlowry.dnstoggle.data.repository
 
+import android.app.UiModeManager
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.util.Patterns
 import androidx.core.content.edit
 import com.ericlowry.dnstoggle.DnsToggleApplication
@@ -16,6 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
  */
 object AppSettingsRepository {
 	private lateinit var sharedPreferences: SharedPreferences
+	private var isTvDevice: Boolean = false
 
 	private val _autoSaveStateEnabled = MutableStateFlow(false)
 	val autoSaveStateEnabled: StateFlow<Boolean> = _autoSaveStateEnabled.asStateFlow()
@@ -81,10 +84,15 @@ object AppSettingsRepository {
 				Constants.PREF_SHOW_TOAST -> _showToastEnabled.value = prefs.getBoolean(key, true)
 				Constants.PREF_AUTH_MODE -> {
 					val modeName = prefs.getString(key, Constants.AuthMode.NONE.name)
-					_authMode.value = try {
+					val baseMode = try {
 						Constants.AuthMode.valueOf(modeName ?: Constants.AuthMode.NONE.name)
 					} catch (e: Exception) {
 						Constants.AuthMode.NONE
+					}
+					_authMode.value = if (isTvDevice) {
+						Constants.AuthMode.NONE
+					} else {
+						baseMode
 					}
 				}
 
@@ -123,6 +131,9 @@ object AppSettingsRepository {
 		val app = context.applicationContext as DnsToggleApplication
 		sharedPreferences = app.getPrefs()
 
+		val uiModeManager = context.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager
+		isTvDevice = uiModeManager.currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
+
 		// Synchronous initial load for critical settings to avoid race conditions during app startup
 		_autoSaveStateEnabled.value =
 			sharedPreferences.getBoolean(Constants.PREF_AUTO_SAVE_STATE, false)
@@ -145,10 +156,16 @@ object AppSettingsRepository {
 
 		val authModeName =
 			sharedPreferences.getString(Constants.PREF_AUTH_MODE, Constants.AuthMode.NONE.name)
-		_authMode.value = try {
+		val baseAuthMode = try {
 			Constants.AuthMode.valueOf(authModeName ?: Constants.AuthMode.NONE.name)
 		} catch (e: Exception) {
 			Constants.AuthMode.NONE
+		}
+
+		_authMode.value = if (isTvDevice) {
+			Constants.AuthMode.NONE
+		} else {
+			baseAuthMode
 		}
 
 		_enableStrictOffOption.value =
@@ -165,6 +182,16 @@ object AppSettingsRepository {
 			sharedPreferences.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null)
 
 		sharedPreferences.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
+	}
+
+	fun getStoredAuthMode(): Constants.AuthMode {
+		val modeName =
+			sharedPreferences.getString(Constants.PREF_AUTH_MODE, Constants.AuthMode.NONE.name)
+		return try {
+			Constants.AuthMode.valueOf(modeName ?: Constants.AuthMode.NONE.name)
+		} catch (e: Exception) {
+			Constants.AuthMode.NONE
+		}
 	}
 
 	fun setAutoSaveState(enabled: Boolean) {

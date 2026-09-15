@@ -34,7 +34,7 @@ class ConnectivityWatchdogManagerTest {
 	@Before
 	fun setup() {
 		app = ApplicationProvider.getApplicationContext()
-		SecurityRepository.initialize(app)
+		SecurityRepository.initialize()
 		VpnRepository.initialize(app)
 		NetworkProfileRepository.initialize(app)
 		HostnameRepository.initialize(app)
