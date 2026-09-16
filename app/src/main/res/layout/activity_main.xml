@@ -195,7 +195,7 @@
 				</LinearLayout>
 
 				<LinearLayout
-					android:id="@+id/rowEnableStrictOff"
+					android:id="@+id/rowAuthMode"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"
 					android:layout_marginTop="10dp"
@@ -210,6 +210,55 @@
 					app:layout_constraintEnd_toEndOf="parent"
 					app:layout_constraintStart_toStartOf="parent"
 					app:layout_constraintTop_toBottomOf="@id/rowShowToast">
+
+					<LinearLayout
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						android:layout_weight="1"
+						android:orientation="vertical">
+
+						<TextView
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:text="@string/auth_mode_title"
+							android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+						<TextView
+							android:id="@+id/tvAuthModeSummary"
+							android:layout_width="wrap_content"
+							android:layout_height="wrap_content"
+							android:layout_marginTop="6dp"
+							android:textAppearance="?attr/textAppearanceBodySmall"
+							android:textColor="?attr/colorOnSurfaceVariant"
+							tools:text="@string/auth_mode_summary_none" />
+					</LinearLayout>
+
+					<ImageView
+						android:layout_width="20dp"
+						android:layout_height="20dp"
+						android:layout_marginStart="16dp"
+						android:layout_marginEnd="8dp"
+						android:contentDescription="@null"
+						android:src="@drawable/ic_chevron_right"
+						app:tint="?attr/colorOnSurfaceVariant" />
+				</LinearLayout>
+
+				<LinearLayout
+					android:id="@+id/rowEnableStrictOff"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					android:layout_marginTop="10dp"
+					android:background="@drawable/bg_row_selectable"
+					android:clickable="true"
+					android:focusable="true"
+					android:focusableInTouchMode="false"
+					android:gravity="center_vertical"
+					android:orientation="horizontal"
+					android:paddingHorizontal="4dp"
+					android:paddingVertical="8dp"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toBottomOf="@id/rowAuthMode">
 
 					<LinearLayout
 						android:layout_width="0dp"
@@ -463,5 +512,26 @@
 		android:background="?attr/colorSurface"
 		android:elevation="8dp"
 		android:visibility="gone" />
+
+	<FrameLayout
+		android:id="@+id/layoutAuthLock"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:background="?attr/colorSurface"
+		android:clickable="true"
+		android:elevation="99dp"
+		android:focusable="true"
+		android:visibility="gone">
+
+		<Button
+			android:id="@+id/btnRetryAuth"
+			style="@style/Widget.Material3.Button.TonalButton"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_gravity="center"
+			android:text="@string/retry"
+			android:visibility="gone"
+			tools:visibility="visible" />
+	</FrameLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

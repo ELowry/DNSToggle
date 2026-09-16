@@ -78,7 +78,7 @@ object DnsPolicyEvaluator {
 					watchdogManager.cancelAll()
 
 					if (!isInVpnOverride) {
-						prefs.edit(commit = true) {
+						prefs.edit {
 							putBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, true)
 							putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null)
 						}
@@ -95,7 +95,7 @@ object DnsPolicyEvaluator {
 					}
 					return@withLock
 				} else if (!isVpnActive && isInVpnOverride) {
-					prefs.edit(commit = true) {
+					prefs.edit {
 						putBoolean(Constants.PREF_IS_IN_VPN_OVERRIDE, false)
 					}
 					dispatchStatusNotification(
@@ -111,7 +111,7 @@ object DnsPolicyEvaluator {
 					lastNotifiedSsid = null
 					watchdogManager.cancelAll()
 					if (prefs.getString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null) != null) {
-						prefs.edit(commit = true) {
+						prefs.edit {
 							putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null)
 						}
 					}
@@ -179,7 +179,7 @@ object DnsPolicyEvaluator {
 									null
 								) != currentSsid
 							) {
-								prefs.edit(commit = true) {
+								prefs.edit {
 									putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, currentSsid)
 								}
 							}
@@ -240,7 +240,7 @@ object DnsPolicyEvaluator {
 									null
 								) != null
 							) {
-								prefs.edit(commit = true) {
+								prefs.edit {
 									putString(Constants.PREF_ACTIVE_SSID_OVERRIDE, null)
 								}
 							}

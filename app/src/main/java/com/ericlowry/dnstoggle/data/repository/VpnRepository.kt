@@ -51,17 +51,7 @@ object VpnRepository {
 			} else {
 				when (val result = EncryptionManager.decrypt(encryptedVpnHostname)) {
 					is EncryptionManager.DecryptResult.Success -> {
-						// START_LEGACY_MIGRATION_CODE: Purge legacy "off" or "opportunistic" strings saved in the hostname slot
-						val decryptedHostname = result.data
-						if (decryptedHostname == Constants.DNS_MODE_OFF || decryptedHostname == Constants.DNS_MODE_OPPORTUNISTIC) {
-							encryptedPrefs.edit {
-								remove(Constants.PREF_VPN_DNS_HOSTNAME)
-							}
-							null
-						} else {
-							decryptedHostname
-						}
-						// END_LEGACY_MIGRATION_CODE
+						result.data
 					}
 
 					is EncryptionManager.DecryptResult.KeyInvalidated -> {

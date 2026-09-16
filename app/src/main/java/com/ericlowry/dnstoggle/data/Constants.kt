@@ -10,11 +10,6 @@ object Constants {
 	const val DNS_MODE_HOSTNAME = "hostname"
 	const val DNS_MODE_OFF = "off"
 
-	// START_LEGACY_MIGRATION_CODE: Old shared preference keys
-	const val PREF_SSID_BLACKLIST = "ssid_blacklist"
-	const val PREF_SSID_AUTO_DETECTED_BLACKLIST = "ssid_auto_detected_blacklist"
-	// END_LEGACY_MIGRATION_CODE
-
 	// Shared Preferences Keys
 	const val PREF_NETWORK_PROFILES = "network_profiles"
 	const val PREF_AUTO_SAVE_STATE = "pref_auto_save_state"
@@ -29,6 +24,25 @@ object Constants {
 	const val PREF_USB_DEBUGGING_TILE_UNLOCKED = "usb_debugging_tile_unlocked"
 	const val PREF_ENABLE_STRICT_OFF_OPTION = "enable_strict_off_option"
 	const val PREF_DEFAULT_OFF_MODE = "default_off_mode"
+	const val PREF_AUTH_MODE = "pref_auth_mode"
+
+	/**
+	 * Enum representing the authentication requirements for various app actions.
+	 */
+	enum class AuthMode {
+		/** No authentication required. */
+		NONE,
+
+		/** Authentication required when manually toggling DNS or changing security settings. */
+		ACTION_ONLY,
+
+		/** Authentication required both on app startup/resume and for manual actions. */
+		ALWAYS
+	}
+
+	// Actions
+	const val ACTION_TOGGLE = "com.ericlowry.dnstoggle.ACTION_TOGGLE"
+	const val ACTION_SELECT_DNS = "com.ericlowry.dnstoggle.ACTION_SELECT_DNS"
 
 	// Connectivity Watchdog Keys
 	const val PREF_CONNECTIVITY_WATCHDOG_ENABLED = "connectivity_watchdog_enabled"

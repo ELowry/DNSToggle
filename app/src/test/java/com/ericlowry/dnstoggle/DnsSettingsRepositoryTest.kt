@@ -23,7 +23,7 @@ class DnsSettingsRepositoryTest {
 	@Before
 	fun setup() {
 		val context = ApplicationProvider.getApplicationContext<DnsToggleApplication>()
-		SecurityRepository.initialize(context)
+		SecurityRepository.initialize()
 		VpnRepository.initialize(context)
 		NetworkProfileRepository.initialize(context)
 		HostnameRepository.initialize(context)

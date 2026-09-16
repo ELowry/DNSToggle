@@ -1,6 +1,7 @@
 package com.ericlowry.dnstoggle.service
 
 import android.Manifest
+import android.app.PendingIntent
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -14,8 +15,10 @@ import com.ericlowry.dnstoggle.DnsToggleApplication
 import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsManager
+import com.ericlowry.dnstoggle.data.repository.AppSettingsRepository
 import com.ericlowry.dnstoggle.data.repository.HostnameRepository
 import com.ericlowry.dnstoggle.ui.MainActivity
+import com.ericlowry.dnstoggle.ui.QsAuthActivity
 import com.ericlowry.dnstoggle.util.attemptSecureSettingsGrant
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,6 +43,27 @@ class DnsToggleService : TileService() {
 
 	override fun onClick() {
 		super.onClick()
+
+		val authMode = AppSettingsRepository.authMode.value
+		if (authMode == Constants.AuthMode.ACTION_ONLY || authMode == Constants.AuthMode.ALWAYS) {
+			val intent = Intent(this, QsAuthActivity::class.java).apply {
+				action = Constants.ACTION_TOGGLE
+				flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+			}
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+				val pendingIntent = PendingIntent.getActivity(
+					this,
+					0,
+					intent,
+					PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+				)
+				startActivityAndCollapse(pendingIntent)
+			} else {
+				TileServiceCompat.startActivityAndCollapse(this, intent)
+			}
+			return
+		}
 
 		serviceScope.launch(Dispatchers.IO) {
 			if (checkSelfPermission(Manifest.permission.WRITE_SECURE_SETTINGS) != PackageManager.PERMISSION_GRANTED) {

@@ -1,0 +1,3 @@
+- Added an option to require authentication to change system settings or open the app.
+
+WARNING: some backwards compatibility with older versions has been dropped with this update. Please make sure to install version `2.2.0` first if you wish to back up your app settings.

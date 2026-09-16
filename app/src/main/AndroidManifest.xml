@@ -137,6 +137,13 @@
 			android:taskAffinity=""
 			android:theme="@android:style/Theme.NoDisplay" />
 
+		<activity
+			android:name=".ui.QsAuthActivity"
+			android:excludeFromRecents="true"
+			android:exported="false"
+			android:taskAffinity=""
+			android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
 		<activity-alias
 			android:name=".LauncherActivity"
 			android:enabled="true"
@@ -222,9 +229,6 @@
 			<intent-filter>
 				<action android:name="android.intent.action.BOOT_COMPLETED" />
 				<action android:name="android.intent.action.QUICKBOOT_POWERON" />
-				<!-- START_LEGACY_MIGRATION_CODE -->
-				<action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
-				<!-- END_LEGACY_MIGRATION_CODE -->
 			</intent-filter>
 		</receiver>
 	</application>

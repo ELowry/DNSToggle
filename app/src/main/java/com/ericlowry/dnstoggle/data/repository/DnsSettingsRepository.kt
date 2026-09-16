@@ -1,16 +1,16 @@
 package com.ericlowry.dnstoggle.data.repository
 
+import android.app.UiModeManager
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import android.util.Log
 import androidx.core.content.edit
 import com.ericlowry.dnstoggle.DnsToggleApplication
 import com.ericlowry.dnstoggle.data.BackupConfig
 import com.ericlowry.dnstoggle.data.Constants
-import com.ericlowry.dnstoggle.data.NetworkProfile
 import com.ericlowry.dnstoggle.util.NetworkUtils
 import kotlinx.serialization.json.Json
-import org.json.JSONObject
 
 /**
  * Repository for bulk export and import of application configuration.
@@ -19,9 +19,11 @@ import org.json.JSONObject
 object DnsSettingsRepository {
 	private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 	private lateinit var sharedPreferences: SharedPreferences
+	private lateinit var appContext: Context
 
 	fun initialize(context: Context) {
-		val app = context.applicationContext as DnsToggleApplication
+		appContext = context.applicationContext
+		val app = appContext as DnsToggleApplication
 		sharedPreferences = app.getPrefs()
 	}
 
@@ -51,7 +53,20 @@ object DnsSettingsRepository {
 			defaultOffMode = sharedPreferences.getString(
 				Constants.PREF_DEFAULT_OFF_MODE,
 				Constants.DNS_MODE_OPPORTUNISTIC
-			) ?: Constants.DNS_MODE_OPPORTUNISTIC
+			) ?: Constants.DNS_MODE_OPPORTUNISTIC,
+			authMode = AppSettingsRepository.getStoredAuthMode(),
+			watchdogEnabled = sharedPreferences.getBoolean(
+				Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED,
+				false
+			),
+			watchdogDebounceSeconds = sharedPreferences.getInt(
+				Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
+				Constants.CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS
+			),
+			watchdogProbeTargets = sharedPreferences.getString(
+				Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS,
+				Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
+			) ?: Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
 		)
 		return json.encodeToString(backupConfig)
 	}
@@ -66,6 +81,14 @@ object DnsSettingsRepository {
 		return try {
 			val config = json.decodeFromString<BackupConfig>(jsonString)
 
+			val isTvDevice =
+				(appContext.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager).currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
+			val safeHideLauncherIcon = if (isTvDevice) {
+				false
+			} else {
+				config.hideLauncherIcon
+			}
+
 			if (config.hostnames.isNotEmpty()) {
 				val validHostnames =
 					config.hostnames.filter { NetworkUtils.isValidDnsHostname(it.hostname) }
@@ -74,39 +97,34 @@ object DnsSettingsRepository {
 
 			if (config.networkProfiles.isNotEmpty()) {
 				NetworkProfileRepository.updateNetworkProfilesFromBackup(config.networkProfiles)
-			} else {
-				// START_LEGACY_MIGRATION_CODE: Legacy flat array JSON backup import
-				try {
-					val rawJson = JSONObject(jsonString)
-					if (rawJson.has("blacklist")) {
-						val blacklistArray = rawJson.getJSONArray("blacklist")
-						val importedProfiles = mutableListOf<NetworkProfile>()
-						for (i in 0 until blacklistArray.length()) {
-							importedProfiles.add(
-								NetworkProfile(
-									ssid = blacklistArray.getString(i),
-									isEnabled = false,
-									targetHostname = null,
-									isAutoDetected = false
-								)
-							)
-						}
-						NetworkProfileRepository.updateNetworkProfilesFromBackup(importedProfiles)
-					}
-				} catch (_: Exception) {
-				}
-				// END_LEGACY_MIGRATION_CODE
 			}
+
+			val currentStoredAuthMode = AppSettingsRepository.getStoredAuthMode()
+			val importedAuthMode = config.authMode
 
 			sharedPreferences.edit {
 				putBoolean(Constants.PREF_AUTO_SAVE_STATE, config.autoSaveState)
 				putBoolean(Constants.PREF_AUTO_SAVE_HOST, config.autoSaveHost)
 				putBoolean(Constants.PREF_VPN_OVERRIDE_ENABLED, config.vpnOverride)
-				putBoolean(Constants.PREF_HIDE_LAUNCHER_ICON, config.hideLauncherIcon)
+				putBoolean(Constants.PREF_HIDE_LAUNCHER_ICON, safeHideLauncherIcon)
 				putBoolean(Constants.PREF_DISABLE_DNS_TEST, config.disableDnsTest)
 				putBoolean(Constants.PREF_SHOW_TOAST, config.showToast)
 				putBoolean(Constants.PREF_ENABLE_STRICT_OFF_OPTION, config.enableStrictOff)
 				putString(Constants.PREF_DEFAULT_OFF_MODE, config.defaultOffMode)
+
+				if (importedAuthMode.ordinal > currentStoredAuthMode.ordinal) {
+					putString(Constants.PREF_AUTH_MODE, importedAuthMode.name)
+				}
+
+				putBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, config.watchdogEnabled)
+				putInt(
+					Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
+					config.watchdogDebounceSeconds
+				)
+				putString(
+					Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS,
+					config.watchdogProbeTargets
+				)
 			}
 			VpnRepository.updateVpnOverrideEnabled(config.vpnOverride)
 

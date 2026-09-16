@@ -33,6 +33,7 @@ import kotlinx.coroutines.withContext
 class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
 	var ioDispatcher = Dispatchers.IO
+	var isUnlockedForSession: Boolean = false
 
 	private val _privateDnsMode = MutableLiveData<String?>()
 	val privateDnsMode: LiveData<String?> = _privateDnsMode
@@ -77,6 +78,9 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
 	private val _showToastEnabled = MutableLiveData<Boolean>()
 	val showToastEnabled: LiveData<Boolean> = _showToastEnabled
+
+	private val _authMode = MutableLiveData<Constants.AuthMode>()
+	val authMode: LiveData<Constants.AuthMode> = _authMode
 
 	private val _vpnOverrideEnabled = MutableLiveData<Boolean>()
 	val vpnOverrideEnabled: LiveData<Boolean> = _vpnOverrideEnabled
@@ -159,6 +163,9 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 		}
 		viewModelScope.launch {
 			AppSettingsRepository.showToastEnabled.collect { _showToastEnabled.postValue(it) }
+		}
+		viewModelScope.launch {
+			AppSettingsRepository.authMode.collect { _authMode.postValue(it) }
 		}
 		viewModelScope.launch {
 			AppSettingsRepository.isInVpnOverride.collect { _isInVpnOverride.postValue(it) }
@@ -331,6 +338,10 @@ class DnsViewModel(application: Application) : AndroidViewModel(application) {
 
 	fun setShowToast(enabled: Boolean) {
 		AppSettingsRepository.setShowToast(enabled)
+	}
+
+	fun setAuthMode(mode: Constants.AuthMode) {
+		AppSettingsRepository.setAuthMode(mode)
 	}
 
 	fun setAutoSaveState(enabled: Boolean) {
