@@ -158,4 +158,19 @@
 	<string name="unsaved_inactive_label">Inactivo (sin guardar)</string>
 	<string name="error_password_length">La contraseña debe tener al menos 4 caracteres</string>
 	<string name="warning_location_disabled">Automatización Wi-Fi pausada: Los servicios de localización del sistema están deshabilitados.</string>
+	<string name="retry">Reintento</string>
+	<string name="auth_mode_title">Requerir autenticación</string>
+	<string name="auth_mode_summary_none">Apagado</string>
+	<string name="auth_mode_summary_action">Al activar DNS</string>
+	<string name="auth_mode_summary_always">Apertura de la app y desactivación</string>
+	<string name="auth_prompt_title">Autenticación de aplicaciones</string>
+	<string name="auth_prompt_settings_subtitle">Verificar identidad para cambiar la configuración del sistema</string>
+	<string name="auth_prompt_action_subtitle">Verifica la identidad para cambiar la configuración DNS del dispositivo</string>
+	<string name="auth_prompt_unlock_subtitle">Verificar identidad para desbloquear la app</string>
+	<string name="biometricErrorNoHardware">No se detectó ningún hardware biométrico en este dispositivo.</string>
+	<string name="biometricErrorHwUnavailable">El hardware biométrico actualmente no está disponible.</string>
+	<string name="biometricErrorNoneEnrolled">No hay biometría ni credenciales de dispositivo registradas.</string>
+	<string name="biometricErrorSecurityUpdateRequired">Se requiere una actualización de seguridad para la autenticación biométrica.</string>
+	<string name="biometricErrorUnsupported">La autenticación biométrica no es compatible con esta versión de Android.</string>
+	<string name="biometricErrorDefault">Autenticación no disponible (Código de error: %1$d)</string>
 </resources>

@@ -1,0 +1,3 @@
+- Se añadió una opción para requerir autenticación para cambiar la configuración del sistema o abrir la aplicación. 
+
+AVISO: se ha eliminado cierta compatibilidad con versiones anteriores con esta actualización. Por favor, asegúrate de instalar primero la versión '2.2.0' si deseas hacer una copia de seguridad de la configuración de tu app.
