@@ -2,4 +2,4 @@
 - Limpieza general de la interfaz y del código
 - Solucionado un problema que requería toques adicionales para los toggles
 - Problema solucionado con el desplazamiento en televisores
-- Traducciones añadidas para español (gracias Allyson502), chino Han (gracias XieyilinMain) y japonés en proceso (gracias Oさん)
+- Traducciones añadidas para español (gracias Allyson 🇬🇹), chino Han (gracias XieyilinMain) y japonés en proceso (gracias Oさん)
