@@ -160,7 +160,7 @@
     <string name="auth_mode_title">需要认证</string>
     <string name="auth_mode_summary_none">关</string>
     <string name="auth_mode_summary_action">在切换DNS时</string>
-    <string name="auth_mode_summary_always">打开应用与切换</string>
+    <string name="auth_mode_summary_always">应用打开与切换</string>
     <string name="auth_prompt_title">应用认证</string>
     <string name="auth_prompt_settings_subtitle">验证身份以更改系统设置</string>
     <string name="auth_prompt_action_subtitle">验证身份以更改设备的DNS设置</string>
