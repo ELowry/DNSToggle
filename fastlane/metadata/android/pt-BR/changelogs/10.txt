@@ -1,0 +1,3 @@
+* Corrigido o fluxo de solicitação de root.
+* Adicionado aviso sobre a necessidade da permissão.
+* Adicionado contexto alinhado ao renomear o app.

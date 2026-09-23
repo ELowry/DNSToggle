@@ -1,0 +1,2 @@
+* APK reduzido com minificação R8 e compactação DEX legada.
+* Melhorias na manutenção e segurança da compilação.

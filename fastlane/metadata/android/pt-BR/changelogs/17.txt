@@ -1,0 +1,4 @@
+* Bloqueio automático de SSID se o DNS Privado falhar seguidamente.
+* Suporte ao Shizuku para concessão de permissão.
+* Guia visual do formulário de DNS do sistema para facilitar o salvamento.
+* Corrigida alternância de depuração USB, backups e restauração de rede.

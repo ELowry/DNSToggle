@@ -1,0 +1,2 @@
+* Opção para desativar completamente o DNS Privado.
+* Elementos da interface aprimorados

@@ -1,0 +1,5 @@
+* Adicionado suporte ao Android TV.
+* Interface otimizada para telas grandes.
+* Atalhos na tela inicial para alternar e selecionar DNS.
+* Navegação por D-pad aprimorada.
+* Tradução para alemão em andamento (obrigado, Menuel)

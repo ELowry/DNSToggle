@@ -1,0 +1,2 @@
+* Pasta fastlane movida para a raiz do projeto.
+* Atualizada a explicação do acesso à localização "o tempo todo".

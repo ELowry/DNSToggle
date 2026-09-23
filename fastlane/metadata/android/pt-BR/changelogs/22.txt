@@ -1,0 +1,5 @@
+* Perfis de Wi-Fi substituem a lista de bloqueio de SSIDs.
+* Limpeza geral da interface e do código.
+* Corrigido o erro que exigia toques extras para alternar opções.
+* Corrigido o problema de rolagem em TVs.
+* Traduções: espanhol (Allyson 🇬🇹), chinês Han (XieyilinMain) e japonês (Oさん)
