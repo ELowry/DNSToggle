@@ -1,0 +1,1 @@
+- Descrição do fastlane migrada de Markdown para HTML

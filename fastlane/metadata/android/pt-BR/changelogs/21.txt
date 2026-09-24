@@ -1,0 +1,4 @@
+- Corrigida a interface e rolagem no Android TV.
+- Adicionada seção "Novidades" com alterações recentes.
+- Corrigidas as cores em dispositivos e TVs antigas.
+- Tradução para turco (obrigado, Kyo様)

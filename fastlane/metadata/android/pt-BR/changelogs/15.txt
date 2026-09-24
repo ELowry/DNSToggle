@@ -1,0 +1,4 @@
+- Rótulos opcionais para entradas de host DNS.
+- Reordenação manual de hosts DNS liberada.
+- Bloco oculto para depuração USB adicionado.
+- Otimizações de desempenho gerais.

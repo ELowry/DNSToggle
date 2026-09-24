@@ -1,0 +1,2 @@
+- Backup e importação de configurações com senha.
+- Suporte a arquivos de backup `.dnstoggle`.

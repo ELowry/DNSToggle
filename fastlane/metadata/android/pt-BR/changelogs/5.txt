@@ -1,0 +1,1 @@
+Zipalign incluído no processo de compilação

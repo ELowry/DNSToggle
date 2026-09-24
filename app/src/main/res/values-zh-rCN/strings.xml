@@ -156,4 +156,19 @@
 	<string name="unsaved_inactive_label">不活动（未保存）</string>
 	<string name="error_password_length">密码必须至少4个字符</string>
 	<string name="warning_location_disabled">Wi-Fi自动化暂停：系统位置服务被禁用。</string>
+	<string name="retry">重试</string>
+	<string name="auth_mode_title">需要认证</string>
+	<string name="auth_mode_summary_none">关</string>
+	<string name="auth_mode_summary_action">在切换DNS时</string>
+	<string name="auth_mode_summary_always">应用打开与切换</string>
+	<string name="auth_prompt_title">应用认证</string>
+	<string name="auth_prompt_settings_subtitle">验证身份以更改系统设置</string>
+	<string name="auth_prompt_action_subtitle">验证身份以更改设备的DNS设置</string>
+	<string name="auth_prompt_unlock_subtitle">验证身份以解锁应用</string>
+	<string name="biometricErrorNoHardware">在该设备上未检测到生物识别硬件。</string>
+	<string name="biometricErrorHwUnavailable">生物识别硬件当前不可用。</string>
+	<string name="biometricErrorNoneEnrolled">未注册生物识别或设备凭证。</string>
+	<string name="biometricErrorSecurityUpdateRequired">生物认证需要一次安全更新。</string>
+	<string name="biometricErrorUnsupported">生物认证在该Andrioid版本上不受支持。</string>
+	<string name="biometricErrorDefault">认证不可用（错误代码：%1$d）</string>
 </resources>

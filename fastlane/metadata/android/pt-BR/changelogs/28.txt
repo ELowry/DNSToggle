@@ -1,0 +1,3 @@
+- Opção de autenticação ao alterar configurações ou abrir o app.
+
+**AVISO:** compatibilidade retroativa reduzida. Para backup, instale antes a versão `2.2.0`.

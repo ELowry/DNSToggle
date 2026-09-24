@@ -1,0 +1,4 @@
+- Pequenos problemas de interface corrigidos em celulares e TVs.
+- Dependências atualizadas e código-fonte aprimorado.
+- Adicionado aviso sobre a descontinuação do armazenamento.
+- Tradução para espanhol atualizada (obrigado, Allyson 🇬🇹).
