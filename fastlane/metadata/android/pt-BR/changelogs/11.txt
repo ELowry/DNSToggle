@@ -1,6 +1,6 @@
-* Permissão `INTERNET` para testar alcance de DNS personalizados.
-* Opção "Desativar teste de DNS" para provedores estritos.
-* Serviços em segundo plano compatíveis com Android 14.
-* Evitada perda da lista de bloqueio após mudar segurança do aparelho.
-* Excessos de notificações corrigidos em instabilidades do Wi-Fi.
-* Melhorias de desempenho.
+- Permissão `INTERNET` para testar alcance de DNS personalizados.
+- Opção "Desativar teste de DNS" para provedores estritos.
+- Serviços em segundo plano compatíveis com Android 14.
+- Evitada perda da lista de bloqueio após mudar segurança do aparelho.
+- Excessos de notificações corrigidos em instabilidades do Wi-Fi.
+- Melhorias de desempenho.

@@ -1,4 +1,4 @@
-* Aviso sobre a permissão `WRITE_SECURE_SETTINGS` para aparelhos com root.
-* Botão para copiar comando ADB de concessão da `WRITE_SECURE_SETTINGS` sem root.
-* Ícone do app restaurado no lançador.
-* Opção para ocultar o ícone do app no lançador.
+- Aviso sobre a permissão `WRITE_SECURE_SETTINGS` para aparelhos com root.
+- Botão para copiar comando ADB de concessão da `WRITE_SECURE_SETTINGS` sem root.
+- Ícone do app restaurado no lançador.
+- Opção para ocultar o ícone do app no lançador.

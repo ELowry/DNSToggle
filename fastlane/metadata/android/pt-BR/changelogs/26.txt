@@ -1,5 +1,5 @@
-* Corrigida falha na alternância do DNS Privado ao conectar à VPN.
-* Evitados conflitos ao alternar rapidamente entre redes Wi-Fi.
-* Aviso caso a localização desativada impeça a automação do Wi-Fi.
-* Segurança reforçada na concessão de permissão do Shizuku.
-* Comprimento mínimo obrigatório para senhas de backup.
+- Corrigida falha na alternância do DNS Privado ao conectar à VPN.
+- Evitados conflitos ao alternar rapidamente entre redes Wi-Fi.
+- Aviso caso a localização desativada impeça a automação do Wi-Fi.
+- Segurança reforçada na concessão de permissão do Shizuku.
+- Comprimento mínimo obrigatório para senhas de backup.

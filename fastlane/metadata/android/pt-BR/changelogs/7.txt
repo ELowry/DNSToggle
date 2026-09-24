@@ -1,6 +1,6 @@
-* Status atual na descrição do bloco de Configurações Rápidas.
-* Lista de bloqueio de Wi-Fi para alternar o DNS Privado automaticamente.
-* Opção de atualizar a lista de bloqueio pelo bloco de Configurações Rápidas.
-* Notificações de status para ajustes automáticos de DNS.
-* Monitoramento em segundo plano com baixo consumo de bateria.
-* Ativado backup automático de configurações e listas de bloqueio.
+- Status atual na descrição do bloco de Configurações Rápidas.
+- Lista de bloqueio de Wi-Fi para alternar o DNS Privado automaticamente.
+- Opção de atualizar a lista de bloqueio pelo bloco de Configurações Rápidas.
+- Notificações de status para ajustes automáticos de DNS.
+- Monitoramento em segundo plano com baixo consumo de bateria.
+- Ativado backup automático de configurações e listas de bloqueio.

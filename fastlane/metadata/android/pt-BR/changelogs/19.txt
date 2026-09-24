@@ -1,5 +1,5 @@
-* Configuração inicial de permissões simplificada.
-* Indicador de carregamento ao conceder permissões via root ou Shizuku.
-* Detecção de Wi-Fi mais rápida e confiável em redes restritivas.
-* Atualizadas infos da loja, capturas de tela e traduções.
-* Código interno reestruturado e otimizações de desempenho
+- Configuração inicial de permissões simplificada.
+- Indicador de carregamento ao conceder permissões via root ou Shizuku.
+- Detecção de Wi-Fi mais rápida e confiável em redes restritivas.
+- Atualizadas infos da loja, capturas de tela e traduções.
+- Código interno reestruturado e otimizações de desempenho

@@ -1,0 +1,2 @@
+- Added Portuguese (Brazilian) translation (thanks jhojhocraazy).
+- Updated Chinese (Han simplified) translation (thanks WatsonTree and flytothehighest).

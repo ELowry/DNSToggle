@@ -1,8 +1,8 @@
-* Suporte a múltiplos nomes de host DNS.
-* Toque longo no bloco de Configurações Rápidas alterna entre hosts.
-* Nome do bloco de Configurações Rápidas mostra o DNS Privado ativo.
-* Permite alternar ou alterar o DNS Privado mesmo com VPN ativa.
-* Opção para desativar as notificações toast.
-* Infos do app e links úteis na tela principal.
-* Interface legada atualizada para o Material 3.
-* Otimizações gerais de código.
+- Suporte a múltiplos nomes de host DNS.
+- Toque longo no bloco de Configurações Rápidas alterna entre hosts.
+- Nome do bloco de Configurações Rápidas mostra o DNS Privado ativo.
+- Permite alternar ou alterar o DNS Privado mesmo com VPN ativa.
+- Opção para desativar as notificações toast.
+- Infos do app e links úteis na tela principal.
+- Interface legada atualizada para o Material 3.
+- Otimizações gerais de código.
