@@ -202,4 +202,8 @@
 	<string name="shortcut_toggle_long">Activer/désactiver le DNS privé</string>
 	<string name="shortcut_select_short">Options DNS</string>
 	<string name="shortcut_select_long">Choisir une adresse DNS privée</string>
+
+	<!-- ChromeOS Safeguard -->
+	<string name="unsupported_device_title">Appareil non pris en charge</string>
+	<string name="unsupported_chromeos_message">Les fonctionalités de DNS Toggle sont fondamentalement incompatibles avec ChromeOS.</string>
 </resources>
