@@ -1,0 +1,1 @@
+- Added safeguard to prevent use on ChromeOS
