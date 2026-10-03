@@ -1,208 +1,380 @@
 <resources>
 	<!-- App Info -->
+	<!-- App name. Not translatable. -->
 	<string name="app_name" translatable="false">DNS Toggle</string>
+	<!-- Text label in the footer displaying the current application version. %s is the version number. -->
 	<string name="app_version_format">App version: %s</string>
+	<!-- Button text in the footer to open the changelog dialog. -->
 	<string name="whats_new">What’s New</string>
+	<!-- Dialog title displaying the changelog version. %s is the version number. -->
 	<string name="whats_new_version_format">New in v%s</string>
+	<!-- Button text in the footer linking to the app's GitHub repository. -->
 	<string name="github">GitHub (source code)</string>
+	<!-- Button text in the footer linking to the app's issue tracker for support. -->
 	<string name="support">Get Support</string>
 
 	<!-- Global -->
+	<!-- Standard confirmation button text used in various dialogs. -->
 	<string name="ok">OK</string>
+	<!-- Standard cancellation button text used in various dialogs. -->
 	<string name="cancel">Cancel</string>
+	<!-- Button text used on the authentication lock screen to retry biometric unlock. -->
 	<string name="retry">Retry</string>
+	<!-- Button text used to dismiss information dialogs. -->
 	<string name="close">Close</string>
+	<!-- Button text used in Quick Settings dialogs to open the main app settings. -->
 	<string name="settings">Settings</string>
+	<!-- General text label representing an enabled state. -->
 	<string name="on_label">On</string>
+	<!-- General text label representing a disabled state. -->
 	<string name="off_label">Off</string>
+	<!-- Accessibility content description for the top app bar menu button. -->
 	<string name="menu_content_description">More options</string>
 
 	<!-- Permissions & ADB Setup -->
+	<!-- Dialog title displayed when the app lacks required system permissions. -->
 	<string name="permission_required">Permission Required</string>
+	<!-- Dialog body text explaining the methods to grant the required WRITE_SECURE_SETTINGS permission. -->
 	<string name="permission_message">To use this toggle, you must grant settings permissions through root, Shizuku, or run this ADB command on your computer with USB debugging enabled:</string>
+	<!-- Label for the ADB command text shown in the permission dialog. -->
 	<string name="adb_command_label">ADB Command</string>
+	<!-- Accessibility content description for the ADB command text. %s is the command itself. -->
 	<string name="adb_command_content_description">ADB command: %s</string>
+	<!-- Button text (or content description) for copying the ADB command to the clipboard. -->
 	<string name="copy_adb_command">Copy ADB Command</string>
+	<!-- Toast notification shown when the ADB command is successfully copied. -->
 	<string name="command_copied">Command copied to clipboard</string>
+	<!-- Button text to attempt granting permissions using the Shizuku app. -->
 	<string name="grant_via_shizuku">Grant via Shizuku</string>
+	<!-- Button text to attempt granting permissions using root access (su). -->
 	<string name="grant_via_root">Grant via Root</string>
+	<!-- Button text to attempt automatic permission granting when the specific method is unknown. -->
 	<string name="grant_auto_fallback">Attempt permission grant</string>
+	<!-- Toast notification shown while trying to grant permissions via Shizuku. -->
 	<string name="toast_attempting_shizuku">Attempting Shizuku grant…</string>
+	<!-- Toast notification shown while trying to grant permissions via Root. -->
 	<string name="toast_attempting_root">Attempting Root grant…</string>
+	<!-- Toast notification shown while trying to grant permissions via an automatic fallback method. -->
 	<string name="toast_attempting_fallback">Attempting auto-grant…</string>
+	<!-- Toast notification shown when permission granting fails. -->
 	<string name="grant_failed">Shizuku/Root grant failed or denied</string>
+	<!-- Toast notification shown when permissions are successfully granted. -->
 	<string name="permission_granted">Permission granted</string>
+	<!-- Warning card title shown on the main screen when settings permissions are missing. -->
 	<string name="main_permission_title">System Settings Permission Required</string>
+	<!-- Warning card description explaining why the permission is needed. -->
 	<string name="main_permission_message">The app needs a special permission to change Private DNS settings.</string>
+	<!-- Button text on the warning card to open the permission resolution dialog. -->
 	<string name="btn_fix_permission">Fix</string>
+	<!-- Button text to open Android system settings. -->
 	<string name="open_settings">Open Settings</string>
 
 	<!-- Main UI - DNS Management -->
+	<!-- Switch label and main section title for toggling the global Private DNS state. -->
 	<string name="private_dns">Private DNS</string>
+	<!-- Switch label in the Private DNS section to skip reachability checks. -->
 	<string name="disable_dns_test">Skip connection test</string>
+	<!-- Summary text explaining the 'Skip connection test' option. -->
 	<string name="disable_dns_test_summary">Enable this only if your DNS works but the app shows it as unreachable.</string>
+	<!-- Section header above the list of saved custom DNS hostnames. -->
 	<string name="custom_dns_provider">Custom DNS Provider(s)</string>
+	<!-- Dialog title and content description for adding a new DNS hostname. -->
 	<string name="add_hostname">Add Hostname</string>
+	<!-- Accessibility content description for the 'Add' button next to a currently active, but unsaved, DNS hostname in the list. -->
 	<string name="add_hostname_desc">Save this active hostname</string>
+	<!-- Dialog title for editing an existing DNS hostname. -->
 	<string name="edit_hostname">Edit Hostname</string>
+	<!-- Text input hint for the DNS hostname field. -->
 	<string name="dns_hostname_hint">DNS Hostname (e.g. dns.nextdns.io)</string>
+	<!-- Text input hint for the optional display name of a DNS hostname. -->
 	<string name="dns_label_hint">Label (optional)</string>
+	<!-- Dialog confirmation message when deleting a saved hostname. -->
 	<string name="delete_hostname_confirm">Remove this hostname?</string>
+	<!-- Toast error message shown when trying to enable DNS without a valid hostname. -->
 	<string name="error_empty_dns_host">Private DNS cannot be enabled while host address is empty</string>
+	<!-- Toast error message shown when an invalid hostname format is entered. -->
 	<string name="error_invalid_dns_host">Invalid DNS host address format</string>
 
 	<!-- Main UI - Status -->
+	<!-- Status text label shown when a DNS connection is currently being verified. -->
 	<string name="status_testing_dns">Testing connection…</string>
+	<!-- List item label for a DNS hostname that is currently active but not saved to the list. -->
 	<string name="unsaved_active_label">Current (unsaved)</string>
+	<!-- List item label for a DNS hostname that was previously used but is not saved or active. -->
 	<string name="unsaved_inactive_label">Inactive (unsaved)</string>
+	<!-- Status text label indicating the DNS server is working properly. -->
 	<string name="status_active_reachable">Active &amp; Reachable</string>
+	<!-- Label indicating the default DNS mode or fallback configuration. -->
 	<string name="default_dns_label">Default</string>
+	<!-- UI badge text indicating the primary or default DNS selection. -->
 	<string name="default_badge">DEFAULT</string>
+	<!-- Prefix for Wi-Fi profiles that were automatically disabled by the connectivity watchdog. -->
 	<string name="auto_blocked_prefix">Auto-blocked:</string>
+	<!-- Status text warning indicating the DNS server failed the port 853 test. -->
 	<string name="warning_unreachable_dns">DNS server unreachable on port 853 (DoT). Android may still successfully connect via other methods.</string>
+	<!-- Status card text indicating the DNS is currently being overridden by a VPN. -->
 	<string name="status_override_vpn">VPN Override Active</string>
+	<!-- Status card text indicating the DNS is overridden by a specific Wi-Fi network. %s is the network name. -->
 	<string name="status_override_ssid">Wi-Fi Profile Active (%s)</string>
+	<!-- Status card text indicating a Wi-Fi profile is overriding the DNS setting. %1$s is the network name, %2$s is the DNS state. -->
 	<string name="status_override_ssid_profile">SSID Override Active: %1$s is set to %2$s</string>
+	<!-- Formatted label used in lists to indicate Private DNS is turned off for a specific configuration. %s is the DNS name. -->
 	<string name="off_profile_format">Off (%s)</string>
+	<!-- Dialog switch label to enable Private DNS within a specific Wi-Fi profile. -->
 	<string name="enable_private_dns">Enable Private DNS</string>
 
 	<!-- Main UI - Wi-Fi Profiles & Monitoring -->
+	<!-- Section title for managing network-specific DNS rules. -->
 	<string name="wifi_profiles_title">Wi-Fi Profiles</string>
+	<!-- Section summary text explaining Wi-Fi profiles. -->
 	<string name="wifi_profiles_summary">Set specific Private DNS rules or bypasses for individual Wi-Fi networks.</string>
+	<!-- Dialog title explaining the background Wi-Fi monitoring service. -->
 	<string name="wifi_monitoring_info_title">Wi-Fi Monitoring Info</string>
+	<!-- Dialog body text explaining the background Wi-Fi monitoring service. -->
 	<string name="wifi_monitoring_info_text">To support automatic toggling, the app monitors network changes. The impact on battery consumption should be minimal, but the system may still report background activity.</string>
+	<!-- Dialog text explaining that battery optimizations might kill the background service. -->
 	<string name="battery_optimization_explanation">Some devices kill background monitoring to save battery. If automation stops working, disable restrictions for this app.</string>
+	<!-- Button text to open Android battery optimization settings. -->
 	<string name="ignore_battery_optimizations">Disable battery restrictions</string>
+	<!-- Setting title for automatically saving DNS toggle states per Wi-Fi network. -->
 	<string name="auto_save_state_title">Auto-save Private DNS states (on/off)</string>
+	<!-- Setting summary for auto-saving Private DNS toggle states. -->
 	<string name="auto_save_state_summary">Remember when you manually enable or disable Private DNS on specific Wi-Fi networks.</string>
+	<!-- Setting title for automatically saving specific DNS hostnames per Wi-Fi network. -->
 	<string name="auto_save_host_title">Auto-save DNS hostnames</string>
+	<!-- Setting summary for auto-saving specific DNS hostnames. -->
 	<string name="auto_save_host_summary">Remember when you switch to a specific custom DNS provider while connected to a Wi-Fi network.</string>
+	<!-- Section header in the Wi-Fi profile dialog for choosing the DNS provider. -->
 	<string name="profile_dns_section_header">Private DNS Provider</string>
+	<!-- Radio button label for the default DNS option. %s is the default hostname. -->
 	<string name="default_dns_with_host_format">Default (%s)</string>
+	<!-- Setting title to enable the connectivity watchdog feature. -->
 	<string name="connectivity_watchdog_toggle">Block private DNS on incompatible networks</string>
+	<!-- Information text explaining the connectivity watchdog feature. -->
 	<string name="connectivity_watchdog_info_text">When Private DNS fails but internet is still available, the app will automatically disable Private DNS for the current network to restore connectivity.</string>
+	<!-- Setting title for the delay before the connectivity watchdog disables DNS. -->
 	<string name="connectivity_watchdog_debounce_label">Wait before disabling</string>
+	<!-- Setting title for the servers used to check internet reachability. -->
 	<string name="connectivity_watchdog_targets_label">Connection test servers</string>
+	<!-- Dialog title for editing the connectivity watchdog target servers. -->
 	<string name="connectivity_watchdog_targets_title">Connectivity check target servers</string>
+	<!-- Text input hint for the connectivity watchdog target servers. -->
 	<string name="connectivity_watchdog_targets_hint">Comma-separated IPs (e.g. 9.9.9.9, 5.1.66.255)</string>
+	<!-- List item to enter a custom wait time for the connectivity watchdog. -->
 	<string name="connectivity_watchdog_debounce_custom">Custom…</string>
+	<!-- Validation error message when entering an invalid watchdog wait time. -->
 	<string name="connectivity_watchdog_debounce_invalid">Enter a value between 5 and 300 seconds</string>
+	<!-- Format string displaying the selected watchdog wait time in seconds. %d is the number of seconds. -->
 	<string name="connectivity_watchdog_debounce_seconds_format">%ds</string>
+	<!-- Notification text when the watchdog automatically disables DNS. %s is the network name. -->
 	<string name="notif_connectivity_watchdog_disabled">Private DNS disabled and Wi-Fi profile added for %s due to a connectivity issue</string>
+	<!-- Notification text when the watchdog restores DNS after connectivity returns. %s is the network name. -->
 	<string name="notif_connectivity_watchdog_restored">Connectivity restored. Private DNS re-enabled for %s</string>
+	<!-- Warning text explaining why location permissions are needed for Wi-Fi profiles. -->
 	<string name="grant_permission_notice">Location/Nearby permission (including background) required to verify the Wi-Fi SSID.</string>
+	<!-- Button text to request required permissions. -->
 	<string name="grant_permission_button">Grant Permissions</string>
+	<!-- Dialog message shown when location permissions are permanently denied. -->
 	<string name="permissions_permanently_denied">Location and Nearby devices permissions have been permanently denied. Please enable them in App Settings to use this feature.</string>
+	<!-- Dialog message explaining why notification permissions are needed. -->
 	<string name="notification_permission_explanation">To notify you when Private DNS is automatically toggled in the background, and ensure monitoring remains active, please allow notifications.</string>
+	<!-- Dialog message explaining why background location permissions are needed. -->
 	<string name="background_location_explanation">To monitor Wi-Fi while the app is closed, Android requires \"Allow all the time\" location access. DNS Toggle only uses this to see the Wi-Fi name, and never tracks your physical location or uses GPS.</string>
+	<!-- Additional disclaimer text regarding VPNs masking Wi-Fi network names. -->
 	<string name="vpn_disclaimer_explanation">\n\nNote: Active VPN connections may mask your Wi-Fi network name, temporarily disabling Wi-Fi Profile automation.</string>
+	<!-- Dialog title to manually add a Wi-Fi profile. -->
 	<string name="add_ssid">Add Wi-Fi Profile</string>
+	<!-- Dialog title to edit an existing Wi-Fi profile. -->
 	<string name="edit_ssid">Edit Wi-Fi Profile</string>
+	<!-- Text input hint for the Wi-Fi network name field. -->
 	<string name="ssid_hint">SSID (Wi-Fi Name)</string>
+	<!-- Toast notification when a Wi-Fi profile is successfully saved. -->
 	<string name="ssid_saved">Wi-Fi profile saved</string>
+	<!-- Dialog confirmation message when deleting a Wi-Fi profile. -->
 	<string name="delete_ssid_confirm">Delete this Wi-Fi profile?</string>
 
 	<!-- Main UI - VPN Override -->
+	<!-- Section title for the VPN Override settings. -->
 	<string name="vpn_override_title">VPN Override</string>
+	<!-- Section summary for the VPN Override settings. -->
 	<string name="vpn_override_summary">Automatically change Private DNS when a VPN is connected.</string>
+	<!-- Switch label to enable the VPN Override feature. -->
 	<string name="vpn_override_toggle_label">Enable VPN Override</string>
+	<!-- Setting title for selecting which DNS to use when a VPN is active. -->
 	<string name="vpn_dns_label">DNS on VPN</string>
+	<!-- Warning text explaining that notification permissions are required for VPN override. -->
 	<string name="vpn_permission_notice">Notification permission is required for background automation.</string>
+	<!-- Dialog message shown when the selected VPN DNS hostname is removed. -->
 	<string name="vpn_hostname_removed_warning">The DNS hostname previously used for VPN was removed. VPN Override has been disabled.</string>
 
 	<!-- Main UI - Full Off Support -->
+	<!-- Setting title to enable strict 'Off' mode options. -->
 	<string name="strict_off_mode_title">Enable fully disabling Private DNS</string>
+	<!-- Setting summary for the strict 'Off' mode. -->
 	<string name="strict_off_mode_summary">Enables the choice between fully disabling Private DNS or setting it to automatic when toggled off.</string>
+	<!-- Setting title for choosing the default behavior when DNS is toggled off. -->
 	<string name="default_off_mode_title">Default Private DNS off mode</string>
+	<!-- Setting summary for the default off mode. -->
 	<string name="default_off_mode_summary">Set what Private DNS toggle defaults to when toggled off.</string>
+	<!-- Option label representing the strict Disabled state. -->
 	<string name="off_strict_label">Off (Disabled)</string>
+	<!-- Option label representing the Automatic state. -->
 	<string name="off_automatic_label">Off (Automatic)</string>
+	<!-- Selection label for Automatic mode. -->
 	<string name="mode_automatic">Automatic</string>
+	<!-- Selection label for Disabled mode. -->
 	<string name="mode_disabled">Disabled</string>
 
 	<!-- Main UI - General Options -->
+	<!-- Section title for general app options. -->
 	<string name="options_title">Options</string>
+	<!-- Setting title to toggle toast notifications on state changes. -->
 	<string name="show_toast_notif">Show status toast notifications</string>
+	<!-- Setting summary for the toast notifications toggle. -->
 	<string name="show_toast_notif_summary">Show a status notification when Private DNS is toggled via the Quick Settings tile.</string>
+	<!-- Setting title for requiring biometric/device authentication. -->
 	<string name="auth_mode_title">Require Authentication</string>
+	<!-- Authentication option: Disabled. -->
 	<string name="auth_mode_summary_none">Off</string>
+	<!-- Authentication option: Require only when changing DNS settings. -->
 	<string name="auth_mode_summary_action">When toggling DNS</string>
+	<!-- Authentication option: Require when opening the app or changing DNS settings. -->
 	<string name="auth_mode_summary_always">App open &amp; toggling</string>
+	<!-- Dialog title for the system biometric/authentication prompt. -->
 	<string name="auth_prompt_title">App Authentication</string>
+	<!-- Dialog subtitle for authentication when modifying app settings. -->
 	<string name="auth_prompt_settings_subtitle">Verify identity to change system settings</string>
+	<!-- Dialog subtitle for authentication when changing the active DNS. -->
 	<string name="auth_prompt_action_subtitle">Verify identity to change device DNS settings</string>
+	<!-- Dialog subtitle for authentication when opening the app. -->
 	<string name="auth_prompt_unlock_subtitle">Verify identity to unlock app</string>
+	<!-- Setting title to hide the app icon from the launcher. -->
 	<string name="hide_launcher_icon">Hide app icon</string>
+	<!-- Setting summary for hiding the launcher icon. -->
 	<string name="hide_launcher_icon_summary">When enabled, the app will be hidden from your app drawer. You can still access settings by long-pressing the Quick Settings tile. Note: on some launchers this option may not fully hide the icon.</string>
+	<!-- Note shown on Android TV devices explaining that hiding the launcher icon is not supported. -->
 	<string name="hide_launcher_icon_tv_summary">This feature is unavailable due to Android TV limitations.</string>
 
 	<!-- Main UI - USB Debugging Tile -->
+	<!-- Setting section title for the USB Debugging Quick Settings tile. -->
 	<string name="usb_debugging">USB Debugging</string>
+	<!-- Switch label to show the USB Debugging Quick Settings tile. -->
 	<string name="show_usb_debugging_tile">Show USB Debugging tile</string>
+	<!-- Setting summary explaining the USB Debugging Quick Settings tile. -->
 	<string name="show_usb_debugging_tile_summary">Show an extra Quick Settings tile to toggle USB Debugging. Long-press to open developer options.</string>
+	<!-- Toast message showing how many taps are left to unlock the developer tile. %1$d is the remaining tap count. -->
 	<plurals name="usb_debugging_tile_steps">
 		<item quantity="one">Tap %1$d more time to enable a USB debugging tile.</item>
 		<item quantity="other">Tap %1$d more times to enable a USB debugging tile.</item>
 	</plurals>
+	<!-- Toast notification when the developer USB debugging tile is unlocked. -->
 	<string name="usb_debugging_tile_enabled">USB debugging Quick Settings tile now available!</string>
 
 	<!-- Menu Actions -->
+	<!-- Menu item and dialog title to rename the application. -->
 	<string name="rename_app">Rename App</string>
+	<!-- Dialog body text explaining the app renaming feature. -->
 	<string name="rename_app_message">Choose a name that makes sense to you. This will be shown on the app icon and the Quick Settings tile.</string>
+	<!-- Menu item to export app configuration. -->
 	<string name="export_config">Export Configuration</string>
+	<!-- Menu item to import app configuration. -->
 	<string name="import_config">Import Configuration</string>
 
 	<!-- Security -->
+	<!-- Dialog title when encrypted keys are invalidated by a device security change. -->
 	<string name="keystore_error_title">Security Reset</string>
+	<!-- Dialog message explaining the security reset of encrypted profiles. -->
 	<string name="keystore_error_message">Due to a change in your device\'s security settings (like changing your screen lock), your Wi-Fi profiles were reset to protect your data. You will need to re-add your saved networks.</string>
+	<!-- Biometric error: No hardware available. -->
 	<string name="biometricErrorNoHardware">No biometric hardware detected on this device.</string>
+	<!-- Biometric error: Hardware unavailable. -->
 	<string name="biometricErrorHwUnavailable">Biometric hardware is currently unavailable.</string>
+	<!-- Biometric error: No biometrics enrolled. -->
 	<string name="biometricErrorNoneEnrolled">No biometrics or device credentials enrolled.</string>
+	<!-- Biometric error: Security update required. -->
 	<string name="biometricErrorSecurityUpdateRequired">A security update is required for biometric authentication.</string>
+	<!-- Biometric error: Unsupported on current OS. -->
 	<string name="biometricErrorUnsupported">Biometric authentication is not supported on this version of Android.</string>
+	<!-- Generic biometric error format string. %1$d is the error code. -->
 	<string name="biometricErrorDefault">Authentication unavailable (Error code: %1$d)</string>
 
 	<!-- Backup/Restore -->
+	<!-- Button text confirming the export action. -->
 	<string name="export">Export</string>
+	<!-- Dialog description asking for a backup encryption password. -->
 	<string name="export_password_description">Enter a password to encrypt your backup file. You will need this same password to restore this configuration later.</string>
+	<!-- Text input hint for the backup encryption/decryption password. -->
 	<string name="password">Password</string>
+	<!-- Button text confirming the import action. -->
 	<string name="import_action">Import</string>
+	<!-- Dialog message confirming the destructive import action. -->
 	<string name="import_confirmation_message">Importing this configuration will overwrite your current settings, hostnames, and Wi-Fi profiles. Do you want to proceed?</string>
+	<!-- Toast message on successful configuration export. -->
 	<string name="export_success">Configuration exported successfully</string>
+	<!-- Toast message on failed configuration export. -->
 	<string name="export_failed">Failed to export configuration</string>
+	<!-- Toast message on successful configuration import. -->
 	<string name="import_success">Configuration imported successfully</string>
+	<!-- Toast message when the imported file cannot be read. -->
 	<string name="import_failed">Failed to read file</string>
+	<!-- Toast message on decryption failure during import. -->
 	<string name="import_failed_password">Decryption failed. Incorrect password or corrupted file.</string>
+	<!-- Input validation error for passwords shorter than 4 characters. -->
 	<string name="error_password_length">Password must be at least 4 characters</string>
+	<!-- Toast or dialog message when location services are disabled, pausing automation. -->
 	<string name="warning_location_disabled">Wi-Fi automation paused: System location services are disabled.</string>
 
 	<!-- Feedback & Notifications -->
+	<!-- Android notification channel name for alerts. -->
 	<string name="notif_channel_alerts_name">Automation Alerts</string>
+	<!-- Android notification channel description for alerts. -->
 	<string name="notif_channel_alerts_desc">Notifications when Private DNS is automatically toggled or Wi-Fi profiles are triggered.</string>
+	<!-- Android notification channel name for the background service. -->
 	<string name="notif_channel_service_name">Background Monitoring</string>
+	<!-- Android notification channel description for the background service. -->
 	<string name="notif_channel_service_desc">A silent, persistent notification required by Android to monitor Wi-Fi networks in the background.</string>
+	<!-- Title of the persistent background monitoring notification. -->
 	<string name="service_notif_title">Monitoring Network Status</string>
+	<!-- Body text of the persistent background monitoring notification. -->
 	<string name="service_notif_text">DNS Toggle is active to automate Private DNS mode.</string>
+	<!-- Notification text shown when Private DNS is disabled automatically by the app. Note to translators: The string ID says "added" historically, but the context is that DNS is turned Off. %s is the network name. -->
 	<string name="notif_dns_disabled_auto">Private DNS disabled automatically for %s</string>
+	<!-- Notification text shown when Private DNS is enabled automatically by the app. Note to translators: The string ID says "removed" historically, but the context is that DNS is turned On. %s is the network name. -->
 	<string name="notif_dns_enabled_auto">Private DNS enabled automatically for %s</string>
+	<!-- Notification text when DNS is adjusted due to a VPN connection. -->
 	<string name="notif_vpn_dns_applied">Private DNS adjusted for VPN</string>
+	<!-- Notification text when DNS is restored after a VPN disconnects. -->
 	<string name="notif_vpn_dns_restored">Private DNS restored after VPN</string>
-	<string name="notif_ssid_added">Wi-Fi profile: Private DNS Off for %s</string>
-	<string name="notif_ssid_removed">Wi-Fi profile: Private DNS On for %s</string>
+	<!-- Notification text when the user manually toggles Private DNS to Off on a specific Wi-Fi network. Note to translators: The string ID says "added", but the context is that DNS is turned Off. %s is the network name. -->
+	<string name="notif_wifi_profile_dns_off">Wi-Fi profile: Private DNS Off for %s</string>
+	<!-- Notification text when the user manually toggles Private DNS to On on a specific Wi-Fi network. Note to translators: The string ID says "removed", but the context is that DNS is turned On. %s is the network name. -->
+	<string name="notif_wifi_profile_dns_on">Wi-Fi profile: Private DNS On for %s</string>
+	<!-- Toast message confirming a manual DNS hostname change. %s is the new hostname. -->
 	<string name="toast_dns_changed">Private DNS changed to %s</string>
+	<!-- Subtitle in the Quick Settings dialog showing the target Wi-Fi network. %s is the network name. -->
 	<string name="qs_ssid_context">Changes apply to %s</string>
+	<!-- Subtitle in the Quick Settings dialog showing the target Wi-Fi network for a hostname change. %s is the network name. -->
 	<string name="qs_hostname_context">Hostname changes apply to %s</string>
+	<!-- Warning in the Quick Settings dialog that global settings are being changed while an override is active. %s is the overriding network name. -->
 	<string name="qs_shadowed_warning">Modifying global settings.\n%s override active.</string>
+	<!-- Badge text shown in the DNS selection list indicating which hostname is currently forced by an active Wi-Fi override. Max 10-15 characters. -->
 	<string name="badge_wifi_override">OVERRIDE</string>
+	<!-- Toast notification when a custom hostname is successfully saved. -->
 	<string name="hostname_saved">Hostname saved</string>
 
 	<!-- App Shortcuts -->
+	<!-- Short label for the launcher shortcut to toggle DNS. Max 10 characters. -->
 	<string name="shortcut_toggle_short">Toggle DNS</string>
+	<!-- Long label for the launcher shortcut to toggle DNS. Max 25 characters. -->
 	<string name="shortcut_toggle_long">Toggle Private DNS Mode</string>
+	<!-- Short label for the launcher shortcut to select DNS. Max 10 characters. -->
 	<string name="shortcut_select_short">Select DNS</string>
+	<!-- Long label for the launcher shortcut to select DNS. Max 25 characters. -->
 	<string name="shortcut_select_long">Choose Private DNS Hostname</string>
 
 	<!-- ChromeOS Safeguard -->
+	<!-- Dialog title shown on unsupported devices like Chromebooks. -->
 	<string name="unsupported_device_title">Unsupported Device</string>
+	<!-- Dialog message explaining that the app cannot function on ChromeOS. -->
 	<string name="unsupported_chromeos_message">DNS Toggle functionality is inherently incompatible with ChromeOS.</string>
 </resources>

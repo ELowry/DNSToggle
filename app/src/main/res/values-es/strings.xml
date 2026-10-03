@@ -120,8 +120,8 @@
 	<string name="notif_dns_disabled_auto">El DNS privado se desactivó automáticamente para %s</string>
 	<string name="notif_vpn_dns_applied">DNS privado configurado para VPN</string>
 	<string name="notif_vpn_dns_restored">Se restableció el DNS privado después de la VPN</string>
-	<string name="notif_ssid_added">Perfil Wi-Fi: DNS privado desactivado para %s</string>
-	<string name="notif_ssid_removed">Perfil Wi-Fi: DNS privado activado para %s</string>
+	<string name="notif_wifi_profile_dns_off">Perfil Wi-Fi: DNS privado desactivado para %s</string>
+	<string name="notif_wifi_profile_dns_on">Perfil Wi-Fi: DNS privado activado para %s</string>
 	<string name="toast_dns_changed">El DNS privado se cambió a %s</string>
 	<string name="hostname_saved">Nombre de host guardado</string>
 	<string name="shortcut_toggle_short">Activar/desactivar el DNS</string>

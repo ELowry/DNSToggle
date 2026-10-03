@@ -141,8 +141,8 @@
     <string name="notif_dns_enabled_auto">专用DNS因为%s而自动启用</string>
     <string name="notif_vpn_dns_applied">专用DNS因VPN而调整</string>
     <string name="notif_vpn_dns_restored">专用DNS在VPN关闭后恢复</string>
-    <string name="notif_ssid_added">Wi-Fi 配置：%s 的专用 DNS 已关闭</string>
-    <string name="notif_ssid_removed">Wi-Fi 配置：%s 的专用 DNS 已开启</string>
+    <string name="notif_wifi_profile_dns_off">Wi-Fi 配置：%s 的专用 DNS 已关闭</string>
+    <string name="notif_wifi_profile_dns_on">Wi-Fi 配置：%s 的专用 DNS 已开启</string>
     <string name="toast_dns_changed">专用DNS已切换到%s</string>
     <string name="qs_ssid_context">更改适用于 %s</string>
     <string name="qs_hostname_context">主机名更改适用于 %s</string>

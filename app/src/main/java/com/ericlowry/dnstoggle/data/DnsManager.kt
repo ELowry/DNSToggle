@@ -184,9 +184,9 @@ object DnsManager {
 					)
 				) {
 					val messageRes = if (enabled) {
-						R.string.notif_ssid_removed
+						R.string.notif_wifi_profile_dns_on
 					} else {
-						R.string.notif_ssid_added
+						R.string.notif_wifi_profile_dns_off
 					}
 					NotificationUtils.showStatusNotification(
 						context,

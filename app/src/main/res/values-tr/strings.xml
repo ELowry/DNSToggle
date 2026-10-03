@@ -144,8 +144,8 @@
 	<string name="notif_dns_disabled_auto">%s için Özel DNS otomatik olarak devre dışı bırakıldı</string>
 	<string name="notif_vpn_dns_applied">Özel DNS, VPN için ayarlandı</string>
 	<string name="notif_vpn_dns_restored">VPN sonrasında Özel DNS geri yüklendi</string>
-	<string name="notif_ssid_added">Wi-Fi profili: %s için Özel DNS Kapalı</string>
-	<string name="notif_ssid_removed">Wi-Fi profili: %s için Özel DNS Açık</string>
+	<string name="notif_wifi_profile_dns_off">Wi-Fi profili: %s için Özel DNS Kapalı</string>
+	<string name="notif_wifi_profile_dns_on">Wi-Fi profili: %s için Özel DNS Açık</string>
 	<string name="toast_dns_changed">Özel DNS %s olarak değiştirildi</string>
 	<string name="hostname_saved">Sunucu adı kaydedildi</string>
 
