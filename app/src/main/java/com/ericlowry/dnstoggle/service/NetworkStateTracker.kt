@@ -140,6 +140,13 @@ class NetworkStateTracker(private val context: Context) {
 			return true
 		}
 
+		if (oldCaps.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL) != newCaps.hasCapability(
+				NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL
+			)
+		) {
+			return true
+		}
+
 		if (oldCaps.hasTransport(NetworkCapabilities.TRANSPORT_VPN) != newCaps.hasTransport(
 				NetworkCapabilities.TRANSPORT_VPN
 			)
@@ -205,6 +212,8 @@ class NetworkStateTracker(private val context: Context) {
 			wifiCaps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
 		val hasInternet =
 			wifiCaps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true
+		val isCaptivePortal =
+			wifiCaps?.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL) == true
 
 		val ssid = if (NetworkUtils.isValidSsid(wifiInfo?.ssid)) {
 			currentSsid
@@ -218,6 +227,7 @@ class NetworkStateTracker(private val context: Context) {
 			isVpnActive = isVpnActive,
 			isValidated = isValidated,
 			hasInternet = hasInternet,
+			isCaptivePortal = isCaptivePortal,
 			wifiCapabilities = wifiCaps
 		)
 	}

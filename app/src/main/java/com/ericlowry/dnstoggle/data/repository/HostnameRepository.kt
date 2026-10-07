@@ -8,6 +8,7 @@ import com.ericlowry.dnstoggle.DnsToggleApplication
 import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.DnsHostname
 import com.ericlowry.dnstoggle.util.EncryptionManager
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -29,7 +30,7 @@ object HostnameRepository {
 	private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 	private lateinit var sharedPreferences: SharedPreferences
 	private lateinit var encryptedPrefs: SharedPreferences
-	private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+	var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 	private val saveMutex = Mutex()
 
 	private val _dnsHostnames = MutableStateFlow<List<DnsHostname>?>(null)
@@ -46,7 +47,7 @@ object HostnameRepository {
 	}
 
 	fun loadHostnames() {
-		scope.launch {
+		CoroutineScope(ioDispatcher + SupervisorJob()).launch {
 			SecurityRepository.isInitialized.first { it }
 			val rawData = encryptedPrefs.all[Constants.PREF_DNS_HOSTNAMES]
 
@@ -166,7 +167,7 @@ object HostnameRepository {
 	}
 
 	fun saveHostnamesAsync(list: List<DnsHostname>) {
-		scope.launch {
+		CoroutineScope(ioDispatcher + SupervisorJob()).launch {
 			saveMutex.withLock {
 				val jsonString = json.encodeToString(list)
 				val encrypted = EncryptionManager.encrypt(jsonString)

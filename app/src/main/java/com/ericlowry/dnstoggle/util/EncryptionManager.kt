@@ -6,7 +6,6 @@ import android.security.keystore.KeyProperties
 import android.util.Base64
 import android.util.Log
 import com.ericlowry.dnstoggle.data.Constants
-import com.ericlowry.dnstoggle.util.EncryptionManager.encrypt
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator

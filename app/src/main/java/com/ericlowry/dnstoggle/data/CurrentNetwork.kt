@@ -11,5 +11,6 @@ data class CurrentNetwork(
 	val isVpnActive: Boolean = false,
 	val isValidated: Boolean = false,
 	val hasInternet: Boolean = false,
+	val isCaptivePortal: Boolean = false,
 	val wifiCapabilities: NetworkCapabilities? = null
 )

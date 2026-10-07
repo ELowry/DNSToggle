@@ -6,6 +6,7 @@ import androidx.core.content.edit
 import com.ericlowry.dnstoggle.DnsToggleApplication
 import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.util.EncryptionManager
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -18,7 +19,7 @@ import kotlinx.coroutines.launch
 object VpnRepository {
 	private lateinit var sharedPreferences: SharedPreferences
 	private lateinit var encryptedPrefs: SharedPreferences
-	private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+	var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 
 	private val _vpnOverrideEnabled = MutableStateFlow(false)
 	val vpnOverrideEnabled: StateFlow<Boolean> = _vpnOverrideEnabled.asStateFlow()
@@ -42,7 +43,7 @@ object VpnRepository {
 			Constants.DNS_MODE_OPPORTUNISTIC
 		) ?: Constants.DNS_MODE_OPPORTUNISTIC
 
-		scope.launch {
+		CoroutineScope(ioDispatcher + SupervisorJob()).launch {
 			SecurityRepository.isInitialized.first { it }
 			val encryptedVpnHostname =
 				encryptedPrefs.getString(Constants.PREF_VPN_DNS_HOSTNAME, null)

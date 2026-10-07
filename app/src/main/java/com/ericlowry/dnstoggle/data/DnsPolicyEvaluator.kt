@@ -65,6 +65,7 @@ object DnsPolicyEvaluator {
 				val isVpnActive = network.isVpnActive
 				val isValidated = network.isValidated
 				val hasInternet = network.hasInternet
+				val isCaptivePortal = network.isCaptivePortal
 				val wifiCaps = network.wifiCapabilities
 
 				app.detectedSsid = currentSsid
@@ -152,7 +153,8 @@ object DnsPolicyEvaluator {
 						currentSsid!!,
 						wifiCaps,
 						activeNetworks,
-						cachedDnsMode
+						cachedDnsMode,
+						isCaptivePortal
 					)
 					return@withLock
 				}
@@ -205,7 +207,8 @@ object DnsPolicyEvaluator {
 									currentSsid!!,
 									wifiCaps,
 									activeNetworks,
-									cachedDnsMode
+									cachedDnsMode,
+									isCaptivePortal
 								)
 							} else {
 								watchdogManager.cancelAll()
@@ -253,7 +256,8 @@ object DnsPolicyEvaluator {
 								currentSsid!!,
 								wifiCaps,
 								activeNetworks,
-								cachedDnsMode
+								cachedDnsMode,
+								isCaptivePortal
 							)
 						}
 					} finally {
