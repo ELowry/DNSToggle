@@ -1,0 +1,1 @@
+- Meilleure gestion des portails captifs pour le blocage du DNS privé sur les réseaux incompatibles (#61)
