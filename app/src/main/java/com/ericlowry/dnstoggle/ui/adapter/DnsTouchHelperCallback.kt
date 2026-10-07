@@ -37,10 +37,7 @@ class DnsTouchHelperCallback(
 		target: RecyclerView.ViewHolder
 	): Boolean {
 		val targetItem = adapter.currentList.getOrNull(target.bindingAdapterPosition)
-		if (targetItem?.isUnsaved == true) {
-			return false
-		}
-		return super.canDropOver(recyclerView, current, target)
+		return targetItem?.isUnsaved != true && super.canDropOver(recyclerView, current, target)
 	}
 
 	override fun onMove(

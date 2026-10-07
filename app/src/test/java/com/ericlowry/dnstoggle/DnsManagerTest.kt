@@ -10,6 +10,9 @@ import com.ericlowry.dnstoggle.data.repository.HostnameRepository
 import com.ericlowry.dnstoggle.data.repository.NetworkProfileRepository
 import com.ericlowry.dnstoggle.data.repository.SecurityRepository
 import com.ericlowry.dnstoggle.data.repository.VpnRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.StandardTestDispatcher
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -22,15 +25,30 @@ class DnsManagerTest {
 
 	private lateinit var app: DnsToggleApplication
 
+	private val testDispatcher = StandardTestDispatcher()
+
 	@Before
 	fun setup() {
+		NetworkProfileRepository.ioDispatcher = testDispatcher
+		HostnameRepository.ioDispatcher = testDispatcher
+		VpnRepository.ioDispatcher = testDispatcher
+
 		app = ApplicationProvider.getApplicationContext()
 		SecurityRepository.initialize()
 		VpnRepository.initialize(app)
 		NetworkProfileRepository.initialize(app)
 		HostnameRepository.initialize(app)
 		DnsSettingsRepository.initialize(app)
+		testDispatcher.scheduler.advanceUntilIdle()
 		app.detectedSsid = null
+	}
+
+	@After
+	fun tearDown() {
+		testDispatcher.scheduler.advanceUntilIdle()
+		NetworkProfileRepository.ioDispatcher = Dispatchers.IO
+		HostnameRepository.ioDispatcher = Dispatchers.IO
+		VpnRepository.ioDispatcher = Dispatchers.IO
 	}
 
 	@Test

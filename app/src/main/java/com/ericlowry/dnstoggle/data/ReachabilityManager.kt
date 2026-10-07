@@ -1,6 +1,7 @@
 package com.ericlowry.dnstoggle.data
 
 import com.ericlowry.dnstoggle.util.NetworkUtils
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -20,7 +21,7 @@ object ReachabilityManager {
 
 	enum class ReachabilityState { IDLE, TESTING, REACHABLE, UNREACHABLE }
 
-	private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+	var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 	private val reachabilityJobs = ConcurrentHashMap<String, Job>()
 	private val _reachabilityStates = MutableStateFlow<Map<String, ReachabilityState>>(emptyMap())
 	val reachabilityStates: StateFlow<Map<String, ReachabilityState>> =
@@ -37,7 +38,7 @@ object ReachabilityManager {
 			return
 		}
 
-		val job = scope.launch {
+		val job = CoroutineScope(ioDispatcher + SupervisorJob()).launch {
 			_reachabilityStates.update { it + (hostname to ReachabilityState.TESTING) }
 
 			val isReachable = NetworkUtils.isHostReachable(hostname, 853)

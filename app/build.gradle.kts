@@ -37,8 +37,8 @@ android {
 		applicationId = "com.ericlowry.dnstoggle"
 		minSdk = 28
 		targetSdk = 37
-		versionCode = 30
-		versionName = "3.0.2"
+		versionCode = 32
+		versionName = "3.0.4"
 
 		testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 	}

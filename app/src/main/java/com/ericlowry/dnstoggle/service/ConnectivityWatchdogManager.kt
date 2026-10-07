@@ -20,8 +20,8 @@ import kotlin.time.Duration.Companion.seconds
 class ConnectivityWatchdogManager(
 	private val context: Context,
 	private val serviceScope: CoroutineScope,
-	private val isDnsSpecificFailureFunc: suspend (String, String) -> Boolean = { hostname, targets ->
-		ConnectivityWatchdog.isDnsSpecificFailure(hostname, targets)
+	private val isDnsSpecificFailureFunc: suspend (String) -> Boolean = { hostname ->
+		ConnectivityWatchdog.isDnsSpecificFailure(hostname)
 	},
 	private val isRecoveredFunc: suspend (String, String) -> Boolean = { hostname, targets ->
 		ConnectivityWatchdog.isRecovered(hostname, targets)
@@ -63,7 +63,8 @@ class ConnectivityWatchdogManager(
 		ssid: String,
 		wifiCaps: NetworkCapabilities?,
 		activeNetworks: Map<Network, NetworkCapabilities>,
-		cachedDnsMode: String?
+		cachedDnsMode: String?,
+		isCaptivePortal: Boolean
 	) {
 		val prefs = getPrefs()
 		val watchdogEnabled = prefs.getBoolean(Constants.PREF_CONNECTIVITY_WATCHDOG_ENABLED, false)
@@ -80,7 +81,10 @@ class ConnectivityWatchdogManager(
 		}
 
 		if (connectivityWatchdogJob?.isActive == true) {
-			return
+			if (!isCaptivePortal) {
+				return
+			}
+			connectivityWatchdogJob?.cancel()
 		}
 
 		val hostname =
@@ -93,13 +97,11 @@ class ConnectivityWatchdogManager(
 			Constants.PREF_CONNECTIVITY_WATCHDOG_DEBOUNCE_SECONDS,
 			Constants.CONNECTIVITY_WATCHDOG_DEFAULT_DEBOUNCE_SECONDS
 		)
-		val probeTargets = prefs.getString(
-			Constants.PREF_CONNECTIVITY_WATCHDOG_PROBE_TARGETS,
-			Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
-		) ?: Constants.CONNECTIVITY_WATCHDOG_DEFAULT_PROBE_TARGETS
 
 		connectivityWatchdogJob = serviceScope.launch {
-			delay(debounceSeconds.seconds)
+			if (!isCaptivePortal) {
+				delay(debounceSeconds.seconds)
+			}
 
 			// Re-verify validation state after debounce to prevent race conditions if the network gets validated during the delay.
 			val stillNotValidated = activeNetworks.values
@@ -116,7 +118,7 @@ class ConnectivityWatchdogManager(
 				return@launch
 			}
 
-			if (isDnsSpecificFailureFunc(hostname, probeTargets)) {
+			if (isCaptivePortal || isDnsSpecificFailureFunc(hostname)) {
 				NetworkProfileRepository.upsertNetworkProfile(
 					ssid = ssid,
 					isEnabled = false,

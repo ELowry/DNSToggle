@@ -161,8 +161,8 @@
 	<string name="notif_dns_enabled_auto">DNS Privado ativado automaticamente para %s</string>
 	<string name="notif_vpn_dns_applied">DNS Privado ajustado para a VPN</string>
 	<string name="notif_vpn_dns_restored">DNS Privado restaurado após a VPN</string>
-	<string name="notif_ssid_added">Perfil de Wi-Fi: DNS Privado desativado para %s</string>
-	<string name="notif_ssid_removed">Perfil de Wi-Fi: DNS Privado ativado para %s</string>
+	<string name="notif_wifi_profile_dns_off">Perfil de Wi-Fi: DNS Privado desativado para %s</string>
+	<string name="notif_wifi_profile_dns_on">Perfil de Wi-Fi: DNS Privado ativado para %s</string>
 	<string name="toast_dns_changed">DNS Privado alterado para %s</string>
 	<string name="qs_ssid_context">As alterações se aplicam a %s</string>
 	<string name="qs_hostname_context">As alterações do nome do host se aplicam a %s</string>

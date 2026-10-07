@@ -32,14 +32,11 @@ object NotificationUtils {
 			.setAutoCancel(true)
 
 		val manager = NotificationManagerCompat.from(appContext)
-		val hasPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-			ContextCompat.checkSelfPermission(
+		val hasPermission =
+			Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU || ContextCompat.checkSelfPermission(
 				appContext,
 				Manifest.permission.POST_NOTIFICATIONS,
 			) == PackageManager.PERMISSION_GRANTED
-		} else {
-			true
-		}
 
 		val channel = manager.getNotificationChannel(Constants.CHANNEL_ID_ALERT)
 		val isChannelBlocked =

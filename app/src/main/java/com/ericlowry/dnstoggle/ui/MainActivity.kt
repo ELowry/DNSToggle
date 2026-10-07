@@ -103,6 +103,17 @@ class MainActivity : AppCompatActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		enableEdgeToEdge()
 		super.onCreate(savedInstanceState)
+
+		if (packageManager.hasSystemFeature("org.chromium.arc")) {
+			com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+				.setTitle(R.string.unsupported_device_title)
+				.setMessage(R.string.unsupported_chromeos_message)
+				.setCancelable(false)
+				.setPositiveButton(R.string.close) { _, _ -> finishAffinity() }
+				.show()
+			return
+		}
+
 		setContentView(R.layout.activity_main)
 
 		dnsViewModel = ViewModelProvider(this)[DnsViewModel::class.java]

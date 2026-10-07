@@ -37,10 +37,11 @@ class SsidTouchHelperCallback(
 		target: RecyclerView.ViewHolder
 	): Boolean {
 		val targetItem = adapter.currentList.getOrNull(target.bindingAdapterPosition)
-		if (targetItem?.isAutoDetected == true) {
-			return false
-		}
-		return super.canDropOver(recyclerView, current, target)
+		return targetItem?.isAutoDetected != true && super.canDropOver(
+			recyclerView,
+			current,
+			target
+		)
 	}
 
 	override fun onMove(

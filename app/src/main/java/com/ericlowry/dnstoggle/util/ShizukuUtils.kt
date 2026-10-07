@@ -68,12 +68,8 @@ object ShizukuUtils {
 				override fun onServiceConnected(name: ComponentName, binder: IBinder) {
 					ioScope.launch {
 						val granted = try {
-							if (binder.pingBinder()) {
-								IShizukuUserService.Stub.asInterface(binder)
-									.grantWriteSecureSettings()
-							} else {
-								false
-							}
+							binder.pingBinder() && IShizukuUserService.Stub.asInterface(binder)
+								.grantWriteSecureSettings()
 						} catch (e: Exception) {
 							Log.e(TAG, "Failed to grant secure settings permission via Shizuku", e)
 							false
@@ -118,10 +114,7 @@ object ShizukuUtils {
 			.version(BuildConfig.VERSION_CODE)
 
 	private suspend fun requestPermission(): Boolean {
-		if (hasPermission()) {
-			return true
-		}
-		return suspendCancellableCoroutine { cont ->
+		return hasPermission() || suspendCancellableCoroutine { cont ->
 			val listener = object : Shizuku.OnRequestPermissionResultListener {
 				override fun onRequestPermissionResult(requestCode: Int, grantResult: Int) {
 					if (requestCode != Constants.REQUEST_CODE_SHIZUKU_PERMISSION) {
@@ -158,9 +151,6 @@ suspend fun attemptSecureSettingsGrant(context: Context): Boolean {
 	val shizukuSuccess = ShizukuUtils.isAvailable() && ShizukuUtils.grantSecureSettingsPermission(
 		context
 	)
-	if (shizukuSuccess) {
-		return true
-	}
+	return shizukuSuccess || RootUtils.grantSecureSettingsPermission()
 	// Always try root as the final fallback, even if detection failed (handles hidden root)
-	return RootUtils.grantSecureSettingsPermission()
 }

@@ -15,6 +15,7 @@ import com.ericlowry.dnstoggle.data.repository.SecurityRepository
 import com.ericlowry.dnstoggle.data.repository.VpnRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -40,6 +41,7 @@ class DnsViewModelTest {
 	val instantTaskExecutorRule = InstantTaskExecutorRule()
 
 	private val testDispatcher = UnconfinedTestDispatcher()
+	private val bgDispatcher = StandardTestDispatcher(testDispatcher.scheduler)
 
 	private lateinit var app: DnsToggleApplication
 	private lateinit var viewModel: DnsViewModel
@@ -47,6 +49,11 @@ class DnsViewModelTest {
 	@Before
 	fun setup() {
 		Dispatchers.setMain(testDispatcher)
+		NetworkProfileRepository.ioDispatcher = bgDispatcher
+		HostnameRepository.ioDispatcher = bgDispatcher
+		VpnRepository.ioDispatcher = bgDispatcher
+		ReachabilityManager.ioDispatcher = bgDispatcher
+
 		app = ApplicationProvider.getApplicationContext()
 		SecurityRepository.initialize()
 		AppSettingsRepository.initialize(app)
@@ -55,15 +62,23 @@ class DnsViewModelTest {
 		HostnameRepository.initialize(app)
 
 		viewModel = DnsViewModel(app)
-		viewModel.ioDispatcher = testDispatcher
+		viewModel.ioDispatcher = bgDispatcher
 
 		viewModel.dnsReachability.observeForever {}
 		viewModel.dnsHostnames.observeForever {}
+		testDispatcher.scheduler.advanceUntilIdle()
+		shadowOf(Looper.getMainLooper()).idle()
 	}
 
 	@After
 	fun tearDown() {
+		testDispatcher.scheduler.advanceUntilIdle()
+		shadowOf(Looper.getMainLooper()).idle()
 		Dispatchers.resetMain()
+		NetworkProfileRepository.ioDispatcher = Dispatchers.IO
+		HostnameRepository.ioDispatcher = Dispatchers.IO
+		VpnRepository.ioDispatcher = Dispatchers.IO
+		ReachabilityManager.ioDispatcher = Dispatchers.IO
 	}
 
 	@Test
@@ -90,6 +105,7 @@ class DnsViewModelTest {
 		Settings.Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER, specifier)
 
 		viewModel.refreshSystemSettings()
+		testDispatcher.scheduler.advanceUntilIdle()
 		shadowOf(Looper.getMainLooper()).idle()
 
 		assertEquals(mode, viewModel.privateDnsMode.value)
@@ -109,6 +125,7 @@ class DnsViewModelTest {
 		Settings.Global.putString(resolver, Constants.SETTINGS_PRIVATE_DNS_SPECIFIER, specifier)
 
 		viewModel.refreshSystemSettings()
+		testDispatcher.scheduler.advanceUntilIdle()
 		shadowOf(Looper.getMainLooper()).idle()
 
 		val hostnames = viewModel.dnsHostnames.value
@@ -120,13 +137,14 @@ class DnsViewModelTest {
 	}
 
 	@Test
-	fun disableDnsTest_skipsReachability() = runTest {
+	fun disableDnsTest_skipsReachability() = runTest(testDispatcher) {
 		val prefs = app.getPrefs()
 		prefs.edit { putBoolean(Constants.PREF_DISABLE_DNS_TEST, true) }
 		shadowOf(Looper.getMainLooper()).idle()
 
 		val hostname = "dns.google"
 		viewModel.addHostname(hostname)
+		testDispatcher.scheduler.advanceUntilIdle()
 		shadowOf(Looper.getMainLooper()).idle()
 
 		val reachability = viewModel.dnsReachability.value

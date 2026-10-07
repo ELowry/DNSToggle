@@ -50,4 +50,19 @@
 	<string name="wifi_monitoring_info_title">Informationen zur WLAN-Überwachung</string>
 	<string name="wifi_profiles_title">WLAN-Profile</string>
 	<string name="menu_content_description">Weitere Einstellungen</string>
+	<string name="show_toast_notif_summary">Zeige eine Statusmeldung an, wenn privates DNS über die Kachel aktiviert oder deaktiviert wird.</string>
+	<string name="auth_mode_title">Authentifizierung erforderlich</string>
+	<string name="auth_mode_summary_none">Aus</string>
+	<string name="auth_mode_summary_action">Beim Umschalten des DNS</string>
+	<string name="auth_mode_summary_always">App öffnen und umschalten</string>
+	<string name="auth_prompt_title">App-Authentifizierung</string>
+	<string name="auth_prompt_settings_subtitle">Identität bestätigen, um die Systemeinstellungen zu ändern</string>
+	<string name="auth_prompt_action_subtitle">Identität bestätigen, um die DNS-Einstellungen des Geräts zu ändern</string>
+	<string name="auth_prompt_unlock_subtitle">Identität bestätigen, um die App freizuschalten</string>
+	<string name="hide_launcher_icon">App-Symbol ausblenden</string>
+	<string name="hide_launcher_icon_summary">Wenn diese Option aktiviert ist, wird die App in Ihrer App-Übersicht ausgeblendet. Du kannst weiterhin auf die Einstellungen zugreifen, indem Sie die Kachel lange gedrückt hälst. Hinweis: Bei einigen Launchern wird das Symbol durch diese Option möglicherweise nicht vollständig ausgeblendet.</string>
+	<string name="hide_launcher_icon_tv_summary">Diese Funktion ist aufgrund von Einschränkungen bei Android TV nicht verfügbar.</string>
+	<string name="usb_debugging">Hauptbenutzeroberfläche – Kachel „USB-Debugging“</string>
+	<string name="show_usb_debugging_tile">Kachel „USB-Debugging“ anzeigen</string>
+	<string name="show_usb_debugging_tile_summary">Zeige eine zusätzliche Kachel in den Schnelleinstellungen an, um das USB-Debugging zu aktivieren bzw. zu deaktivieren. Durch langes Drücken öffnest du die Entwickleroptionen.</string>
 </resources>

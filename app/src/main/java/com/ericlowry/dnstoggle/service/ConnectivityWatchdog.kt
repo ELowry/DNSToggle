@@ -11,8 +11,6 @@ object ConnectivityWatchdog {
 
 	suspend fun isDnsSpecificFailure(
 		dnsHostname: String,
-		probeTargetsStr: String,
-		isNetworkReachable: suspend () -> Boolean = { probeNetwork(probeTargetsStr) },
 		isDnsHostReachable: suspend () -> Boolean = {
 			NetworkUtils.isHostReachable(
 				dnsHostname,
@@ -20,9 +18,6 @@ object ConnectivityWatchdog {
 			)
 		}
 	): Boolean {
-		if (!isNetworkReachable()) {
-			return false
-		}
 		return !isDnsHostReachable()
 	}
 

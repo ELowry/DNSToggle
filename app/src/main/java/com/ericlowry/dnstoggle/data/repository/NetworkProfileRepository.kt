@@ -8,6 +8,7 @@ import com.ericlowry.dnstoggle.DnsToggleApplication
 import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.NetworkProfile
 import com.ericlowry.dnstoggle.util.EncryptionManager
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -28,7 +29,7 @@ import kotlinx.serialization.json.Json
 object NetworkProfileRepository {
 	private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 	private lateinit var encryptedPrefs: SharedPreferences
-	private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+	var ioDispatcher: CoroutineDispatcher = Dispatchers.IO
 	private val saveMutex = Mutex()
 
 	private val _networkProfiles = MutableStateFlow<List<NetworkProfile>?>(null)
@@ -44,7 +45,7 @@ object NetworkProfileRepository {
 	}
 
 	fun loadNetworkProfiles() {
-		scope.launch {
+		CoroutineScope(ioDispatcher + SupervisorJob()).launch {
 			SecurityRepository.isInitialized.first {
 				it
 			}
@@ -174,7 +175,7 @@ object NetworkProfileRepository {
 	}
 
 	fun saveNetworkProfilesAsync(list: List<NetworkProfile>) {
-		scope.launch {
+		CoroutineScope(ioDispatcher + SupervisorJob()).launch {
 			saveMutex.withLock {
 				val jsonString = json.encodeToString(list)
 				val encrypted = EncryptionManager.encrypt(jsonString)

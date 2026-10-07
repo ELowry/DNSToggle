@@ -12,6 +12,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.ericlowry.dnstoggle.data.Constants
 import com.ericlowry.dnstoggle.data.CurrentNetwork
 import com.ericlowry.dnstoggle.data.DnsPolicyEvaluator
+import com.ericlowry.dnstoggle.data.ReachabilityManager
 import com.ericlowry.dnstoggle.data.repository.DnsSettingsRepository
 import com.ericlowry.dnstoggle.data.repository.HostnameRepository
 import com.ericlowry.dnstoggle.data.repository.NetworkProfileRepository
@@ -62,6 +63,11 @@ class WifiMonitoringServiceTest {
 	@Before
 	fun setup() {
 		Dispatchers.setMain(testDispatcher)
+		NetworkProfileRepository.ioDispatcher = testDispatcher
+		HostnameRepository.ioDispatcher = testDispatcher
+		VpnRepository.ioDispatcher = testDispatcher
+		ReachabilityManager.ioDispatcher = testDispatcher
+
 		app = ApplicationProvider.getApplicationContext()
 		app.unregisterAllInternalObservers()
 
@@ -137,7 +143,13 @@ class WifiMonitoringServiceTest {
 
 	@After
 	fun tearDown() {
+		testDispatcher.scheduler.advanceUntilIdle()
+		shadowOf(Looper.getMainLooper()).idle()
 		Dispatchers.resetMain()
+		NetworkProfileRepository.ioDispatcher = Dispatchers.IO
+		HostnameRepository.ioDispatcher = Dispatchers.IO
+		VpnRepository.ioDispatcher = Dispatchers.IO
+		ReachabilityManager.ioDispatcher = Dispatchers.IO
 	}
 
 	private fun setupService(): WifiMonitoringService {

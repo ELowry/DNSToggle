@@ -6,8 +6,10 @@ import com.ericlowry.dnstoggle.data.repository.HostnameRepository
 import com.ericlowry.dnstoggle.data.repository.NetworkProfileRepository
 import com.ericlowry.dnstoggle.data.repository.SecurityRepository
 import com.ericlowry.dnstoggle.data.repository.VpnRepository
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -15,18 +17,32 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 @org.robolectric.annotation.Config(application = DnsToggleApplication::class, sdk = [34])
 class DnsSettingsRepositoryTest {
 
+	private val testDispatcher = StandardTestDispatcher()
+
 	@Before
 	fun setup() {
+		NetworkProfileRepository.ioDispatcher = testDispatcher
+		HostnameRepository.ioDispatcher = testDispatcher
+		VpnRepository.ioDispatcher = testDispatcher
+
 		val context = ApplicationProvider.getApplicationContext<DnsToggleApplication>()
 		SecurityRepository.initialize()
 		VpnRepository.initialize(context)
 		NetworkProfileRepository.initialize(context)
 		HostnameRepository.initialize(context)
+		testDispatcher.scheduler.advanceUntilIdle()
+	}
+
+	@After
+	fun tearDown() {
+		testDispatcher.scheduler.advanceUntilIdle()
+		NetworkProfileRepository.ioDispatcher = Dispatchers.IO
+		HostnameRepository.ioDispatcher = Dispatchers.IO
+		VpnRepository.ioDispatcher = Dispatchers.IO
 	}
 
 	@Test

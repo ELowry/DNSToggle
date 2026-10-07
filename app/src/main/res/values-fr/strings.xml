@@ -188,8 +188,8 @@
 	<string name="notif_dns_enabled_auto">DNS privé activé auto pour %s</string>
 	<string name="notif_vpn_dns_applied">DNS privé ajusté pour VPN</string>
 	<string name="notif_vpn_dns_restored">DNS privé restauré après VPN</string>
-	<string name="notif_ssid_added">Profil Wi-Fi: DNS privé OFF pour %s</string>
-	<string name="notif_ssid_removed">Profil Wi-Fi: DNS privé ON pour %s</string>
+	<string name="notif_wifi_profile_dns_off">Profil Wi-Fi: DNS privé OFF pour %s</string>
+	<string name="notif_wifi_profile_dns_on">Profil Wi-Fi: DNS privé ON pour %s</string>
 	<string name="toast_dns_changed">DNS privé: %s</string>
 	<string name="qs_ssid_context">S\'applique à %s</string>
 	<string name="qs_hostname_context">Hôte s\'applique à %s</string>
@@ -202,4 +202,8 @@
 	<string name="shortcut_toggle_long">Activer/désactiver le DNS privé</string>
 	<string name="shortcut_select_short">Options DNS</string>
 	<string name="shortcut_select_long">Choisir une adresse DNS privée</string>
+
+	<!-- ChromeOS Safeguard -->
+	<string name="unsupported_device_title">Appareil non pris en charge</string>
+	<string name="unsupported_chromeos_message">Les fonctionalités de DNS Toggle sont fondamentalement incompatibles avec ChromeOS.</string>
 </resources>

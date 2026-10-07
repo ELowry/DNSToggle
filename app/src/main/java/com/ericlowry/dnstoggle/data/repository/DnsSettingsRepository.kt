@@ -83,11 +83,7 @@ object DnsSettingsRepository {
 
 			val isTvDevice =
 				(appContext.getSystemService(Context.UI_MODE_SERVICE) as UiModeManager).currentModeType == Configuration.UI_MODE_TYPE_TELEVISION
-			val safeHideLauncherIcon = if (isTvDevice) {
-				false
-			} else {
-				config.hideLauncherIcon
-			}
+			val safeHideLauncherIcon = !isTvDevice && config.hideLauncherIcon
 
 			if (config.hostnames.isNotEmpty()) {
 				val validHostnames =
