@@ -46,7 +46,7 @@
     <string name="unsaved_active_label">現在の設定 (未保存)</string>
     <string name="status_active_reachable">アクティブ・接続可能</string>
     <string name="warning_unreachable_dns">ポート853 (DoT)でDNSサーバーに接続できません。Androidが別の方法で接続を確立している可能性があります。</string>
-    <string name="retry">下のテキストは認証ロックスクリーンで使われているので、生体ロック解除を試してください。</string>
-    <string name="unsaved_inactive_label">DNSホスト名のためのリストアイテムラベルは前回使われていましたが、しかし保存やアクティブになっていません。</string>
-    <string name="default_badge">UIバッジテキストは最優先かデフォルトのDNS選択肢を示しています。</string>
+    <string name="retry">リトリート</string>
+    <string name="unsaved_inactive_label">不活性(未保存)</string>
+    <string name="default_badge">デファルト</string>
 </resources>
