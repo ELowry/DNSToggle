@@ -49,4 +49,8 @@
     <string name="retry">リトリート</string>
     <string name="unsaved_inactive_label">不活性(未保存)</string>
     <string name="default_badge">デファルト</string>
+    <string name="default_dns_label">デフォルト</string>
+    <string name="off_profile_format">オフ(%s)</string>
+    <string name="enable_private_dns">プライベートDNS有効化</string>
+    <string name="wifi_profiles_title">Wi-Fiプロファイル</string>
 </resources>
