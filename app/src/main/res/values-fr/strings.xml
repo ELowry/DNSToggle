@@ -45,7 +45,8 @@
 	<string name="add_hostname">Ajouter une adresse</string>
 	<string name="add_hostname_desc">Enregistrer cette adresse active</string>
 	<string name="edit_hostname">Modifier l\'adresse</string>
-	<string name="dns_hostname_hint">Adresse DNS (ex: dns.nextdns.io)</string>
+	<string name="dns_hostname_hint">Adresse DNS</string>
+	<string name="dns_hostname_placeholder">dns.nextdns.io</string>
 	<string name="dns_label_hint">Surnom (optionnel)</string>
 	<string name="delete_hostname_confirm">Supprimer cette adresse?</string>
 	<string name="error_empty_dns_host">L\'adresse DNS ne peut pas être vide</string>
@@ -84,7 +85,8 @@
 	<string name="connectivity_watchdog_debounce_label">Délai avant désactivation</string>
 	<string name="connectivity_watchdog_targets_label">Serveurs de test</string>
 	<string name="connectivity_watchdog_targets_title">Serveurs de test de connectivité</string>
-	<string name="connectivity_watchdog_targets_hint">IPs séparées par des virgules (ex: 9.9.9.9, 5.1.66.255)</string>
+	<string name="connectivity_watchdog_targets_hint">IPs séparées par des virgules</string>
+	<string name="connectivity_watchdog_targets_placeholder">9.9.9.9, 5.1.66.255</string>
 	<string name="connectivity_watchdog_debounce_custom">Personnalisé…</string>
 	<string name="connectivity_watchdog_debounce_invalid">Saisissez une valeur entre 5 et 300 secondes</string>
 	<string name="connectivity_watchdog_debounce_seconds_format">%ds</string>
@@ -98,7 +100,8 @@
 	<string name="vpn_disclaimer_explanation">\n\nNote: Un VPN actif peut masquer le nom de votre réseau Wi-Fi et désactiver l\'automatisation des profils.</string>
 	<string name="add_ssid">Ajouter un profil Wi-Fi</string>
 	<string name="edit_ssid">Modifier le profil Wi-Fi</string>
-	<string name="ssid_hint">SSID (Nom du Wi-Fi)</string>
+	<string name="ssid_hint">SSID</string>
+	<string name="ssid_placeholder">Nom du Wi-Fi</string>
 	<string name="ssid_saved">Profil Wi-Fi enregistré</string>
 	<string name="delete_ssid_confirm">Supprimer ce profil Wi-Fi?</string>
 
@@ -149,6 +152,7 @@
 
 	<!-- Menu Actions -->
 	<string name="rename_app">Renommer l\'application</string>
+	<string name="rename_app_hint">Nom de l\'application</string>
 	<string name="rename_app_message">Choisissez un nom personnalisé pour l\'icône et la tuile des paramètres rapides.</string>
 	<string name="export_config">Exporter la configuration</string>
 	<string name="import_config">Importer une configuration</string>

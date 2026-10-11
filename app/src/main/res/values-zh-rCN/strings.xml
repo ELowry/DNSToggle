@@ -37,7 +37,8 @@
 	<string name="add_hostname">添加主机名</string>
 	<string name="add_hostname_desc">保存此活动的主机名</string>
 	<string name="edit_hostname">编辑主机名</string>
-	<string name="dns_hostname_hint">DNS主机名（如 dns.nextdns.io）</string>
+	<string name="dns_hostname_hint">DNS主机名</string>
+	<string name="dns_hostname_placeholder">dns.nextdns.io</string>
 	<string name="dns_label_hint">标签（可选）</string>
 	<string name="delete_hostname_confirm">删除此主机名？</string>
 	<string name="error_empty_dns_host">无法启用专用DNS，因为主机地址是空的</string>
@@ -71,7 +72,8 @@
 	<string name="connectivity_watchdog_debounce_label">停用前等待时间</string>
 	<string name="connectivity_watchdog_targets_label">连接测试服务器</string>
 	<string name="connectivity_watchdog_targets_title">连接测试目标服务器</string>
-	<string name="connectivity_watchdog_targets_hint">用逗号隔开多个IP（例如 9.9.9.9, 5.1.66.255）</string>
+	<string name="connectivity_watchdog_targets_hint">用逗号隔开多个IP</string>
+	<string name="connectivity_watchdog_targets_placeholder">9.9.9.9, 5.1.66.255</string>
 	<string name="connectivity_watchdog_debounce_custom">自定义…</string>
 	<string name="connectivity_watchdog_debounce_invalid">输入一个位于5-300秒之间的值</string>
 	<string name="connectivity_watchdog_debounce_seconds_format">%d秒</string>
@@ -85,7 +87,8 @@
 	<string name="vpn_disclaimer_explanation">\n\n注意：正在活动的VPN连接可能会覆盖您的Wi-Fi网络名称，暂时禁用 Wi-Fi 配置自动化。</string>
 	<string name="add_ssid">添加 Wi-Fi 配置</string>
 	<string name="edit_ssid">编辑 Wi-Fi 配置</string>
-	<string name="ssid_hint">SSID (Wi-Fi 名称)</string>
+	<string name="ssid_hint">SSID</string>
+	<string name="ssid_placeholder">Wi-Fi 名称</string>
 	<string name="ssid_saved">Wi-Fi 配置已保存</string>
 	<string name="delete_ssid_confirm">删除此 Wi-Fi 配置？</string>
 	<string name="vpn_override_title">VPN超控</string>
@@ -116,6 +119,7 @@
 	</plurals>
 	<string name="usb_debugging_tile_enabled">USB调试快速设置磁贴现在可以使用了！</string>
 	<string name="rename_app">重命名应用</string>
+	<string name="rename_app_hint">应用显示名称</string>
 	<string name="rename_app_message">选择一个对您来说更合理的名称。此名称将显示在应用图标和快速设置磁贴上。</string>
 	<string name="export_config">导出配置项</string>
 	<string name="import_config">导入设置项</string>

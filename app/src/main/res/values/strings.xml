@@ -85,9 +85,11 @@
 	<!-- Dialog title for editing an existing DNS hostname. -->
 	<string name="edit_hostname">Edit Hostname</string>
 	<!-- Text input hint for the DNS hostname field. -->
-	<string name="dns_hostname_hint">DNS Hostname (e.g. dns.nextdns.io)</string>
+	<string name="dns_hostname_hint">DNS Server</string>
+	<!-- Placeholder example for the DNS hostname input field. -->
+	<string name="dns_hostname_placeholder">dns.nextdns.io</string>
 	<!-- Text input hint for the optional display name of a DNS hostname. -->
-	<string name="dns_label_hint">Label (optional)</string>
+	<string name="dns_label_hint">Name (optional)</string>
 	<!-- Dialog confirmation message when deleting a saved hostname. -->
 	<string name="delete_hostname_confirm">Remove this hostname?</string>
 	<!-- Toast error message shown when trying to enable DNS without a valid hostname. -->
@@ -159,7 +161,9 @@
 	<!-- Dialog title for editing the connectivity watchdog target servers. -->
 	<string name="connectivity_watchdog_targets_title">Connectivity check target servers</string>
 	<!-- Text input hint for the connectivity watchdog target servers. -->
-	<string name="connectivity_watchdog_targets_hint">Comma-separated IPs (e.g. 9.9.9.9, 5.1.66.255)</string>
+	<string name="connectivity_watchdog_targets_hint">IP Addresses</string>
+	<!-- Placeholder example for the connectivity watchdog target servers field. -->
+	<string name="connectivity_watchdog_targets_placeholder">9.9.9.9, 5.1.66.255</string>
 	<!-- List item to enter a custom wait time for the connectivity watchdog. -->
 	<string name="connectivity_watchdog_debounce_custom">Custom…</string>
 	<!-- Validation error message when entering an invalid watchdog wait time. -->
@@ -187,7 +191,9 @@
 	<!-- Dialog title to edit an existing Wi-Fi profile. -->
 	<string name="edit_ssid">Edit Wi-Fi Profile</string>
 	<!-- Text input hint for the Wi-Fi network name field. -->
-	<string name="ssid_hint">SSID (Wi-Fi Name)</string>
+	<string name="ssid_hint">SSID</string>
+	<!-- Placeholder example for the Wi-Fi network name field. -->
+	<string name="ssid_placeholder">Wi-Fi Name</string>
 	<!-- Toast notification when a Wi-Fi profile is successfully saved. -->
 	<string name="ssid_saved">Wi-Fi profile saved</string>
 	<!-- Dialog confirmation message when deleting a Wi-Fi profile. -->
@@ -273,6 +279,8 @@
 	<!-- Menu Actions -->
 	<!-- Menu item and dialog title to rename the application. -->
 	<string name="rename_app">Rename App</string>
+	<!-- Input hint for renaming the app. -->
+	<string name="rename_app_hint">App display name</string>
 	<!-- Dialog body text explaining the app renaming feature. -->
 	<string name="rename_app_message">Choose a name that makes sense to you. This will be shown on the app icon and the Quick Settings tile.</string>
 	<!-- Menu item to export app configuration. -->

@@ -17,6 +17,7 @@
 			android:id="@+id/tvPermissionMessage"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
+			android:breakStrategy="high_quality"
 			android:text="@string/permission_message"
 			android:textAppearance="?attr/textAppearanceBodyMedium"
 			android:textColor="?attr/colorOnSurfaceVariant" />

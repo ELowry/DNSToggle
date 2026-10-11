@@ -151,7 +151,7 @@ object BackupDialogHelper {
 		val textInputLayout = dialogView.findViewById<TextInputLayout>(R.id.textInputLayout)
 		val inputTextField = dialogView.findViewById<TextInputEditText>(R.id.etInput)
 
-		textInputLayout.hint = activity.getString(R.string.app_name)
+		textInputLayout.hint = activity.getString(R.string.rename_app_hint)
 
 		if (currentAppName != null) {
 			inputTextField.setText(currentAppName)

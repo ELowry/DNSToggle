@@ -43,7 +43,8 @@
 	<string name="add_hostname">Sunucu Adı Ekle</string>
 	<string name="add_hostname_desc">Bu aktif sunucu adını kaydet</string>
 	<string name="edit_hostname">Sunucu Adını Düzenle</string>
-	<string name="dns_hostname_hint">DNS Sunucu Adı (örn. dns.nextdns.io)</string>
+	<string name="dns_hostname_hint">DNS Sunucu Adı</string>
+	<string name="dns_hostname_placeholder">dns.nextdns.io</string>
 	<string name="dns_label_hint">Etiket (isteğe bağlı)</string>
 	<string name="delete_hostname_confirm">Bu sunucu adı kaldırılsın mı?</string>
 	<string name="error_empty_dns_host">Sunucu adresi boşken Özel DNS etkinleştirilemez</string>
@@ -69,7 +70,8 @@
 	<string name="connectivity_watchdog_debounce_label">Devre dışı bırakmadan önce bekle</string>
 	<string name="connectivity_watchdog_targets_label">Bağlantı testi sunucuları</string>
 	<string name="connectivity_watchdog_targets_title">Bağlantı kontrolü hedef sunucuları</string>
-	<string name="connectivity_watchdog_targets_hint">Virgülle ayrılmış IP\'ler (örn. 9.9.9.9, 5.1.66.255)</string>
+	<string name="connectivity_watchdog_targets_hint">Virgülle ayrılmış IP\'ler</string>
+	<string name="connectivity_watchdog_targets_placeholder">9.9.9.9, 5.1.66.255</string>
 	<string name="connectivity_watchdog_debounce_custom">Özel…</string>
 	<string name="connectivity_watchdog_debounce_invalid">5 ile 300 saniye arasında bir değer girin</string>
 	<string name="connectivity_watchdog_debounce_seconds_format">%d sn</string>
@@ -83,7 +85,8 @@
 	<string name="vpn_disclaimer_explanation">\n\nNot: Aktif VPN bağlantıları Wi-Fi ağ adınızı gizleyebilir ve Wi-Fi Profili otomasyonunu geçici olarak devre dışı bırakabilir.</string>
 	<string name="add_ssid">Wi-Fi Profili Ekle</string>
 	<string name="edit_ssid">Wi-Fi Profilini Düzenle</string>
-	<string name="ssid_hint">SSID (Wi-Fi Adı)</string>
+	<string name="ssid_hint">SSID</string>
+	<string name="ssid_placeholder">Wi-Fi Adı</string>
 	<string name="ssid_saved">Wi-Fi profili kaydedildi</string>
 	<string name="delete_ssid_confirm">Bu Wi-Fi profili kaldırılsın mı?</string>
 
@@ -114,6 +117,7 @@
 
 	<!-- Menu Actions -->
 	<string name="rename_app">Uygulamayı Yeniden Adlandır</string>
+	<string name="rename_app_hint">Uygulama görünen adı</string>
 	<string name="rename_app_message">Sana mantıklı gelen bir isim seç. Bu isim, uygulama simgesinde ve Hızlı Ayarlar kutucuğunda gösterilecek.</string>
 	<string name="export_config">Yapılandırmayı Dışa Aktar</string>
 	<string name="import_config">Yapılandırmayı İçe Aktar</string>

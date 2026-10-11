@@ -44,11 +44,24 @@
 			android:paddingStart="8dp"
 			android:paddingEnd="6dp">
 
-			<LinearLayout
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:gravity="center_vertical"
-				android:orientation="horizontal">
+			<androidx.constraintlayout.widget.ConstraintLayout
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content">
+
+				<androidx.constraintlayout.helper.widget.Flow
+					android:id="@+id/flowTitleBadge"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					app:constraint_referenced_ids="tvHostname,tvDefaultBadge"
+					app:flow_horizontalAlign="start"
+					app:flow_horizontalBias="0"
+					app:flow_horizontalGap="8dp"
+					app:flow_horizontalStyle="packed"
+					app:flow_verticalGap="2dp"
+					app:flow_wrapMode="chain"
+					app:layout_constraintEnd_toEndOf="parent"
+					app:layout_constraintStart_toStartOf="parent"
+					app:layout_constraintTop_toTopOf="parent" />
 
 				<TextView
 					android:id="@+id/tvHostname"
@@ -62,7 +75,6 @@
 					android:id="@+id/tvDefaultBadge"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
-					android:layout_marginStart="8dp"
 					android:background="@drawable/bg_pill_badge"
 					android:paddingHorizontal="4dp"
 					android:paddingVertical="2dp"
@@ -73,7 +85,7 @@
 					android:textStyle="bold"
 					android:visibility="gone"
 					tools:visibility="visible" />
-			</LinearLayout>
+			</androidx.constraintlayout.widget.ConstraintLayout>
 
 			<TextView
 				android:id="@+id/tvSecondaryHostname"

@@ -30,6 +30,7 @@
 				android:layout_height="wrap_content"
 				android:layout_alignParentStart="true"
 				android:layout_centerVertical="true"
+				android:breakStrategy="balanced"
 				android:text="@string/wifi_profiles_title"
 				android:textAppearance="?attr/textAppearanceTitleMedium"
 				android:textStyle="bold" />
@@ -63,6 +64,7 @@
 			android:layout_height="wrap_content"
 			android:layout_marginHorizontal="4dp"
 			android:layout_marginTop="2dp"
+			android:breakStrategy="high_quality"
 			android:text="@string/wifi_profiles_summary"
 			android:textAppearance="?attr/textAppearanceBodySmall"
 			android:textColor="?attr/colorOnSurfaceVariant" />
@@ -72,6 +74,7 @@
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
 			android:layout_marginTop="8dp"
+			android:breakStrategy="high_quality"
 			android:text="@string/grant_permission_notice"
 			android:textColor="?attr/colorError"
 			android:visibility="gone" />
@@ -81,6 +84,7 @@
 			style="@style/Widget.Material3.Button.TextButton"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
+			android:breakStrategy="balanced"
 			android:text="@string/grant_permission_button"
 			android:visibility="gone" />
 
@@ -126,6 +130,7 @@
 				<TextView
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
+					android:breakStrategy="balanced"
 					android:text="@string/auto_save_state_title"
 					android:textAppearance="?attr/textAppearanceBodyLarge" />
 
@@ -133,6 +138,7 @@
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:layout_marginTop="2dp"
+					android:breakStrategy="high_quality"
 					android:text="@string/auto_save_state_summary"
 					android:textAppearance="?attr/textAppearanceBodySmall"
 					android:textColor="?attr/colorOnSurfaceVariant" />
@@ -172,6 +178,7 @@
 				<TextView
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
+					android:breakStrategy="balanced"
 					android:text="@string/auto_save_host_title"
 					android:textAppearance="?attr/textAppearanceBodyLarge" />
 
@@ -179,6 +186,7 @@
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:layout_marginTop="2dp"
+					android:breakStrategy="high_quality"
 					android:text="@string/auto_save_host_summary"
 					android:textAppearance="?attr/textAppearanceBodySmall"
 					android:textColor="?attr/colorOnSurfaceVariant" />
@@ -218,6 +226,7 @@
 				<TextView
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
+					android:breakStrategy="balanced"
 					android:text="@string/connectivity_watchdog_toggle"
 					android:textAppearance="?attr/textAppearanceBodyLarge" />
 
@@ -225,6 +234,7 @@
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
 					android:layout_marginTop="2dp"
+					android:breakStrategy="high_quality"
 					android:text="@string/connectivity_watchdog_info_text"
 					android:textAppearance="?attr/textAppearanceBodySmall"
 					android:textColor="?attr/colorOnSurfaceVariant" />
@@ -283,8 +293,12 @@
 
 					<TextView
 						android:id="@+id/tvConnectivityWatchdogDebounceValue"
-						android:layout_width="wrap_content"
+						android:layout_width="0dp"
 						android:layout_height="wrap_content"
+						android:layout_marginStart="8dp"
+						android:layout_weight="1"
+						android:gravity="end"
+						android:textAlignment="viewEnd"
 						android:textAppearance="?attr/textAppearanceBodySmall"
 						android:textColor="?attr/colorPrimary"
 						tools:text="15s" />
@@ -320,11 +334,14 @@
 
 					<TextView
 						android:id="@+id/tvConnectivityWatchdogTargetsValue"
-						android:layout_width="wrap_content"
+						android:layout_width="0dp"
 						android:layout_height="wrap_content"
+						android:layout_marginStart="8dp"
+						android:layout_weight="1"
 						android:ellipsize="end"
-						android:maxWidth="120dp"
-						android:maxLines="1"
+						android:gravity="end"
+						android:maxLines="2"
+						android:textAlignment="viewEnd"
 						android:textAppearance="?attr/textAppearanceBodySmall"
 						android:textColor="?attr/colorPrimary"
 						tools:text="91.198.174.192, 103.102.166.224, 173.239.79.196" />

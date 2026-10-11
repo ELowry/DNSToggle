@@ -38,7 +38,8 @@
 	<string name="add_hostname">Adicionar nome do host</string>
 	<string name="add_hostname_desc">Salvar este nome do host ativo</string>
 	<string name="edit_hostname">Editar nome do host</string>
-	<string name="dns_hostname_hint">Nome do host DNS (ex.: dns.nextdns.io)</string>
+	<string name="dns_hostname_hint">Nome do host DNS</string>
+	<string name="dns_hostname_placeholder">dns.nextdns.io</string>
 	<string name="dns_label_hint">Rótulo (opcional)</string>
 	<string name="delete_hostname_confirm">Remover este nome do host?</string>
 	<string name="error_empty_dns_host">Não é possível ativar o DNS Privado com o endereço do host vazio</string>
@@ -73,7 +74,8 @@
 	<string name="connectivity_watchdog_debounce_label">Aguardar antes de desativar</string>
 	<string name="connectivity_watchdog_targets_label">Servidores para teste de conexão</string>
 	<string name="connectivity_watchdog_targets_title">Servidores de destino para teste de conexão</string>
-	<string name="connectivity_watchdog_targets_hint">IPs separados por vírgula (ex.: 9.9.9.9, 5.1.66.255)</string>
+	<string name="connectivity_watchdog_targets_hint">IPs separados por vírgula</string>
+	<string name="connectivity_watchdog_targets_placeholder">9.9.9.9, 5.1.66.255</string>
 	<string name="connectivity_watchdog_debounce_custom">Personalizado…</string>
 	<string name="connectivity_watchdog_debounce_invalid">Insira um valor entre 5 e 300 segundos</string>
 	<string name="connectivity_watchdog_debounce_seconds_format">%d s</string>
@@ -87,7 +89,8 @@
 	<string name="vpn_disclaimer_explanation">\n\nObservação: conexões VPN ativas podem ocultar o nome da sua rede Wi-Fi, desativando temporariamente a automação dos perfis de Wi-Fi.</string>
 	<string name="add_ssid">Adicionar perfil de Wi-Fi</string>
 	<string name="edit_ssid">Editar perfil de Wi-Fi</string>
-	<string name="ssid_hint">SSID (nome da rede Wi-Fi)</string>
+	<string name="ssid_hint">SSID</string>
+	<string name="ssid_placeholder">nome da rede Wi-Fi</string>
 	<string name="ssid_saved">Perfil de Wi-Fi salvo</string>
 	<string name="delete_ssid_confirm">Excluir este perfil de Wi-Fi?</string>
 	<string name="vpn_override_title">Substituição por VPN</string>
@@ -128,6 +131,7 @@
 	</plurals>
 	<string name="usb_debugging_tile_enabled">O bloco de Depuração USB nas Configurações Rápidas já está disponível!</string>
 	<string name="rename_app">Renomear app</string>
+	<string name="rename_app_hint">Nome de exibição do app</string>
 	<string name="rename_app_message">Escolha um nome que faça sentido para você. Ele será exibido no ícone do app e no bloco das Configurações Rápidas.</string>
 	<string name="export_config">Exportar configuração</string>
 	<string name="import_config">Importar configuração</string>

@@ -20,6 +20,7 @@
 		<TextView
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
+			android:breakStrategy="balanced"
 			android:text="@string/show_usb_debugging_tile"
 			android:textAppearance="?attr/textAppearanceBodyLarge" />
 
@@ -28,6 +29,7 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginTop="6dp"
+			android:breakStrategy="high_quality"
 			android:text="@string/show_usb_debugging_tile_summary"
 			android:textAppearance="?attr/textAppearanceBodySmall"
 			android:textColor="?attr/colorOnSurfaceVariant" />

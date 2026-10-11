@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.listitem.ListItemLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
@@ -26,11 +27,24 @@
 				android:layout_weight="1"
 				android:orientation="vertical">
 
-				<LinearLayout
-					android:layout_width="wrap_content"
-					android:layout_height="wrap_content"
-					android:gravity="center_vertical"
-					android:orientation="horizontal">
+				<androidx.constraintlayout.widget.ConstraintLayout
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content">
+
+					<androidx.constraintlayout.helper.widget.Flow
+						android:id="@+id/flowTitleBadge"
+						android:layout_width="0dp"
+						android:layout_height="wrap_content"
+						app:constraint_referenced_ids="tvHostname,tvOverrideBadge"
+						app:flow_horizontalAlign="start"
+						app:flow_horizontalBias="0"
+						app:flow_horizontalGap="8dp"
+						app:flow_horizontalStyle="packed"
+						app:flow_verticalGap="2dp"
+						app:flow_wrapMode="chain"
+						app:layout_constraintEnd_toEndOf="parent"
+						app:layout_constraintStart_toStartOf="parent"
+						app:layout_constraintTop_toTopOf="parent" />
 
 					<TextView
 						android:id="@+id/tvHostname"
@@ -43,7 +57,6 @@
 						android:id="@+id/tvOverrideBadge"
 						android:layout_width="wrap_content"
 						android:layout_height="wrap_content"
-						android:layout_marginStart="8dp"
 						android:background="@drawable/bg_pill_badge"
 						android:backgroundTint="?attr/colorTertiaryContainer"
 						android:paddingHorizontal="4dp"
@@ -55,7 +68,7 @@
 						android:textStyle="bold"
 						android:visibility="gone"
 						tools:visibility="visible" />
-				</LinearLayout>
+				</androidx.constraintlayout.widget.ConstraintLayout>
 
 				<TextView
 					android:id="@+id/tvSecondaryHostname"
