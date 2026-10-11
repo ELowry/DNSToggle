@@ -1,0 +1,3 @@
+- Código da interface limpo para lidar melhor com tamanhos de fonte grandes e telas pequenas
+- Atualizadas algumas strings de tradução em alemão para resolver dúvidas de uso (obrigado akapuma)
+- Atualizada a tradução em japonês (obrigado akinobun).
