@@ -1,2 +1,3 @@
 - Cleaned up some UI code to make it handle large font sizes and small screens more reliably
 - Updated some German translation strings to address UX confusion (thanks akapuma)
+- Updated Japanese translation (thanks akinobun).
