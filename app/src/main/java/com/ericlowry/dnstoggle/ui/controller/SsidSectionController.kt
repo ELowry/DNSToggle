@@ -270,6 +270,7 @@ class SsidSectionController(
 				R.string.connectivity_watchdog_targets_title,
 				R.string.connectivity_watchdog_targets_hint,
 				viewModel.connectivityWatchdogProbeTargets.value ?: "",
+				placeholderResId = R.string.connectivity_watchdog_targets_placeholder,
 			) { targets ->
 				viewModel.setConnectivityWatchdogProbeTargets(targets)
 			}

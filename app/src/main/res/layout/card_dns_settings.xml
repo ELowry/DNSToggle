@@ -43,6 +43,7 @@
 					android:id="@+id/tvToggleLabel"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
+					android:breakStrategy="balanced"
 					android:text="@string/private_dns"
 					android:textAppearance="?attr/textAppearanceTitleMedium"
 					android:textStyle="bold" />
@@ -51,6 +52,7 @@
 					android:id="@+id/tvToggleSubtitle"
 					android:layout_width="wrap_content"
 					android:layout_height="wrap_content"
+					android:breakStrategy="high_quality"
 					android:textAppearance="?attr/textAppearanceBodySmall"
 					android:textColor="?attr/colorOnSurfaceVariant"
 					android:visibility="gone"

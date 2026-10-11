@@ -1,0 +1,2 @@
+- Nettoyage du code d'interface utilisateur·rice pour mieux gérer les grosses polices et les petits écrans
+- Mise à jour de la traduction allemande afin de clarifier l'expérience utilisateur·rice (merci akapuma)

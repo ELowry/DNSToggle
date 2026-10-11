@@ -12,6 +12,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.ericlowry.dnstoggle.R
 import com.ericlowry.dnstoggle.data.DnsHostname
 import com.ericlowry.dnstoggle.data.NetworkProfile
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.listitem.ListItemCardView
@@ -182,6 +183,7 @@ object SsidDialogHelper {
 		mainContainer.addView(radioContainer)
 
 		textInputLayout.hint = activity.getString(R.string.ssid_hint)
+		textInputLayout.placeholderText = activity.getString(R.string.ssid_placeholder)
 
 		val textToSet = existingProfile?.ssid ?: suggestedSsid
 		if (textToSet != null) {
@@ -339,17 +341,33 @@ object SsidDialogHelper {
 				.append(context.getString(R.string.battery_optimization_explanation))
 		}
 
-		val builder = MaterialAlertDialogBuilder(context)
-			.setTitle(context.getString(R.string.wifi_monitoring_info_title))
-			.setMessage(message.toString())
-			.setPositiveButton(context.getString(R.string.ok), null)
+		val dialogView = LayoutInflater.from(context).inflate(
+			R.layout.dialog_wifi_info,
+			(context as? Activity)?.findViewById(android.R.id.content),
+			false
+		)
+		val tvWifiInfoText = dialogView.findViewById<TextView>(R.id.tvWifiInfoText)
+		val btnIgnoreBattery = dialogView.findViewById<MaterialButton>(R.id.btnIgnoreBattery)
+
+		tvWifiInfoText.text = message.toString()
+
+		var dialog: androidx.appcompat.app.AlertDialog? = null
 
 		if (!isIgnoringBattery) {
-			builder.setNeutralButton(context.getString(R.string.ignore_battery_optimizations)) { _, _ ->
+			btnIgnoreBattery.visibility = View.VISIBLE
+			btnIgnoreBattery.setOnClickListener {
+				dialog?.dismiss()
 				onRequestIgnoreBattery()
 			}
+		} else {
+			btnIgnoreBattery.visibility = View.GONE
 		}
-		builder.show()
+
+		dialog = MaterialAlertDialogBuilder(context)
+			.setTitle(context.getString(R.string.wifi_monitoring_info_title))
+			.setView(dialogView)
+			.setPositiveButton(context.getString(R.string.ok), null)
+			.show()
 	}
 
 	/**

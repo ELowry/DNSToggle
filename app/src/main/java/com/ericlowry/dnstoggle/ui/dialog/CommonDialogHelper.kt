@@ -45,6 +45,7 @@ object CommonDialogHelper {
 		titleResId: Int,
 		hintResId: Int,
 		initialValue: String,
+		placeholderResId: Int? = null,
 		onSave: (String) -> Unit,
 	) {
 		val dialogView =
@@ -57,6 +58,11 @@ object CommonDialogHelper {
 		val inputTextField = dialogView.findViewById<TextInputEditText>(R.id.etInput)
 
 		textInputLayout.hint = activity.getString(hintResId)
+		if (placeholderResId != null) {
+			textInputLayout.placeholderText = activity.getString(placeholderResId)
+		} else {
+			textInputLayout.placeholderText = null
+		}
 		inputTextField.setText(initialValue)
 		inputTextField.setSelection(initialValue.length)
 

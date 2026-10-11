@@ -37,7 +37,8 @@
 	<string name="add_hostname">ホスト名を追加</string>
 	<string name="add_hostname_desc">使用中のホスト名を保存</string>
 	<string name="edit_hostname">ホスト名を編集</string>
-	<string name="dns_hostname_hint">DNS ホスト名 (例: dns.nextdns.io)</string>
+	<string name="dns_hostname_hint">DNS ホスト名</string>
+	<string name="dns_hostname_placeholder">dns.nextdns.io</string>
 	<string name="dns_label_hint">ラベル (オプション)</string>
 	<string name="delete_hostname_confirm">このホスト名を削除しますか?</string>
 	<string name="error_empty_dns_host">ホストアドレスが空のため、プライベートDNSを有効化できません</string>
@@ -46,4 +47,12 @@
 	<string name="unsaved_active_label">現在の設定 (未保存)</string>
 	<string name="status_active_reachable">アクティブ・接続可能</string>
 	<string name="warning_unreachable_dns">ポート853 (DoT)でDNSサーバーに接続できません。Androidが別の方法で接続を確立している可能性があります。</string>
+	<string name="rename_app_hint">アプリの表示名</string>
+	<string name="retry">リトリート</string>
+	<string name="unsaved_inactive_label">不活性(未保存)</string>
+	<string name="default_badge">デファルト</string>
+	<string name="default_dns_label">デフォルト</string>
+	<string name="off_profile_format">オフ(%s)</string>
+	<string name="enable_private_dns">プライベートDNS有効化</string>
+	<string name="wifi_profiles_title">Wi-Fiプロファイル</string>
 </resources>

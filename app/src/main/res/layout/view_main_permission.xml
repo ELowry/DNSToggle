@@ -34,6 +34,7 @@
 			<TextView
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
+				android:breakStrategy="balanced"
 				android:text="@string/main_permission_title"
 				android:textColor="?attr/colorOnSecondaryContainer"
 				android:textStyle="bold" />
@@ -41,6 +42,7 @@
 			<TextView
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
+				android:breakStrategy="high_quality"
 				android:text="@string/main_permission_message"
 				android:textAppearance="?attr/textAppearanceBodySmall"
 				android:textColor="?attr/colorOnSecondaryContainer" />

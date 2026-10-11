@@ -36,8 +36,9 @@
 	<string name="add_hostname">Hostnamen hinzufügen</string>
 	<string name="add_hostname_desc">Diesen aktiven Hostname speichern</string>
 	<string name="edit_hostname">Hostname bearbeiten</string>
-	<string name="dns_hostname_hint">DNS Hostname (z.B. dns.nextdns.io)</string>
-	<string name="dns_label_hint">Bezeichnung (optional)</string>
+	<string name="dns_hostname_hint">DNS-Server</string>
+	<string name="dns_hostname_placeholder">dns.nextdns.io</string>
+	<string name="dns_label_hint">Name (optional)</string>
 	<string name="delete_hostname_confirm">Hostname entfernen?</string>
 	<string name="error_empty_dns_host">Privates DNS kann nicht aktiviert werden, solange die Host-Adresse leer ist</string>
 	<string name="error_invalid_dns_host">Ungültiges DNS-Hostname-Format</string>
@@ -65,4 +66,5 @@
 	<string name="usb_debugging">Hauptbenutzeroberfläche – Kachel „USB-Debugging“</string>
 	<string name="show_usb_debugging_tile">Kachel „USB-Debugging“ anzeigen</string>
 	<string name="show_usb_debugging_tile_summary">Zeige eine zusätzliche Kachel in den Schnelleinstellungen an, um das USB-Debugging zu aktivieren bzw. zu deaktivieren. Durch langes Drücken öffnest du die Entwickleroptionen.</string>
+	<string name="rename_app_hint">App-Anzeigename</string>
 </resources>
