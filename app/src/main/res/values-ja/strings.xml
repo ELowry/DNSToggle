@@ -48,4 +48,11 @@
 	<string name="status_active_reachable">アクティブ・接続可能</string>
 	<string name="warning_unreachable_dns">ポート853 (DoT)でDNSサーバーに接続できません。Androidが別の方法で接続を確立している可能性があります。</string>
 	<string name="rename_app_hint">アプリの表示名</string>
+	<string name="retry">リトリート</string>
+	<string name="unsaved_inactive_label">不活性(未保存)</string>
+	<string name="default_badge">デファルト</string>
+	<string name="default_dns_label">デフォルト</string>
+	<string name="off_profile_format">オフ(%s)</string>
+	<string name="enable_private_dns">プライベートDNS有効化</string>
+	<string name="wifi_profiles_title">Wi-Fiプロファイル</string>
 </resources>
