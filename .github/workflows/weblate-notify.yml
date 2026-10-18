@@ -1,0 +1,16 @@
+name: Weblate Notification
+
+on:
+    push:
+        branches:
+            - 'translate'
+
+jobs:
+    notify:
+        runs-on: ubuntu-latest
+        if: github.actor == 'weblate'
+        steps:
+            - name: Send Discord Alert
+              uses: ELowry/weblate-action-notifier@main
+              with:
+                  webhook_url: ${{ secrets.DISCORD_WEBLATE_WEBHOOK }}
