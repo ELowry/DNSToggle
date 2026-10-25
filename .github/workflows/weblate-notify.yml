@@ -3,12 +3,15 @@ name: Weblate Notification
 on:
     push:
         branches:
-            - 'translate'
+            - 'translation'
 
 jobs:
     notify:
         runs-on: ubuntu-latest
-        if: github.actor == 'weblate'
+        if: |
+            contains(github.actor, 'weblate') ||
+            contains(github.event.head_commit.committer.email, 'weblate') ||
+            contains(github.event.head_commit.author.email, 'weblate')
         steps:
             - name: Send Discord Alert
               uses: ELowry/weblate-action-notifier@main

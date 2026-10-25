@@ -1,0 +1,3 @@
+- Updated Portuguese (Brazilian) translation (thanks Joseph Alves).
+- Updated Spanish translation (thanks Cristian Uroz).
+- Updated Catalan translation (thanks Cristian Uroz).
