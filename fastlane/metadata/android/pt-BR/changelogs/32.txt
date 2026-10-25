@@ -1,0 +1,1 @@
+- Melhor suporte a portais cativos ao bloquear o DNS Privado em redes incompatíveis

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_version_format">Versió de l\'aplicació: %s</string>
+    <string name="whats_new">Novetats</string>
+    <string name="whats_new_version_format">Nou a la v%s</string>
+    <string name="github">GitHub (codi font)</string>
+    <string name="support">Ajuda</string>
+    <string name="ok">D\'acord</string>
+    <string name="cancel">Cancel·la</string>
+    <string name="retry">Reintenta</string>
+    <string name="close">Tanca</string>
+    <string name="settings">Configuració</string>
+    <string name="on_label">Activat</string>
+    <string name="off_label">Desactivat</string>
+    <string name="menu_content_description">Més opcions</string>
+    <string name="permission_required">Cal permís</string>
+    <string name="permission_message">Per a fer servir aquest commutador, heu de permetre els permisos de configuració mitjançant root o Shizuku, o bé executar aquesta ordre d\'ADB a l\'ordinador amb la depuració USB activada:</string>
+    <string name="adb_command_label">Ordre d\'ADB</string>
+    <string name="adb_command_content_description">Ordre d\'ADB: %s</string>
+    <string name="copy_adb_command">Copia l\'ordre d\'ADB</string>
+    <string name="command_copied">S\'ha copiat l\'ordre al porta-retalls</string>
+    <string name="grant_via_shizuku">Concedeix mitjançant Shizuku</string>
+    <string name="grant_via_root">Concedeix mitjançant Root</string>
+    <string name="grant_auto_fallback">Intenta concedir els permisos</string>
+    <string name="toast_attempting_shizuku">S\'està intentant concedir mitjançant Shizuku…</string>
+    <string name="toast_attempting_root">S\'està intentant concedir mitjançant Root…</string>
+    <string name="toast_attempting_fallback">S\'està intentant la concessió automàtica…</string>
+    <string name="grant_failed">S\'ha denegat o ha fallat la concessió mitjançant Shizuku o root</string>
+    <string name="permission_granted">S\'ha concedit el permís</string>
+</resources>

@@ -1,0 +1,3 @@
+- Ajustes no código da interface para lidar melhor com fontes grandes e telas pequenas.
+- Tradução para alemão atualizada para melhorar a clareza de uso (obrigado, akapuma).
+- Tradução para japonês atualizada (obrigado, akinobun).

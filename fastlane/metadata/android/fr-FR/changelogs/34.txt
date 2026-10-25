@@ -1,0 +1,3 @@
+- Mise à jour de la traduction portugaise (brésilienne) (merci Joseph Alves).
+- Mise à jour de la traduction espagnole (merci Cristian Uroz).
+- Mise à jour de la traduction catalane (merci Cristian Uroz).

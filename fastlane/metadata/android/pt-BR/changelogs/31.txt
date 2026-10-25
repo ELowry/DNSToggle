@@ -1,0 +1,1 @@
+- Adicionada proteção para evitar o uso no ChromeOS
