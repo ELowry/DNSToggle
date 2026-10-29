@@ -177,4 +177,5 @@
     <string name="shortcut_select_short">DNS auswählen</string>
     <string name="shortcut_select_long">Privaten DNS Hostnamen auswählen</string>
     <string name="unsupported_device_title">Nicht unterstütztes Gerät</string>
+    <string name="unsupported_chromeos_message">Die DNS-Toggle-Funktion ist grundsätzlich nicht mit Chrome OS kompatibel.</string>
 </resources>
