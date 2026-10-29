@@ -1,0 +1,2 @@
+- Updated Chinese (Han simplified) translation (thanks hamburger2048).
+- Updated German translation (thanks Tofedide).

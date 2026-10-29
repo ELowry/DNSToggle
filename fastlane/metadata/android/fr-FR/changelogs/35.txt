@@ -1,0 +1,2 @@
+- Mise à jour de la traduction chinoise (Han simplifié) (merci hamburger2048).
+- Mise à jour de la traduction allemande (merci Tofedide).
