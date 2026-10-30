@@ -119,7 +119,7 @@
     <string name="auth_prompt_action_subtitle">Confirme sua identidade para alterar as configurações de DNS do dispositivo</string>
     <string name="auth_prompt_unlock_subtitle">Confirme sua identidade para desbloquear o app</string>
     <string name="hide_launcher_icon">Ocultar ícone do app</string>
-    <string name="hide_launcher_icon_summary">Quando ativado, o app será ocultado da gaveta de aplicativos. Você ainda poderá acessar as configurações mantendo pressionado o bloco das Configurações Rápidas. Observação: em alguns inicializadores, essa opção pode não ocultar totalmente o ícone.</string>
+    <string name="hide_launcher_icon_summary">Quando ativado, o app será ocultado da gaveta de apps. Você ainda poderá acessar as configurações mantendo pressionado o bloco das Configurações Rápidas. Observação: em alguns inicializadores, essa opção pode não ocultar totalmente o ícone.</string>
     <string name="hide_launcher_icon_tv_summary">Este recurso está indisponível devido a limitações do Android TV.</string>
     <string name="usb_debugging">Depuração USB</string>
     <string name="show_usb_debugging_tile">Exibir bloco de Depuração USB</string>
