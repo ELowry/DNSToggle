@@ -1,0 +1,3 @@
+- Mise à jour de la traduction allemande (merci Tofedide).
+- Mise à jour de la traduction portugaise (brésilienne) (merci Joseph Alves).
+- Traduction polonaise ajoutée (merci Kamilis).

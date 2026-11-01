@@ -1,0 +1,3 @@
+- Updated German translation (thanks Tofedide).
+- Updated Portuguese (Brazilian) translation (thanks Joseph Alves).
+- Added Polish translation (thanks Kamilis).
