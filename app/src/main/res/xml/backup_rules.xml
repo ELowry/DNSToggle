@@ -8,4 +8,10 @@
 	<exclude
 		domain="sharedpref"
 		path="encrypted_prefs.xml" />
+
+	<!-- Exclude fallback backup encryption keys used if keystore is unavailable -->
+	<exclude
+		domain="sharedpref"
+		path="encryption_fallback_prefs.xml" />
+
 </full-backup-content>

@@ -1,0 +1,1 @@
+- Added backup encryption system in case of broken or unavailable Android Keystore
