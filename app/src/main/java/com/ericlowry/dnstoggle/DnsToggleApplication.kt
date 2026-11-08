@@ -148,6 +148,7 @@ class DnsToggleApplication : Application() {
 		})
 
 		SecurityRepository.initialize()
+		EncryptionManager.initialize(this)
 		AppSettingsRepository.initialize(this)
 		VpnRepository.initialize(this)
 		NetworkProfileRepository.initialize(this)
